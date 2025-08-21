@@ -1,0 +1,19 @@
+{
+  // 配置终端启动时自动执行的命令（激活虚拟环境）
+  "terminal.integrated.profiles.osx": {
+    "bash": {
+      "path": "bash",
+      "args": ["-l", "-c", "source ${workspaceFolder}/backend/.venv/bin/activate && exec bash"]
+    },
+    "zsh": {  // 如果你用的是 zsh 终端（macOS 10.15+ 默认终端）
+      "path": "zsh",
+      "args": ["-l", "-c", "source ${workspaceFolder}/backend/.venv/bin/activate && exec zsh"]
+    }
+  },
+  
+  // 设置默认终端（选你常用的，如 zsh 或 bash）
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  // 让 VS Code 的 Python 插件优先使用虚拟环境的 Python
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "python.terminal.activateEnvInCurrentTerminal": true  // 确保开启自动激活
+}

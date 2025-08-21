@@ -1,0 +1,10 @@
+# 编辑器配置
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 系统临时文件
+# Mac系统
+.DS_Store  
+# Windows
+Thumbs.db  

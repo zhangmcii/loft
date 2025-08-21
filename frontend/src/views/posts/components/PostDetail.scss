@@ -1,0 +1,201 @@
+/* 文章详情页共享样式 */
+@use "sass:color";
+
+// 颜色变量
+$primary-color: #1890ff;
+$primary-gradient-from: #09c8ce;
+$primary-gradient-to: #eb2f96;
+$text-primary: #333;
+$text-secondary: #666;
+$text-light: #999;
+$border-color: #f0f0f0;
+$background-light: #fafafa;
+$background-hover: #f5f5f5;
+$shadow-color: rgba(0, 0, 0, 0.05);
+
+// 间距变量
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// 圆角变量
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 16px;
+
+// 过渡效果
+@mixin transition($property: all, $duration: 0.3s, $timing: ease) {
+  transition: $property $duration $timing;
+}
+
+// 卡片样式
+@mixin card-style {
+  background-color: #fff;
+  border-radius: $border-radius-md;
+  box-shadow: 0 1px 3px $shadow-color;
+  padding: $spacing-md;
+}
+
+// 渐变文本
+@mixin gradient-text {
+  background: linear-gradient(90deg, $primary-gradient-from, $primary-gradient-to);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+
+// 渐变边框
+@mixin gradient-border($width: 3px, $direction: 'left') {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    @if $direction == 'left' {
+      left: -$spacing-xs;
+      top: 2px;
+      bottom: 2px;
+      width: $width;
+    } @else if $direction == 'bottom' {
+      left: 0;
+      right: 0;
+      bottom: -$spacing-xs;
+      height: $width;
+    }
+    background: linear-gradient(to bottom, $primary-gradient-from, $primary-gradient-to);
+    border-radius: $width;
+  }
+}
+
+// 响应式媒体查询
+@mixin mobile {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 769px) and (max-width: 1024px) {
+    @content;
+  }
+}
+
+// 动画效果
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease forwards;
+}
+
+// 图片悬停效果
+@mixin image-hover {
+  overflow: hidden;
+  
+  img {
+    @include transition(transform);
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// 按钮样式
+@mixin button-style {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $border-radius-sm;
+  background-color: $primary-color;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  @include transition;
+  
+  &:hover {
+    background-color: color.scale($primary-color, $lightness: 10%);
+  }
+  
+  .icon {
+    margin-right: $spacing-xs;
+  }
+}
+
+// 文章内容样式
+.post-content {
+  font-size: 16px;
+  line-height: 1.8;
+  color: $text-primary;
+  
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    font-weight: 600;
+    color: color.scale($text-primary, $lightness: -10%);
+  }
+  
+  p {
+    margin-bottom: 1.2em;
+  }
+  
+  img {
+    max-width: 100%;
+    border-radius: $border-radius-md;
+    margin: $spacing-md 0;
+  }
+  
+  a {
+    color: $primary-color;
+    text-decoration: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  blockquote {
+    border-left: 4px solid $border-color;
+    padding: $spacing-sm $spacing-md;
+    margin: $spacing-md 0;
+    color: $text-secondary;
+    background-color: $background-light;
+  }
+  
+  code {
+    background-color: $background-light;
+    padding: 2px 4px;
+    border-radius: $border-radius-sm;
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+  
+  @include mobile {
+    font-size: 14px;
+  }
+}
