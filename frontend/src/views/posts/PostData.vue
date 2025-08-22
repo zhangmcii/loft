@@ -49,10 +49,6 @@ export default {
   },
   mounted() {
     this.getPosts(this.currentPage, this.activeName)
-    // 自己发布的文章
-    emitter.on('newPost', (post) => {
-      this.posts.unshift(...post)
-    })
     // 关注的用户发布了新文章
     emitter.on('followPost', (newPost) => {
       this.showDot = true
@@ -89,17 +85,10 @@ export default {
         }
       })
     },
-    getPostsResult(res) {
-      // 适配新的统一接口返回格式
-      if (res.code === 200) {
-        // 新格式
-        this.posts = res.data
-        this.posts_count = res.total || 0
-      } else if (res.data) {
-        // 兼容旧格式
-        this.posts = res.data.data
-        this.posts_count = res.data.total
-      }
+    getPostsResult(post) {
+      this.posts.unshift(...post)
+      this.posts_count++
+
       // 首页设置了缓存，手动更新为第一页
       this.currentPage = 1
       this.loading.publishPost = false
@@ -119,7 +108,7 @@ export default {
     <!-- 使用新的发布入口组件 -->
     <PublishEntry
       @loading-begin="(flag) => (loading.publishPost = flag)"
-      @posts-result="getPostsResult"
+      @newPost="getPostsResult"
       v-if="currentUser.isLogin"
     />
     <el-tabs v-model="activeName" type="card" class="demo-tabs" @tab-change="changeTab">

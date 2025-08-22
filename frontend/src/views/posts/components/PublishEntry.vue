@@ -140,7 +140,7 @@ export default {
     Emoji,
     MarkdownEditor
   },
-  emits: ['postsResult', 'loadingBegin'],
+  emits: ['newPost', 'loadingBegin'],
   data() {
     return {
       showPublishPanel: false,
@@ -220,8 +220,7 @@ export default {
           this.$message.success('发布成功!')
           this.resetForm()
           this.showPublishPanel = false
-          this.$emit('postsResult', result)
-          emitter.emit('newPost', result.data)
+          this.$emit('newPost', result.data)
         } else {
           this.$message.error('发布失败!')
         }

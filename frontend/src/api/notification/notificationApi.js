@@ -1,7 +1,7 @@
 import { $http } from '@/utils/request.js'
 export default {
-  getUnRead() {
-    return $http.get('/notification/unread')
+  getNotificationByUser() {
+    return $http.get('/notifications')
   },
   markRead(params) {
     return $http.post('/notification/read', params)

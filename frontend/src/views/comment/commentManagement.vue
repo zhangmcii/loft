@@ -80,7 +80,7 @@ export default {
       </PostCard>
     </SkeletonUtil>
     <el-pagination v-model:current-page="currentPage" :page-size="10" layout="total, prev, pager, next"
-      :total="comments_count" @current-change="handleCurrentChange" :hide-on-single-page="true" :pager-count="4" />
+      :total="comments_count" @current-change="handleCurrentChange" :hide-on-single-page="true" :pager-count="5" />
   </PageHeadBack>
 </template>
 <style scoped></style>

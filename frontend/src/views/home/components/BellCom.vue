@@ -63,13 +63,14 @@ export default {
     }
   },
   methods: {
+    
     async initLoad() {
       // 加载本地数据
       const localData = this.currentUser.notice.Notification_data
       // 请求服务器数据
-      const unRead = await notificationApi.getUnRead().then((res) => res.data)
+      const notifications = await notificationApi.getNotificationByUser().then((res) => res.data)
       // 合并去重
-      const allData = [...unRead, ...localData].filter(
+      const allData = [...notifications, ...localData].filter(
         (item, index, self) => index === self.findIndex((t) => t.id === item.id)
       )
       this.notifications = allData
@@ -154,7 +155,8 @@ export default {
       this.classification.at = this.notifications.filter((item) => item.type === '@')
       this.classification.chat = this.notifications.filter((item) => item.type === '私信')
       this.classification.newPost = this.notifications.filter((item) => item.type === '新文章')
-      if (this.classification.newPost.length > 0) {
+      let post_notice = this.classification.newPost.length > 0 && this.classification.newPost.some((item) => !item.isRead)
+      if ( post_notice) {
         emitter.emit('followPost', this.classification.newPost)
       }
     },
