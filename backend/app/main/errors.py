@@ -8,6 +8,7 @@ from .. import logger
 # 日志
 log = logger.get_logger()
 
+# jwt无效的自定义回调
 @jwt.unauthorized_loader
 def missing_token_callback(error_msg):
     log.warning(f"未授权访问: {request.path}, 错误: {error_msg}")

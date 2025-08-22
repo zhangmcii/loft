@@ -92,7 +92,7 @@ def test_user_posts(client, test_user, test_post):
 def test_user_posts_user_not_found(client):
     """测试获取不存在用户的文章"""
     response = client.get('/user/nonexistent')
-    assert response.status_code == 404
+    assert response.json.get('code') == 404
     data = json.loads(response.data)
     assert data['code'] == 404
     assert data['message'] == '用户不存在'
