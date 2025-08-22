@@ -68,7 +68,7 @@ export default {
       // 加载本地数据
       const localData = this.currentUser.notice.Notification_data
       // 请求服务器数据
-      const notifications = await notificationApi.getNotificationByUser().then((res) => res.data)
+      const notifications = await notificationApi.getCurrentUserNotification().then((res) => res.data)
       // 合并去重
       const allData = [...notifications, ...localData].filter(
         (item, index, self) => index === self.findIndex((t) => t.id === item.id)

@@ -782,7 +782,7 @@ def create_comment():
 
 @main.route("/notifications")
 @jwt_required()
-def get_notification_by_user():
+def get_currentUsernotification():
     d = (
         Notification.query.filter_by(receiver_id=current_user.id)
         .order_by(Notification.created_at.desc())

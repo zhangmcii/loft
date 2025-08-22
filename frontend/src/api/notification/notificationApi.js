@@ -1,6 +1,6 @@
 import { $http } from '@/utils/request.js'
 export default {
-  getNotificationByUser() {
+  getCurrentUserNotification() {
     return $http.get('/notifications')
   },
   markRead(params) {
