@@ -15,7 +15,7 @@ from qiniu import Auth, BucketManager, build_batch_delete
 log = logger.get_logger()
 
 # 初始化Auth状态
-q = Auth(os.getenv("QINIU_ACCESS_KEY"), os.getenv("QINIU_SECRET_KEY"))
+q = Auth(os.getenv("QINIU_ACCESS_KEY",'fdfddgfg'), os.getenv("QINIU_SECRET_KEY", 'dfdffgfgfg'))
 # 初始化BucketManager
 bucket = BucketManager(q)
 

@@ -1,12 +1,36 @@
-name: Run Tests
+name: Flask Tests
 
 on:
-  push:          # 每次推送代码时运行
-  pull_request:  # 每次 PR 时运行
+  push:
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: 1234
+          MYSQL_DATABASE: test_backend_flask
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout code
@@ -23,5 +47,15 @@ jobs:
           pip install -r backend/requirements.txt
           pip install pytest
 
+      - name: Run migrations
+        env:
+          DATABASE_URL: mysql+pymysql://root:1234@127.0.0.1:3306/test_backend_flask
+        run: |
+          cd backend && flask db upgrade
+
       - name: Run tests
+        env:
+          DATABASE_URL: mysql+pymysql://root:1234@127.0.0.1:3306/test_backend_flask
+          REDIS_URL: redis://127.0.0.1:6379/0
         run: pytest backend/tests -v
+
