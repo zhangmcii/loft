@@ -32,12 +32,13 @@ def runner(app):
 def test_user(app):
     """创建测试用户"""
     with app.app_context():
+        # 使用User模型的password属性setter方法设置密码
         user = User(
             email='test@example.com',
             username='testuser',
-            password='password',
             confirmed=True
         )
+        user.password = 'password'  # 这会调用password.setter方法，正确设置password_hash
         db.session.add(user)
         db.session.commit()
         
@@ -54,9 +55,9 @@ def admin_user(app):
         admin = User(
             email='admin@example.com',
             username='admin',
-            password='password',
             confirmed=True
         )
+        admin.password = 'password'  # 这会调用password.setter方法，正确设置password_hash
         admin_role = Role.query.filter_by(name='Administrator').first()
         admin.role = admin_role
         db.session.add(admin)
