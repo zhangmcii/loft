@@ -5,7 +5,7 @@ from flask_jwt_extended import current_user, jwt_required
 from .. import db
 from ..models import Post, Permission, Image, ImageType, PostType
 from . import api
-from ..main.views import del_qiniu_image
+from ..main.uploads import del_qiniu_image
 from ..utils.response import success, error
 from .. import logger
 
