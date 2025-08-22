@@ -14,11 +14,11 @@ def test_login(client):
         'username': 'john',
         'password': 'cat',
     })
-    assert response.json.get('msg') == 'success'
+    assert response.json.get('message') == 'success'
     
     # 登录
     res = client.post('/auth/login', json={
         'uiAccountName': 'john',
         'uiPassword': 'cat',
     })
-    assert res.json.get('msg') == '登录成功'
+    assert res.json.get('message') == 'success'

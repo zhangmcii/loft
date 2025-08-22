@@ -2,8 +2,7 @@ import pytest
 import json
 from app import create_app, db
 from app.models import User, Role
-from flask import url_for
-
+from flask_jwt_extended import create_access_token
 
 @pytest.fixture
 def app():
@@ -86,19 +85,23 @@ class TestResponseFormat:
 
     def test_search_followed_response_format(self, client):
         """测试搜索关注用户的接口返回格式"""
-        # 创建一个测试用户并登录
-        user = User(email='test@example.com', username='test', password='test')
-        db.session.add(user)
-        db.session.commit()
-        
-        # 获取JWT令牌
-        auth_response = client.post('/auth/login', json={
+        # 注册一个测试用户并登录
+        auth_response = client.post('/auth/register', json={
             'username': 'test',
             'password': 'test'
         })
+        result = json.loads(auth_response.data)
+        assert result.get('message') == 'success'
         
-        token = json.loads(auth_response.data).get('access_token')
-        headers = {'Authorization': f'Bearer {token}'}
+        # 获取JWT令牌
+        auth_response = client.post('/auth/login', json={
+            'uiAccountName': 'test',
+            'uiPassword': 'test'
+        })
+        
+        token = json.loads(auth_response.data).get('token')
+        assert token is not None, f"登录失败，返回内容：{auth_response.data}"
+        headers = {'Authorization': token}
         
         # 请求搜索关注用户
         response = client.get('/api/v1/search_followed?name=test', headers=headers)

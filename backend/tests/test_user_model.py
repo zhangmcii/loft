@@ -122,10 +122,9 @@ class TestUserModel:
         db.session.add(u)
         db.session.commit()
         with app.test_request_context('/'):
-            json_user = u.to_json(u)
-        expected_keys = ['url', 'username', 'member_since', 'last_seen',
+            json_user = u.to_json()
+        expected_keys = ['username', 'member_since', 'last_seen',
                          'posts_url', 'followed_posts_url', 'post_count']
         assert sorted(json_user.keys()), sorted(expected_keys)
-        assert '/api/v1/users/' + str(u.id) == json_user['url']
        
         

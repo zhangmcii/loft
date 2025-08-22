@@ -9,6 +9,9 @@ from .. import logger
 # skip_pattern = r'^/api/v1/(posts/.*$ | users/\d+$)'
 skip_pattern = r'^(/api/v1/posts/.*$|/api/v1/users/\d+$)'
 
+# 日志
+log = logger.get_logger()
+
 @api.before_request
 def auth():
     """
@@ -21,5 +24,5 @@ def auth():
         else:
             verify_jwt_in_request()
     except Exception as e:
-        logger.get_logger().warning(f"未授权访问: {request.path}, 错误: {str(e)}")
+        log.warning(f"未授权访问: {request.path}, 错误: {str(e)}")
         return unauthorized("未授权访问")

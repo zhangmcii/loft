@@ -7,6 +7,8 @@ from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
 from .. import logger
 
+# 日志
+log = logger.get_logger()
 
 @api.route('/users/<int:id>')
 def get_user(id):
@@ -55,14 +57,14 @@ def get_user(id):
               type: object
               example: {}
     """
-    logger.get_logger().info(f"获取用户信息: id={id}")
+    log.info(f"获取用户信息: id={id}")
     user = User.query.get_or_404(id)
     return success(data=user.to_json())
 
 
 @api.route('/users/<int:id>/posts/')
 def get_user_posts(id):
-    logger.get_logger().info(f"获取用户文章: id={id}")
+    log.info(f"获取用户文章: id={id}")
     user = User.query.get_or_404(id)
     page = request.args.get('page', 1, type=int)
     pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
@@ -85,7 +87,7 @@ def get_user_posts(id):
 
 @api.route('/users/<int:id>/timeline/')
 def get_user_followed_posts(id):
-    logger.get_logger().info(f"获取用户关注的文章: id={id}")
+    log.info(f"获取用户关注的文章: id={id}")
     user = User.query.get_or_404(id)
     page = request.args.get('page', 1, type=int)
     pagination = user.followed_posts.order_by(Post.timestamp.desc()).paginate(
@@ -162,7 +164,7 @@ def search_followed():
               example: {}
     """
     search_query = request.args.get('name', '').strip()
-    logger.get_logger().info(f"搜索关注用户: query={search_query}")
+    log.info(f"搜索关注用户: query={search_query}")
     # 关注者
     user = User.query.filter_by(username=current_user.username).first()
     if not user:
@@ -186,7 +188,7 @@ def search_followed():
 @api.route('/search_fan', methods=['GET'])
 def search_fan():
     search_query = request.args.get('name', '').strip()
-    logger.get_logger().info(f"搜索粉丝: query={search_query}")
+    log.info(f"搜索粉丝: query={search_query}")
     # 粉丝
     user = User.query.filter_by(username=current_user.username).first()
     if not user:
@@ -264,7 +266,7 @@ def update_user_profile():
               type: object
               example: {}
     """
-    logger.get_logger().info(f"更新用户信息: user_id={current_user.id}")
+    log.info(f"更新用户信息: user_id={current_user.id}")
     try:
         for key, value in request.json.items():
             if hasattr(current_user, key):
@@ -272,6 +274,6 @@ def update_user_profile():
         db.session.commit()
         return success(message="用户信息更新成功")
     except Exception as e:
-        logger.get_logger().error(f"更新用户信息失败: {str(e)}", exc_info=True)
+        log.error(f"更新用户信息失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"更新用户信息失败: {str(e)}")

@@ -6,6 +6,8 @@ from .decorators import permission_required
 from ..utils.response import success, error, not_found
 from .. import logger
 
+# 日志
+log = logger.get_logger()
 
 @api.route('/comments/')
 def get_comments():
@@ -49,7 +51,7 @@ def get_comments():
                   type: integer
                   example: 100
     """
-    logger.get_logger().info("获取评论列表")
+    log.info("获取评论列表")
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
         page=page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
@@ -98,7 +100,7 @@ def get_comment(id):
       404:
         description: 评论不存在
     """
-    logger.get_logger().info(f"获取评论: id={id}")
+    log.info(f"获取评论: id={id}")
     comment = Comment.query.get_or_404(id)
     return success(data=comment.to_json())
 
@@ -147,7 +149,7 @@ def new_post_comment(id):
       404:
         description: 文章不存在
     """
-    logger.get_logger().info(f"创建新评论: post_id={id}")
+    log.info(f"创建新评论: post_id={id}")
     post = Post.query.get_or_404(id)
     try:
         comment = Comment.from_json(request.json)
@@ -160,7 +162,7 @@ def new_post_comment(id):
             message="评论创建成功"
         )
     except Exception as e:
-        logger.get_logger().error(f"创建评论失败: {str(e)}", exc_info=True)
+        log.error(f"创建评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"创建评论失败: {str(e)}")
 
@@ -207,7 +209,7 @@ def get_comments_new(id):
       404:
         description: 文章不存在
     """
-    logger.get_logger().info(f"获取文章评论: post_id={id}")
+    log.info(f"获取文章评论: post_id={id}")
     post = Post.query.get_or_404(id)
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('size', current_app.config['FLASKY_COMMENTS_PER_PAGE'], type=int)
@@ -290,7 +292,7 @@ def get_comment_replies():
               items:
                 type: object
     """
-    logger.get_logger().info("获取评论回复")
+    log.info("获取评论回复")
     root_comment_id = request.args.get('rootCommentId', type=int)
     page = request.args.get('page', 1, type=int)
     # 分页时不自动嵌套，前端按需请求

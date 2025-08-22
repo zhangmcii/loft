@@ -9,6 +9,8 @@ from ..main.views import del_qiniu_image
 from ..utils.response import success, error
 from .. import logger
 
+# 日志
+log = logger.get_logger()
 
 @api.route('/posts/')
 def get_posts():
@@ -52,7 +54,7 @@ def get_posts():
                   type: integer
                   example: 100
     """
-    logger.get_logger().info("获取文章列表")
+    log.info("获取文章列表")
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.paginate(
         page=page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
@@ -101,7 +103,7 @@ def get_post(id):
       404:
         description: 文章不存在
     """
-    logger.get_logger().info(f"获取文章: id={id}")
+    log.info(f"获取文章: id={id}")
     post = Post.query.get_or_404(id)
     return success(data=post.to_json())
 
@@ -137,7 +139,7 @@ def new_post():
             data:
               type: object
     """
-    logger.get_logger().info("创建新文章")
+    log.info("创建新文章")
     post = Post.from_json(request.json)
     post.author = current_user
     db.session.add(post)
@@ -203,10 +205,10 @@ def edit_post(id):
       404:
         description: 文章不存在
     """
-    logger.get_logger().info(f"编辑文章: id={id}")
+    log.info(f"编辑文章: id={id}")
     post = Post.query.get_or_404(id)
     if current_user.username != post.author.username and not current_user.can(Permission.ADMIN):
-        logger.get_logger().warning(f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}")
+        log.warning(f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}")
         return error(403, "没有权限编辑此文章")
     
     # 对表单编辑业务逻辑
@@ -272,13 +274,13 @@ def del_post(id):
               type: object
               example: {}
     """
-    logger.get_logger().info(f"删除文章: id={id}")
+    log.info(f"删除文章: id={id}")
     # 删除文章，同时也要删除文章中的图片url
     is_contain_image, data = None, None
     try:
         p = Post.query.filter_by(id=id, author_id=current_user.id).first()
         if not p:
-            logger.get_logger().warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
+            log.warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
             return error(404, "文章不存在")
         
         is_contain_image = p.type == PostType.IMAGE
@@ -292,7 +294,7 @@ def del_post(id):
         db.session.delete(p)
         db.session.commit()
     except Exception as e:
-        logger.get_logger().error(f"删除文章失败: {str(e)}", exc_info=True)
+        log.error(f"删除文章失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"删除文章失败: {str(e)}")
         

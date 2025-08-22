@@ -4,7 +4,6 @@ from flask_jwt_extended import (
     jwt_required,
     current_user,
     get_jwt_identity,
-    decode_token,
     verify_jwt_in_request,
 )
 from . import main
@@ -50,9 +49,7 @@ from ..utils.response import (
     error,
     not_found,
     bad_request,
-    unauthorized,
     forbidden,
-    server_error,
 )
 from .. import logger
 
@@ -64,6 +61,9 @@ q = Auth(os.getenv("QINIU_ACCESS_KEY"), os.getenv("QINIU_SECRET_KEY"))
 # 初始化BucketManager
 bucket = BucketManager(q)
 
+# 日志
+log = logger.get_logger()
+
 
 # --------------------------- 编辑资料 ---------------------------
 @main.route("/edit-profile", methods=["POST"])
@@ -71,7 +71,7 @@ bucket = BucketManager(q)
 def edit_profile():
     """编辑用户资料"""
 
-    logger.get_logger().info(f"编辑用户资料: user_id={current_user.id}")
+    log.info(f"编辑用户资料: user_id={current_user.id}")
     try:
         user_info = request.get_json()
         current_user.nickname = user_info.get("nickname")
@@ -81,7 +81,7 @@ def edit_profile():
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
-        logger.get_logger().error(f"编辑用户资料失败: {str(e)}", exc_info=True)
+        log.error(f"编辑用户资料失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑用户资料失败: {str(e)}")
 
@@ -91,7 +91,7 @@ def edit_profile():
 @admin_required
 def edit_profile_admin(id):
     """管理员编辑用户资料"""
-    logger.get_logger().info(f"管理员编辑用户资料: user_id={id}")
+    log.info(f"管理员编辑用户资料: user_id={id}")
     try:
         user = User.query.get_or_404(id)
         user_info = request.get_json()
@@ -108,7 +108,7 @@ def edit_profile_admin(id):
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
-        logger.get_logger().error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
+        log.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑用户资料失败: {str(e)}")
 
@@ -144,11 +144,11 @@ def index():
                 db.session.add_all(images)
             db.session.commit()
             new_post_notification(post.id)
-            logger.get_logger().info(
+            log.info(
                 f"创建新文章: user_id={current_user.id}, post_id={post.id}"
             )
         except Exception as e:
-            logger.get_logger().error(f"创建文章失败: {str(e)}", exc_info=True)
+            log.error(f"创建文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"创建文章失败: {str(e)}")
 
@@ -214,7 +214,7 @@ def get_user_data(username):
 @jwt_required(optional=True)
 def user(username):
     """获取博客文章的资料页面路由"""
-    logger.get_logger().info(f"获取用户文章: username={username}")
+    log.info(f"获取用户文章: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
         return not_found("用户不存在")
@@ -233,7 +233,7 @@ def user(username):
 @jwt_required(optional=True)
 def get_user_by_username(username):
     """根据用户名获取用户数据"""
-    logger.get_logger().info(f"获取用户信息: username={username}")
+    log.info(f"获取用户信息: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
         return not_found("用户不存在")
@@ -247,12 +247,12 @@ def get_user_by_username(username):
 def edit(id):
     # PUT 文章已使用api中的
     """编辑博客文章"""
-    logger.get_logger().info(f"编辑文章: id={id}")
+    log.info(f"编辑文章: id={id}")
     post = Post.query.get_or_404(id)
     if current_user.username != post.author.username and not current_user.can(
         Permission.ADMIN
     ):
-        logger.get_logger().warning(
+        log.warning(
             f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}"
         )
         return forbidden("没有权限编辑此文章")
@@ -266,7 +266,7 @@ def edit(id):
         db.session.commit()
         return success(message="文章编辑成功")
     except Exception as e:
-        logger.get_logger().error(f"编辑文章失败: {str(e)}", exc_info=True)
+        log.error(f"编辑文章失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑文章失败: {str(e)}")
 
@@ -279,7 +279,7 @@ def edit(id):
 @permission_required(Permission.FOLLOW)
 def follow(username):
     """关注用户"""
-    logger.get_logger().info(f"关注用户: {current_user.username} -> {username}")
+    log.info(f"关注用户: {current_user.username} -> {username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -292,7 +292,7 @@ def follow(username):
         data = get_user_data(username)
         return success(data=data)
     except Exception as e:
-        logger.get_logger().error(f"关注用户失败: {str(e)}", exc_info=True)
+        log.error(f"关注用户失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"关注用户失败: {str(e)}")
 
@@ -302,7 +302,7 @@ def follow(username):
 @permission_required(Permission.FOLLOW)
 def unfollow(username):
     """取消关注用户"""
-    logger.get_logger().info(f"取消关注用户: {current_user.username} -> {username}")
+    log.info(f"取消关注用户: {current_user.username} -> {username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -315,7 +315,7 @@ def unfollow(username):
         data = get_user_data(username)
         return success(data=data)
     except Exception as e:
-        logger.get_logger().error(f"取消关注用户失败: {str(e)}", exc_info=True)
+        log.error(f"取消关注用户失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"取消关注用户失败: {str(e)}")
 
@@ -323,7 +323,7 @@ def unfollow(username):
 @main.route("/followers/<username>")
 def followers(username):
     """获取用户的粉丝列表"""
-    logger.get_logger().info(f"获取用户粉丝列表: username={username}")
+    log.info(f"获取用户粉丝列表: username={username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -357,7 +357,7 @@ def followers(username):
 @main.route("/followed_by/<username>")
 def followed_by(username):
     """获取用户关注的人列表"""
-    logger.get_logger().info(f"获取用户关注列表: username={username}")
+    log.info(f"获取用户关注列表: username={username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -392,7 +392,7 @@ def followed_by(username):
 @jwt_required(optional=True)
 def can(perm):
     """检查用户权限"""
-    logger.get_logger().info(f"检查用户权限: perm={perm}")
+    log.info(f"检查用户权限: perm={perm}")
     if current_user:
         return success(data=current_user.can(perm))
     return success(data=False)
@@ -404,7 +404,7 @@ def can(perm):
 @jwt_required()
 def post(id):
     """发布评论（适配direct_parent关系）"""
-    logger.get_logger().info(f"发布评论: post_id={id}")
+    log.info(f"发布评论: post_id={id}")
     post = Post.query.get_or_404(id)
     verify_jwt_in_request()
     data = request.get_json()
@@ -470,7 +470,7 @@ def post(id):
     except TooManyRequests:
         raise
     except Exception as e:
-        logger.get_logger().error(f"发布评论失败: {str(e)}", exc_info=True)
+        log.error(f"发布评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"发布评论失败: {str(e)}")
 
@@ -547,7 +547,7 @@ def all_comments(page):
 @permission_required(Permission.MODERATE)
 def moderate():
     """管理评论"""
-    logger.get_logger().info("管理评论")
+    log.info("管理评论")
     page = request.args.get("page", 1, type=int)
     comments, total = all_comments(page)
     return success(data=comments, total=total)
@@ -558,7 +558,7 @@ def moderate():
 @permission_required(Permission.MODERATE)
 def moderate_enable(id):
     """恢复评论"""
-    logger.get_logger().info(f"恢复评论: id={id}")
+    log.info(f"恢复评论: id={id}")
     try:
         comment = Comment.query.get_or_404(id)
         comment.disabled = False
@@ -567,7 +567,7 @@ def moderate_enable(id):
         comments, total = all_comments(1)
         return success(message="评论已恢复", data=comments, total=total)
     except Exception as e:
-        logger.get_logger().error(f"恢复评论失败: {str(e)}", exc_info=True)
+        log.error(f"恢复评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"恢复评论失败: {str(e)}")
 
@@ -577,7 +577,7 @@ def moderate_enable(id):
 @permission_required(Permission.MODERATE)
 def moderate_disable(id):
     """禁用评论"""
-    logger.get_logger().info(f"禁用评论: id={id}")
+    log.info(f"禁用评论: id={id}")
     try:
         comment = Comment.query.get_or_404(id)
         comment.disabled = True
@@ -586,7 +586,7 @@ def moderate_disable(id):
         comments, total = all_comments(1)
         return success(message="评论已禁用", data=comments, total=total)
     except Exception as e:
-        logger.get_logger().error(f"禁用评论失败: {str(e)}", exc_info=True)
+        log.error(f"禁用评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"禁用评论失败: {str(e)}")
 
@@ -596,14 +596,14 @@ def moderate_disable(id):
 @jwt_required()
 def user_image():
     """批量生成用户和文章"""
-    logger.get_logger().info("批量生成用户和文章")
+    log.info("批量生成用户和文章")
     try:
         Role.insert_roles()
         Fake.users()
         Fake.posts()
         return success(message="用户和文章生成成功")
     except Exception as e:
-        logger.get_logger().error(f"生成用户和文章失败: {str(e)}", exc_info=True)
+        log.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
         return error(500, f"生成用户和文章失败: {str(e)}")
 
 
@@ -611,7 +611,7 @@ def user_image():
 @jwt_required()
 def add_user_and_post():
     """存储用户图像地址"""
-    logger.get_logger().info(f"存储用户图像地址: user_id={current_user.id}")
+    log.info(f"存储用户图像地址: user_id={current_user.id}")
     try:
         image = request.get_json().get("image")
         current_user.image = image
@@ -619,7 +619,7 @@ def add_user_and_post():
         db.session.commit()
         return success(data={"image": get_avatars_url(image)})
     except Exception as e:
-        logger.get_logger().error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
+        log.error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"存储用户图像地址失败: {str(e)}")
 
@@ -627,7 +627,7 @@ def add_user_and_post():
 @main.route("/praise/<int:id>", methods=["GET", "POST"])
 def praise(id):
     """文章点赞"""
-    logger.get_logger().info(f"文章点赞: id={id}")
+    log.info(f"文章点赞: id={id}")
     post = Post.query.get_or_404(id)
     if request.method == "POST":
         # POST 请求需要 JWT 验证
@@ -663,7 +663,7 @@ def praise(id):
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
         except Exception as e:
-            logger.get_logger().error(f"文章点赞失败: {str(e)}", exc_info=True)
+            log.error(f"文章点赞失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"操作失败，已回滚: {str(e)}")
 
@@ -673,7 +673,7 @@ def praise(id):
 @main.route("/praise/comment/<int:id>", methods=["GET", "POST"])
 def praise_comment(id):
     """评论点赞"""
-    logger.get_logger().info(f"评论点赞: id={id}")
+    log.info(f"评论点赞: id={id}")
     comment = Comment.query.get_or_404(id)
     if request.method == "POST":
         # POST 请求需要 JWT 验证
@@ -705,7 +705,7 @@ def praise_comment(id):
 
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
-            logger.get_logger().error(f"评论点赞失败: {str(e)}", exc_info=True)
+            log.error(f"评论点赞失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"点赞操作失败，已回滚: {str(e)}")
 
@@ -715,7 +715,7 @@ def praise_comment(id):
 @main.route("/has_praised/<int:post_id>")
 def has_praised_comment_id(post_id):
     """查找某文章下当前用户已点赞的评论id"""
-    logger.get_logger().info(f"查询用户已点赞评论: post_id={post_id}")
+    log.info(f"查询用户已点赞评论: post_id={post_id}")
     comment_ids = (
         db.session.query(Praise.comment_id)
         .join(Comment)
