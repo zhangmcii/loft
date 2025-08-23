@@ -76,8 +76,8 @@ class TestNotificationCase:
         # 验证通知内容
         notifications = r.json.get('data')
         assert len(notifications) > 0
-        assert notifications[0].get('type') == '点赞'
-        assert notifications[0].get('triggerUsername') == 'liker'
+        assert notifications[-1].get('type') == '点赞'
+        assert notifications[-1].get('triggerUsername') == 'liker'
 
     def test_reply_notification(self, client, auth):
         """测试回复通知"""

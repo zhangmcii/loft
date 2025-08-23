@@ -1,5 +1,6 @@
 import pytest
 from app.models import User, Role
+from app import redis
 from base64 import b64encode
 import re
 
@@ -46,8 +47,8 @@ class TestPasswordResetCase:
     def test_password_reset_flow(self, client, auth, monkeypatch):
         """测试忘记密码流程"""
         # 注册用户并确保邮箱已绑定
-        auth.register()
-        auth.login()
+        auth.register('tree', 'tree')
+        auth.login('tree', 'tree')
 
         # 模拟验证码生成，始终返回固定验证码
         def mock_generate_code(email, expiration=60*3):
@@ -56,11 +57,15 @@ class TestPasswordResetCase:
         # 模拟验证码比较，始终返回True
         def mock_compare_code(email, code):
             return True
+
+        # 模拟redis删除值
+        def mock_delete_code(email):
+            pass
         
         # 应用模拟函数
         monkeypatch.setattr(User, 'generate_code', mock_generate_code)
         monkeypatch.setattr(User, 'compare_code', mock_compare_code)
-
+        monkeypatch.setattr(redis, 'delete', mock_delete_code)
         # 绑定邮箱
         r = client.post('/auth/applyCode', headers=auth.get_headers(), json={
             'email': 'test@example.com',
@@ -97,7 +102,7 @@ class TestPasswordResetCase:
 
         # 使用新密码登录
         r = client.post('/auth/login', json={
-            'uiAccountName': 'test',
+            'uiAccountName': 'tree',
             'uiPassword': 'reset_password'
         })
         assert r.json.get('code') == 200

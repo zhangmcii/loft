@@ -3,16 +3,6 @@ from app import create_app, db
 from app.models import Role, User
 
 
-# @pytest.fixture(scope='module')
-# def app():
-#     app = create_app('testing')
-#     return app
-#
-#
-# @pytest.fixture
-# def client(app):
-#     return app.test_client()
-
 @pytest.fixture(scope='module')
 def app():
     """创建并配置一个Flask应用实例用于测试"""
