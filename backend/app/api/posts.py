@@ -108,45 +108,6 @@ def get_post(id):
     return success(data=post.to_json())
 
 
-@api.route('/posts/', methods=['POST'])
-def new_post():
-    """
-    创建新文章
-    ---
-    tags:
-      - 文章
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            body:
-              type: string
-              description: 文章内容
-    responses:
-      200:
-        description: 成功创建文章
-        schema:
-          properties:
-            code:
-              type: integer
-              example: 200
-            message:
-              type: string
-              example: success
-            data:
-              type: object
-    """
-    log.info("创建新文章")
-    post = Post.from_json(request.json)
-    post.author = current_user
-    db.session.add(post)
-    db.session.commit()
-    return success(data=post.to_json())
-
-
 @api.route('/posts/<int:id>', methods=['PUT'])
 @jwt_required()
 def edit_post(id):

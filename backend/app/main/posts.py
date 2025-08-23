@@ -119,7 +119,7 @@ def edit(id):
 
 
 @main.route("/rich_post", methods=["POST"])
-@limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
+# @limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
 @jwt_required()
 def create_post():
     """创建富文本文章"""

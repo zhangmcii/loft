@@ -480,7 +480,7 @@ class Post(db.Model):
     def replace_body(content, pos, image_urls):
         pos2url = {str(_pos): _url for _pos, _url in zip(pos, image_urls)}
 
-        # 匹配 ![xxx](数字)
+
         def replacer(match):
             alt = match.group(1)
             pos = match.group(2)
@@ -490,6 +490,7 @@ class Post(db.Model):
             else:
                 return match.group(0)
 
+        # 匹配 ![xxx](数字)
         pattern = re.compile(r'!\[([^\]]*)\]\((\d+)\)')
         return pattern.sub(replacer, content)
 

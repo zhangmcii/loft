@@ -87,6 +87,7 @@ export default {
       this.imageKey = imageKey
       this.imageUrls = imageUrls
       console.log('imageKey', this.imageKey)
+      // imageKey[{url:'', pos:''},{url:'', pos:''}]
       return this.imageKey
     },
     change(value) {
