@@ -27,6 +27,7 @@ jobs:
         ports:
           - 6379:6379
         options: >-
+          --requirepass 1234
           --health-cmd "redis-cli ping"
           --health-interval=10s
           --health-timeout=5s
@@ -55,6 +56,6 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: mysql+pymysql://root:1234@127.0.0.1:3306/test_backend_flask
-          REDIS_URL: redis://127.0.0.1:6379/0
+          REDIS_URL: redis://:1234@127.0.0.1:6379/0
         run: pytest backend/tests -v
 
