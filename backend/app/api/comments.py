@@ -105,66 +105,66 @@ def get_comment(id):
     return success(data=comment.to_json())
 
 
-@api.route('/posts/<int:id>/comments/', methods=['POST'])
-@permission_required(Permission.COMMENT)
-def new_post_comment(id):
-    """
-    创建新评论
-    ---
-    tags:
-      - 评论
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-        description: 文章ID
-      - name: Authorization
-        in: header
-        type: string
-        required: true
-        description: Bearer {token}
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            body:
-              type: string
-              description: 评论内容
-    responses:
-      200:
-        description: 成功创建评论
-        schema:
-          properties:
-            code:
-              type: integer
-              example: 200
-            message:
-              type: string
-              example: success
-            data:
-              type: object
-      404:
-        description: 文章不存在
-    """
-    log.info(f"创建新评论: post_id={id}")
-    post = Post.query.get_or_404(id)
-    try:
-        comment = Comment.from_json(request.json)
-        comment.author = g.current_user
-        comment.post = post
-        db.session.add(comment)
-        db.session.commit()
-        return success(
-            data=comment.to_json(),
-            message="评论创建成功"
-        )
-    except Exception as e:
-        log.error(f"创建评论失败: {str(e)}", exc_info=True)
-        db.session.rollback()
-        return error(500, f"创建评论失败: {str(e)}")
+# @api.route('/posts/<int:id>/comments/', methods=['POST'])
+# @permission_required(Permission.COMMENT)
+# def new_post_comment(id):
+#     """
+#     创建新评论
+#     ---
+#     tags:
+#       - 评论
+#     parameters:
+#       - name: id
+#         in: path
+#         type: integer
+#         required: true
+#         description: 文章ID
+#       - name: Authorization
+#         in: header
+#         type: string
+#         required: true
+#         description: Bearer {token}
+#       - name: body
+#         in: body
+#         required: true
+#         schema:
+#           type: object
+#           properties:
+#             body:
+#               type: string
+#               description: 评论内容
+#     responses:
+#       200:
+#         description: 成功创建评论
+#         schema:
+#           properties:
+#             code:
+#               type: integer
+#               example: 200
+#             message:
+#               type: string
+#               example: success
+#             data:
+#               type: object
+#       404:
+#         description: 文章不存在
+#     """
+#     log.info(f"创建新评论: post_id={id}")
+#     post = Post.query.get_or_404(id)
+#     try:
+#         comment = Comment.from_json(request.json)
+#         comment.author = g.current_user
+#         comment.post = post
+#         db.session.add(comment)
+#         db.session.commit()
+#         return success(
+#             data=comment.to_json(),
+#             message="评论创建成功"
+#         )
+#     except Exception as e:
+#         log.error(f"创建评论失败: {str(e)}", exc_info=True)
+#         db.session.rollback()
+#         return error(500, f"创建评论失败: {str(e)}")
 
 
 @api.route('/posts/<int:id>/comments/')

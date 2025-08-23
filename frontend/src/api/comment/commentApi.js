@@ -17,6 +17,8 @@ export default {
     params['page'] = page
     return $http.get(`${url_prefix}/reply_comments/`, { params: params })
   },
+  
+  // 管理员审核评论页面
   getAllComments(page) {
     let params = {}
     params['page'] = page

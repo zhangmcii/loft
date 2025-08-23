@@ -66,6 +66,12 @@ class AuthAction:
 
     def register(self, username='test', password = 'test'):
         return self._client.post('/auth/register', json={
+        'username': username,
+        'password': password,
+    })
+
+    def register_admin(self, username='admin', password = 'admin'):
+        return self._client.post('/auth/register', json={
         'email': 'zmc_li@foxmail.com',
         'username': username,
         'password': password,

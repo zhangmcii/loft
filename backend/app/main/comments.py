@@ -20,7 +20,7 @@ log = logger.get_logger()
 
 # --------------------------- 评论 ---------------------------
 @main.route("/post/<int:id>", methods=["POST"])
-@limiter.limit("1/second;3/minute", exempt_when=lambda: current_user.role_id == 3)
+# @limiter.limit("1/second;3/minute", exempt_when=lambda: current_user.role_id == 3)
 @jwt_required()
 def post(id):
     """发布评论（适配direct_parent关系）"""
