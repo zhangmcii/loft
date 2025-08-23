@@ -26,8 +26,9 @@ jobs:
         image: redis:6
         ports:
           - 6379:6379
+        env:
+          REDIS_PASSWORD: 1234
         options: >-
-          --requirepass 1234
           --health-cmd "redis-cli ping"
           --health-interval=10s
           --health-timeout=5s
