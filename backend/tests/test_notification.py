@@ -16,8 +16,8 @@ class TestNotificationCase:
     def test_comment_notification(self, client, auth):
         """测试评论通知"""
         # 注册第一个用户并发布文章
-        auth.register(username='author', password='password')
-        auth.login(username='author', password='password')
+        auth.register(username='author1', password='password')
+        auth.login(username='author1', password='password')
         author_headers = auth.get_headers()
 
         # 发布文章
@@ -26,8 +26,8 @@ class TestNotificationCase:
         post_id = r.json.get('data')[0].get('id')
 
         # 注册第二个用户
-        auth.register(username='commenter', password='password')
-        auth.login(username='commenter', password='password')
+        auth.register(username='commenter1', password='password')
+        auth.login(username='commenter1', password='password')
         commenter_headers = auth.get_headers()
 
         # 第二个用户评论第一个用户的文章
@@ -44,13 +44,13 @@ class TestNotificationCase:
         notifications = r.json.get('data')
         assert len(notifications) > 0
         assert notifications[0].get('type') == '评论'
-        assert notifications[0].get('triggerUsername') == 'commenter'
+        assert notifications[0].get('triggerUsername') == 'commenter1'
 
     def test_like_notification(self, client, auth):
         """测试点赞通知"""
         # 注册第一个用户并发布文章
-        auth.register(username='author', password='password')
-        auth.login(username='author', password='password')
+        auth.register(username='author2', password='password')
+        auth.login(username='author2', password='password')
         author_headers = auth.get_headers()
 
         # 发布文章
@@ -59,8 +59,8 @@ class TestNotificationCase:
         post_id = r.json.get('data')[0].get('id')
 
         # 注册第二个用户
-        auth.register(username='liker', password='password')
-        auth.login(username='liker', password='password')
+        auth.register(username='liker2', password='password')
+        auth.login(username='liker2', password='password')
         liker_headers = auth.get_headers()
 
         # 第二个用户点赞第一个用户的文章
@@ -68,6 +68,10 @@ class TestNotificationCase:
         assert r.status_code == 200
         assert r.json.get('code') == 200
 
+        # 打印数据库通知数量
+        print('通知数量:', Notification.query.count())
+        print('通知内容:', Notification.query.all())
+        
         # 第一个用户查看通知
         r = client.get('/notifications', headers=author_headers)
         assert r.status_code == 200
@@ -75,15 +79,17 @@ class TestNotificationCase:
         
         # 验证通知内容
         notifications = r.json.get('data')
+        print('zmc', notifications)
+
         assert len(notifications) > 0
         assert notifications[-1].get('type') == '点赞'
-        assert notifications[-1].get('triggerUsername') == 'liker'
+        assert notifications[-1].get('triggerUsername') == 'liker2'
 
     def test_reply_notification(self, client, auth):
         """测试回复通知"""
         # 注册第一个用户并发布文章和评论
-        auth.register(username='commenter1', password='password')
-        auth.login(username='commenter1', password='password')
+        auth.register(username='commenter3', password='password')
+        auth.login(username='commenter3', password='password')
         commenter1_headers = auth.get_headers()
 
         # 发布文章
@@ -97,8 +103,8 @@ class TestNotificationCase:
         comment_id = r.json.get('data').get('id')
 
         # 注册第二个用户
-        auth.register(username='commenter2', password='password')
-        auth.login(username='commenter2', password='password')
+        auth.register(username='commenter31', password='password')
+        auth.login(username='commenter31', password='password')
         commenter2_headers = auth.get_headers()
 
         # 第二个用户回复第一个用户的评论
@@ -115,13 +121,13 @@ class TestNotificationCase:
         notifications = r.json.get('data')
         assert len(notifications) > 0
         assert notifications[0].get('type') == '回复'
-        assert notifications[0].get('triggerUsername') == 'commenter2'
+        assert notifications[0].get('triggerUsername') == 'commenter31'
 
     def test_mark_notification_as_read(self, client, auth):
         """测试标记通知为已读"""
         # 注册第一个用户并发布文章
-        auth.register(username='author', password='password')
-        auth.login(username='author', password='password')
+        auth.register(username='author4', password='password')
+        auth.login(username='author4', password='password')
         author_headers = auth.get_headers()
 
         # 发布文章
@@ -130,8 +136,8 @@ class TestNotificationCase:
         post_id = r.json.get('data')[0].get('id')
 
         # 注册第二个用户
-        auth.register(username='commenter', password='password')
-        auth.login(username='commenter', password='password')
+        auth.register(username='commenter4', password='password')
+        auth.login(username='commenter4', password='password')
         commenter_headers = auth.get_headers()
 
         # 第二个用户评论第一个用户的文章

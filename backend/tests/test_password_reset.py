@@ -66,6 +66,9 @@ class TestPasswordResetCase:
         monkeypatch.setattr(User, 'generate_code', mock_generate_code)
         monkeypatch.setattr(User, 'compare_code', mock_compare_code)
         monkeypatch.setattr(redis, 'delete', mock_delete_code)
+        # 模拟 celery 的 send_email.delay，不执行实际任务
+        monkeypatch.setattr('backend.mycelery.tasks.send_email.delay', lambda *args, **kwargs: None)
+
         # 绑定邮箱
         r = client.post('/auth/applyCode', headers=auth.get_headers(), json={
             'email': 'test@example.com',
