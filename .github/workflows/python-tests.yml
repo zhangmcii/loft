@@ -28,7 +28,7 @@ jobs:
           - 6379:6379
         options: >-
           --requirepass 1234
-          --health-cmd "redis-cli ping"
+          --health-cmd "redis-cli -a 1234 ping"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
