@@ -3,7 +3,7 @@ from . import main
 from ..models import User, Follow, Permission
 from ..decorators import permission_required
 from .. import db
-from flask import request
+from flask import request, current_app
 from ..utils.time_util import DateUtils
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
@@ -128,7 +128,3 @@ def followed_by(username):
                 }
             )
     return success(data=follows, total=user.followed.count() - 1)
-
-
-# 导入必要的模块
-from flask import current_app

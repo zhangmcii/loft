@@ -1,12 +1,13 @@
 from flask_jwt_extended import jwt_required, current_user
 from . import main
-from ..models import User, Role
+from ..models import User, Role, Image, ImageType
 from ..decorators import admin_required
 from .. import db
 from flask import jsonify, request
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
 from .. import logger
+from sqlalchemy import and_
 
 # 日志
 log = logger.get_logger()
@@ -128,3 +129,33 @@ def generate_user_posts():
     except Exception as e:
         log.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
         return error(500, f"生成用户和文章失败: {str(e)}")
+    
+    
+@main.route("/socketData")
+@admin_required
+@jwt_required()
+def online():
+    """获取在线用户信息"""
+    log.info("获取在线用户信息")
+    from ..utils.socket_util import ManageSocket
+    from ..models import User
+    
+    manage_socket = ManageSocket()
+    # 在线人数信息
+    user_ids = manage_socket.user_socket.keys()
+    users = []
+    for user_id in user_ids:
+        u = User.query.get(user_id)
+        users.append({"username": u.username, "nickName": u.nickname})
+    online_total = len(users)
+    return success(data=users, extra={"total": online_total})
+
+
+@main.route("/user/<int:user_id>/interest_images")
+def get_favorite_book_image(user_id):
+    """获取用户兴趣图片"""
+    log.info(f"获取用户兴趣图片: user_id={user_id}")
+    book_images = Image.query.filter(
+        and_(Image.type == ImageType.BOOK, Image.related_id == user_id)
+    ).all()
+    return success(data=[image.to_json() for image in book_images])

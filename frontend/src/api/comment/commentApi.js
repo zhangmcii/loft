@@ -30,7 +30,4 @@ export default {
   disable(commentId) {
     return $http.get(`/moderate/disable/${commentId}`)
   },
-  test_comm() {
-    return $http.post(`/comm`, {})
-  }
 }

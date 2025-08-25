@@ -1,15 +1,11 @@
 import os
-from flask_jwt_extended import jwt_required, current_user, verify_jwt_in_request
+from flask_jwt_extended import jwt_required, current_user
 from . import main
-from ..models import Post, PostType, Image, ImageType
-from ..decorators import permission_required, admin_required
+from ..models import Post, PostType, Image, ImageType, User
 from .. import db
-from flask import jsonify, current_app, request, abort
-from ..utils.time_util import DateUtils
+from flask import current_app, request
 from ..models import Permission
-from .. import socketio
 from .. import limiter
-from werkzeug.exceptions import TooManyRequests
 from ..utils.response import success, error, not_found, forbidden
 from .. import logger
 from .notifications import new_post_notification
@@ -74,7 +70,7 @@ def index():
 @main.route("/user/<username>")
 @jwt_required(optional=True)
 def user(username):
-    """获取博客文章的资料页面路由"""
+    """根据用户名获取文章的资料页面路由"""
     log.info(f"获取用户文章: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
@@ -119,7 +115,7 @@ def edit(id):
 
 
 @main.route("/rich_post", methods=["POST"])
-# @limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
+@limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
 @jwt_required()
 def create_post():
     """创建富文本文章"""
@@ -135,7 +131,3 @@ def create_post():
     db.session.add_all(images)
     db.session.commit()
     return success(data=[p.to_json()])
-
-
-# 导入必要的模型
-from ..models import User

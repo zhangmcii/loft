@@ -162,7 +162,7 @@ export default {
 }
 
 .post-detail-container {
-  max-width: 800px;
+  // max-width: 800px;
   margin: 0 auto;
   padding: $spacing-md;
   background-color: #fff;

@@ -113,16 +113,6 @@ def query_qiniu_key():
     )
 
 
-@main.route("/user/<int:user_id>/interest_images")
-def get_favorite_book_image(user_id):
-    """获取用户兴趣图片"""
-    log.info(f"获取用户兴趣图片: user_id={user_id}")
-    book_images = Image.query.filter(
-        and_(Image.type == ImageType.BOOK, Image.related_id == user_id)
-    ).all()
-    return success(data=[image.to_json() for image in book_images])
-
-
 @main.route("/user/<int:user_id>/interest_images", methods=["POST"])
 @jwt_required()
 def upload_favorite_book_image(user_id):

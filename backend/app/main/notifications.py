@@ -6,7 +6,6 @@ from flask import request
 from .. import socketio
 from ..utils.response import success
 from .. import logger
-from ..decorators import admin_required
 # 日志
 log = logger.get_logger()
 
@@ -68,25 +67,5 @@ def mark_read_notification():
     ).update({"is_read": True}, synchronize_session=False)
     db.session.commit()
     return success(message="通知已标记为已读")
-
-
-@main.route("/socketData")
-@admin_required
-@jwt_required()
-def online():
-    """获取在线用户信息"""
-    log.info("获取在线用户信息")
-    from ..utils.socket_util import ManageSocket
-    from ..models import User
-    
-    manage_socket = ManageSocket()
-    # 在线人数信息
-    user_ids = manage_socket.user_socket.keys()
-    users = []
-    for user_id in user_ids:
-        u = User.query.get(user_id)
-        users.append({"username": u.username, "nickName": u.nickname})
-    online_total = len(users)
-    return success(data=users, extra={"total": online_total})
 
 

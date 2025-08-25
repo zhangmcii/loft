@@ -1,7 +1,8 @@
 import pytest
+import os
 from app import create_app, db
 from app.models import Role, User
-
+from app.utils.common import get_local_ip
 
 @pytest.fixture
 def app():
@@ -9,6 +10,9 @@ def app():
     
     每个测试函数都会获得一个新的应用实例和数据库
     """
+    # 测试环境自动获取本地地址
+    # os.environ["FLASK_RUN_HOST"] = get_local_ip()
+
     app = create_app('testing')
 
     # 创建应用上下文

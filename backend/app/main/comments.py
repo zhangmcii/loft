@@ -20,7 +20,7 @@ log = logger.get_logger()
 
 # --------------------------- 评论 ---------------------------
 @main.route("/post/<int:id>", methods=["POST"])
-# @limiter.limit("1/second;3/minute", exempt_when=lambda: current_user.role_id == 3)
+@limiter.limit("1/second;3/minute", exempt_when=lambda: current_user.role_id == 3)
 @jwt_required()
 def post(id):
     """发布评论（适配direct_parent关系）"""
@@ -209,20 +209,3 @@ def moderate_disable(id):
         log.error(f"禁用评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"禁用评论失败: {str(e)}")
-
-
-@main.route("/comm", methods=["POST"])
-@jwt_required()
-def create_comment():
-    current_user_id = get_jwt_identity()
-    # 通过WebSocket推送通知给作者
-    socketio.emit(
-        "new_notification",
-        {
-            "type": "comment",
-            "message": f"用户{current_user_id}评论了你的文章",
-            # 'article_id': article_id
-        },
-    )  # 发送到作者的房间
-
-    return success(message="评论已创建")
