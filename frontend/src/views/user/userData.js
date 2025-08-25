@@ -145,12 +145,10 @@ export default {
   created() {
     // 首次加载时获取用户数据
     this.getUser()
-    
     // 监听路由参数变化
     this.$watch(
       () => this.$route.params.userName,
       (newUserName, oldUserName) => {
-        // 当用户名参数变化且当前路由是用户资料页时，重新获取用户数据
         if (this.$route.name === 'user' && newUserName !== oldUserName) {
           this.isUserPage = true
           this.getUser()
@@ -158,30 +156,19 @@ export default {
       }
     )
   },
-  // 在首次挂载、以及每次从缓存中被重新插入的时候调用
   activated() {
-    // 获取当前路由中的用户名参数
+    // 只刷新背景和属性，不请求接口
     const routeUserName = this.$route.params.userName
-    
-    // 检查当前用户是否已登录且是查看自己的资料
     const isViewingSelf = this.currentUser.isLogin && 
       routeUserName === this.currentUser.userInfo.username
-    
-    // 如果是查看自己的资料，确保使用最新的用户信息
+
     if (isViewingSelf) {
       this.user = { ...this.currentUser.userInfo }
+      this.imgList = [this.user.image] // 修复兴趣图片不显示
       this.isUserPage = true
       this.setMainProperty()
-    }
-    // 检查是否与当前显示的用户资料不同
-    else if (this.user.username !== routeUserName) {
-      // 用户名不匹配，需要重新获取数据
-      this.isUserPage = true
-      this.getUser()
-    }
-    // 用户名匹配但可能需要刷新属性
-    else {
-      this.isUserPage = true
+      this.loading.skeleton = false
+    } else {
       this.setMainProperty()
     }
   },
