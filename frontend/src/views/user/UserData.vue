@@ -146,7 +146,7 @@
           @click="setActive('movie')"
         />
         <ButtonAnimate
-          content="在看的书籍"
+          content="喜爱的书籍"
           :isActive="activeInterest === 'book'"
           @click="setActive('book')"
         />
