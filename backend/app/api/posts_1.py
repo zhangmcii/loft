@@ -1,15 +1,13 @@
 import os
-from email.headerregistry import Group
-
 from flask import request, current_app
 from flask.views import MethodView
 from flask_jwt_extended import current_user
 from .. import db
-from ..models import Post, Permission, Image, ImageType, PostType
+from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notification, NotificationType
 from ..main.uploads import del_qiniu_image
 from ..utils.response import success, error
+from .. import socketio
 from .. import logger
-from ..main.notifications import new_post_notification
 
 # 日志
 log = logger.get_logger()
@@ -94,6 +92,38 @@ class PostGroupApi(MethodView):
         posts = paginate.items
         return [post.to_json() for post in posts], query.count()
 
+    @staticmethod
+    def new_post_notification(post_id):
+        """创建新文章通知并推送给粉丝"""
+        # 查询当前用户的所有粉丝（排除自己）
+        followers = Follow.query.filter_by(followed_id=current_user.id).all()
+
+        # 为每个粉丝创建通知并推送
+        for follow in followers:
+            # 跳过作者自己（虽然逻辑上自己不会关注自己，但以防万一）
+            if follow.follower_id == current_user.id:
+                continue
+
+            # 创建通知
+            notification = Notification(
+                receiver_id=follow.follower_id,  # 粉丝ID
+                trigger_user_id=current_user.id,  # 触发用户（作者）
+                post_id=post_id,  # 关联文章ID
+                type=NotificationType.NewPost,  # 通知类型：新文章
+            )
+            db.session.add(notification)
+            db.session.flush()  # 刷新以获取通知ID
+
+            # 实时推送给粉丝
+            socketio.emit(
+                "new_notification",
+                notification.to_json(),
+                to=str(follow.follower_id),  # 发送到粉丝的房间
+            )
+
+        # 提交所有通知
+        db.session.commit()
+
     def get(self):
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get(
@@ -128,7 +158,7 @@ class PostGroupApi(MethodView):
                     ]
                     db.session.add_all(images)
                 db.session.commit()
-                new_post_notification(post.id)
+                PostGroupApi.new_post_notification(post.id)
                 log.info(
                     f"创建新文章: user_id={current_user.id}, post_id={post.id}"
                 )
