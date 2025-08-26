@@ -7,4 +7,7 @@
 # Mac系统
 .DS_Store  
 # Windows
-Thumbs.db  
+Thumbs.db
+
+.venv
+venv/
