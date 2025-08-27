@@ -82,8 +82,8 @@ class TagApi(DecoratedMethodView):
         return success(message="公共标签库更新成功")
 
 
-def register_tag_api(bp, name):
-    tag_user = TagUserApi.as_view(f'{name}_user')
-    tag = TagApi.as_view(f'{name}')
-    bp.add_url_rule(f'/users/<int:user_id>/{name}', view_func=tag_user)
-    bp.add_url_rule(f'/{name}', view_func=tag)
+def register_tag_api(bp, *, tag_user_url, tag_url):
+    tag_user = TagUserApi.as_view('tags_user')
+    tag = TagApi.as_view('tags')
+    bp.add_url_rule(tag_user_url, view_func=tag_user)
+    bp.add_url_rule(tag_url, view_func=tag)

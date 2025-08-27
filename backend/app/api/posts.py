@@ -1,6 +1,7 @@
 import os
 from flask import request, current_app
 from .decorators import DecoratedMethodView
+from ..decorators import log_operate
 from flask_jwt_extended import jwt_required, verify_jwt_in_request, current_user
 from .. import db
 from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notification, NotificationType
@@ -81,7 +82,7 @@ class PostItemApi(DecoratedMethodView):
 
 class PostGroupApi(DecoratedMethodView):
     method_decorators = {
-        'get': [],
+        'get': [log_operate],
         'post': [jwt_required()],
     }
 
@@ -178,8 +179,8 @@ class PostGroupApi(DecoratedMethodView):
         return success(data=posts, total=total)
 
 
-def register_bp_api(bp, name):
-    item = PostItemApi.as_view(f'{name}_item')
-    group = PostGroupApi.as_view(f'{name}_group')
-    bp.add_url_rule(f'/{name}/<int:id>', view_func=item)
-    bp.add_url_rule(f'/{name}', view_func=group)
+def register_post_api(bp, *, post_item_url, post_group_url):
+    item = PostItemApi.as_view('post_item')
+    group = PostGroupApi.as_view('post_group')
+    bp.add_url_rule(post_item_url, view_func=item)
+    bp.add_url_rule(post_group_url, view_func=group)

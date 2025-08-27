@@ -39,5 +39,5 @@ class NotificationApi(DecoratedMethodView):
         return success(message="通知已标记为已读")
 
 
-def register_notification_api(bp, name):
-    bp.add_url_rule(f'/{name}', view_func=NotificationApi.as_view(f'{name}'))
+def register_notification_api(bp, *, notification_url):
+    bp.add_url_rule(f'/{notification_url}', view_func=NotificationApi.as_view('notification'))

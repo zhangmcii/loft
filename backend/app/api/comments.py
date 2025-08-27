@@ -286,8 +286,8 @@ class CommentManageApi(DecoratedMethodView):
         return error(500, f"操作失败: ")
 
 
-def register_comment_api(bp, name):
-    comment = CommentApi.as_view(f'{name}')
-    comment_manage = CommentManageApi.as_view(f'{name}_manage')
-    bp.add_url_rule(f'/posts/<int:post_id>/{name}', view_func=comment)
-    bp.add_url_rule(f'/{name}/<comment_id>', view_func=comment_manage)
+def register_comment_api(bp, *, comment_url, comment_manage_url):
+    comment = CommentApi.as_view('comments')
+    comment_manage = CommentManageApi.as_view('comments_manage')
+    bp.add_url_rule(comment_url, view_func=comment)
+    bp.add_url_rule(comment_manage_url, view_func=comment_manage)

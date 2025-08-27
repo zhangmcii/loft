@@ -68,6 +68,6 @@ class LogApi(DecoratedMethodView):
             return error(500, f"删除日志失败: {str(e)}")
 
 
-def register_log_api(bp, name):
-    _log = LogApi.as_view(f'{name}')
-    bp.add_url_rule(f'/{name}', view_func=_log)
+def register_log_api(bp, *, logs_url):
+    _log = LogApi.as_view('logs')
+    bp.add_url_rule(logs_url, view_func=_log)

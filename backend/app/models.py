@@ -431,7 +431,7 @@ class Post(db.Model):
 
         # 提取url和pos字段
         json_post = {
-            'url': url_for('api.get_post', id=self.id),
+            # 'url': url_for('api.get_post', id=self.id),
             'id': self.id,
             'body': body,
             'body_html': body_html,

@@ -110,9 +110,9 @@ class UserImageApi(DecoratedMethodView):
 #             return error(500, f"编辑用户资料失败: {str(e)}")
 
 
-def register_user_api(bp, name):
-    users = UsersApi.as_view(f'{name}')
-    user_image = UserImageApi.as_view(f'{name}_image')
+def register_user_api(bp, *, user_url, user_image_url):
+    users = UsersApi.as_view('users')
+    user_image = UserImageApi.as_view('users_image')
     # admin = UserAdminApi.as_view(f'{name}_admin')
-    bp.add_url_rule(f'/{name}/<int:id>', view_func=users)
-    bp.add_url_rule(f'/{name}/<int:id>/image', view_func=user_image)
+    bp.add_url_rule(user_url, view_func=users)
+    bp.add_url_rule(user_image_url, view_func=user_image)

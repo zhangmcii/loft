@@ -24,11 +24,9 @@ class DecoratedMethodView(MethodView):
         # 'get': [admin_required],
         # 'post': [user_required],
 
-        # 公共的
+        # 共有的
         # 'share': [],
     }
-
-
 
     def dispatch_request(self, *args, **kwargs):
         meth = getattr(self, request.method.lower(), None)

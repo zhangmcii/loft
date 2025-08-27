@@ -57,6 +57,6 @@ class MessageApi(DecoratedMethodView):
         return success(message="消息已标记为已读")
 
 
-def register_message_api(bp, name):
-    message = MessageApi.as_view(f'{name}')
-    bp.add_url_rule(f'/conversations/<user_id>/{name}', view_func=message)
+def register_message_api(bp, *, message_url):
+    message = MessageApi.as_view('message')
+    bp.add_url_rule(message_url, view_func=message)

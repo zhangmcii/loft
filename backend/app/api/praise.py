@@ -149,8 +149,8 @@ class PraiseCommentApi(DecoratedMethodView):
         return error(500, f"取消点赞失败")
 
 
-def register_praise_api(bp, name):
-    post_praise = PraisePostApi.as_view(f'{name}_post')
-    comment_praise = PraiseCommentApi.as_view(f'{name}_comment')
-    bp.add_url_rule(f'/posts/<int:post_id>/{name}', view_func=post_praise)
-    bp.add_url_rule(f'/comments/<int:comment_id>/{name}', view_func=comment_praise)
+def register_praise_api(bp, *, post_praise_url, comment_praise_url):
+    post_praise = PraisePostApi.as_view('likes_post')
+    comment_praise = PraiseCommentApi.as_view('likes_comment')
+    bp.add_url_rule(post_praise_url, view_func=post_praise)
+    bp.add_url_rule(comment_praise_url, view_func=comment_praise)
