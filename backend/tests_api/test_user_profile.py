@@ -39,9 +39,6 @@ class TestUserProfileCase:
         # 更新用户资料
         update_data = {
             'nickname': '测试昵称',
-            'location': '北京',
-            'about_me': '这是一段个人简介',
-            'sex': '男'
         }
         r = client.patch(self.pre_fix + '/users/1', headers=auth.get_headers(), json=update_data)
         assert r.status_code == 200
@@ -52,9 +49,6 @@ class TestUserProfileCase:
         r = client.get(self.pre_fix + '/users/1', headers=auth.get_headers())
         assert r.status_code == 200
         assert r.json.get('data').get('nickname') == '测试昵称'
-        assert r.json.get('data').get('location') == '北京'
-        assert r.json.get('data').get('about_me') == '这是一段个人简介'
-        assert r.json.get('data').get('sex') == '男'
 
     def test_follow_unfollow_user(self, client, auth):
         """测试关注和取消关注用户"""

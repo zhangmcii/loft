@@ -1,9 +1,9 @@
 import { $http } from '@/utils/request.js'
 const url_prefix = '/api/v1'
 export default {
-  editProfile(formUserData) {
-    return $http.post('/edit-profile', formUserData)
-  },
+  // editProfile(formUserData) {
+  //   return $http.post('/edit-profile', formUserData)
+  // },
   editProfileAdmin(formUserData) {
     return $http.post(`/edit-profile/${formUserData.id}`, formUserData)
   },

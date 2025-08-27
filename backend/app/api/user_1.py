@@ -36,24 +36,16 @@ class UsersApi(DecoratedMethodView):
         return success(data=user.to_json())
 
     def patch(self, id):
-        """编辑用户资料"""
+        """编辑用户资料
+        """
         log.info(f"编辑用户资料: user_id={id}")
-        if not current_user or current_user.id !=id:
-            return error(400, f"操作不合法，非当前用户")
-        try:
-            user = User.query.get_or_404(id)
-            user_info = request.get_json()
-            user.nickname = user_info.get("nickname")
-            user.location = user_info.get("location")
-            user.about_me = user_info.get("about_me")
-
-            db.session.add(user)
-            db.session.commit()
-            return success(message="用户资料更新成功")
-        except Exception as e:
-            log.error(f"编辑用户资料失败: {str(e)}", exc_info=True)
-            db.session.rollback()
-            return error(500, f"编辑用户资料失败: {str(e)}")
+        if not current_user or current_user.id != id:
+            return error(400, message='操作不合法，非当前用户')
+        for key, value in request.json.items():
+            if hasattr(current_user, key):
+                setattr(current_user, key, value)
+        db.session.commit()
+        return success(data='', message='用户资料更新成功')
 
 
 class UserImageApi(DecoratedMethodView):
