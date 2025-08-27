@@ -37,7 +37,9 @@ class UsersApi(DecoratedMethodView):
 
     def patch(self, id):
         """编辑用户资料"""
-        log.info(f"编辑用户资料: user_id={current_user.id}")
+        log.info(f"编辑用户资料: user_id={id}")
+        if not current_user or current_user.id !=id:
+            return error(400, f"操作不合法，非当前用户")
         try:
             user = User.query.get_or_404(id)
             user_info = request.get_json()

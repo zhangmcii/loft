@@ -155,5 +155,5 @@ def followed_by(username):
 
 
 def register_follow_api(bp, *, follow_url):
-    user_follow = UserFollowApi.as_view('users1_follow')
+    user_follow = UserFollowApi.as_view('users_follow')
     bp.add_url_rule(follow_url, view_func=user_follow)

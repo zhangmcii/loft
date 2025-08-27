@@ -13,27 +13,28 @@ log = logger.get_logger()
 
 
 # --------------------------- 点赞功能 ---------------------------
-# @api.route("/posts/<post_id>/comments")
-# def has_praised_comment_id(post_id):
-#     """ 前端未使用
-#         查找某文章下当前用户已点赞的评论i
-#     d"""
-#     is_like = request.args.get('liked', '') == 'true'
-#     if not is_like:
-#         return error(400, message=f'参数错误, liked:{request.args.get('liked', '')}')
-#     log.info(f"查询用户已点赞评论: post_id={post_id}")
-#     comment_ids = (
-#         db.session.query(Praise.comment_id)
-#         .join(Comment)
-#         .filter(
-#             Praise.author_id == current_user.id,
-#             Comment.post_id == post_id,
-#             Praise.comment_id.isnot(None),
-#         )
-#         .distinct()
-#         .all()
-#     )
-#     return success(data=[item[0] for item in comment_ids])
+@api.route("/posts/<post_id>/comments/has_praised")
+def has_praised_comment_id(post_id):
+    """ 前端未使用
+        单元测试用到了
+        查找某文章下当前用户已点赞的评论id
+    d"""
+    is_like = request.args.get('liked', '') == 'true'
+    if not is_like:
+        return error(400, message=f'参数错误, liked:{request.args.get('liked', '')}')
+    log.info(f"查询用户已点赞评论: post_id={post_id}")
+    comment_ids = (
+        db.session.query(Praise.comment_id)
+        .join(Comment)
+        .filter(
+            Praise.author_id == current_user.id,
+            Comment.post_id == post_id,
+            Praise.comment_id.isnot(None),
+        )
+        .distinct()
+        .all()
+    )
+    return success(data=[item[0] for item in comment_ids])
 
 
 class PraisePostApi(DecoratedMethodView):
