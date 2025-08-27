@@ -1,5 +1,5 @@
-from flask.views import MethodView
-from flask_jwt_extended import  current_user
+from .decorators import DecoratedMethodView
+from flask_jwt_extended import current_user, jwt_required
 from ..models import Notification
 from .. import db
 from flask import request
@@ -13,9 +13,10 @@ log = logger.get_logger()
 # --------------------------- 通知功能 ---------------------------
 
 
-class NotificationApi(MethodView):
-    def __init__(self):
-        pass
+class NotificationApi(DecoratedMethodView):
+    method_decorators = {
+        'share': [jwt_required()],
+    }
 
     def get(self):
         """获取当前用户的所有通知"""
@@ -39,4 +40,4 @@ class NotificationApi(MethodView):
 
 
 def register_notification_api(bp, name):
-    bp.add_url_rule(f'/{name}', view_func=NotificationApi.as_view(f'{name}_api'))
+    bp.add_url_rule(f'/{name}', view_func=NotificationApi.as_view(f'{name}'))

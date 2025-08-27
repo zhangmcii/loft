@@ -2,7 +2,7 @@ import os
 import time
 import json
 from flask_jwt_extended import jwt_required, current_user
-from . import main
+from . import api
 from ..models import Image, ImageType
 from .. import db
 from flask import request
@@ -21,7 +21,7 @@ bucket = BucketManager(q)
 
 
 # --------------------------- 文件上传 ---------------------------
-@main.route("/get_upload_token", methods=["GET"])
+@api.route("/files/token", methods=["GET"])
 @jwt_required()
 def get_upload_token():
     """获取七牛云上传凭证"""
@@ -41,8 +41,7 @@ def get_upload_token():
     return success(data={"upload_token": token})
 
 
-@main.route("/get_signed_image_urls", methods=["POST"])
-@jwt_required()
+@api.route("/files/urls", methods=["POST"])
 def get_signed_image_urls():
     """获取私有存储图片url(暂时没用上)"""
     log.info("获取签名图片URL")
@@ -54,7 +53,7 @@ def get_signed_image_urls():
     for key in keys:
         # 添加图片瘦身参数，这里以调整图片质量为 80 为例
         fops = "imageMogr2/quality/80"
-        base_url = f"{os.getenv('QINIU_DOMAIN')}/{key}"
+        base_url = f"{os.getenv('QINIU_DOapi')}/{key}"
         # 拼接处理参数到基础 URL
         processed_url = base_url + "?" + fops
         # 生成带处理参数的签名 URL
@@ -63,7 +62,7 @@ def get_signed_image_urls():
     return success(data={"signed_urls": signed_urls})
 
 
-@main.route("/del_image", methods=["DELETE"])
+@api.route("/del_image", methods=["DELETE"])
 @jwt_required()
 def delete_image():
     """删除七牛云图片"""
@@ -81,7 +80,7 @@ def del_qiniu_image(keys, bucket_name=os.getenv("QINIU_BUCKET_NAME")):
     bucket.batch(ops)
 
 
-@main.route("/dir_name")
+@api.route("/dir_name")
 def query_qiniu_key():
     """查询七牛云某个bucket指定目录的所有文件名"""
     log.info("查询七牛云目录文件")
@@ -115,7 +114,7 @@ def query_qiniu_key():
     )
 
 
-@main.route("/user/<int:user_id>/interest_images", methods=["POST"])
+@api.route("/user/<int:user_id>/interest_images", methods=["POST"])
 @jwt_required()
 def upload_favorite_book_image(user_id):
     """上传兴趣封面"""

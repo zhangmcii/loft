@@ -1,5 +1,5 @@
 | 方法                                    | 路径                                     | 说明           |
-| ------------------------------------- | -------------------------------------- | ------------ |
+| ------------------------------------- |----------------------------------------| ------------ |
 | **Posts & Comments（文章 & 评论）**         |                                        |              |
 | `GET`                                 | `/posts`                               | 获取所有文章       |
 | `POST`                                | `/posts`                               | 发布文章         |
@@ -34,8 +34,8 @@
 | `PUT`                                 | `/tags/<tag_id>`                       | 更新标签         |
 | `POST`                                | `/users/<user_id>/tags`                | 更新用户标签       |
 | **Messages & Notifications（消息 & 通知）** |                                        |              |
-| `GET`                                 | `/messages`                            | 获取聊天消息历史     |
-| `PATCH`                               | `/messages`                            | 批量标记消息为已读    |
+| `GET`                                 | `/conversations/<user_id>/messages`    | 获取聊天消息历史     |
+| `PATCH`                               | `/conversations/<user_id>/messages`    | 批量标记消息为已读    |
 | `GET`                                 | `/notifications`                       | 获取当前用户的通知    |
 | `PATCH`                               | `/notifications`                       | 批量标记通知为已读    |
 | **Files（文件/图片）**                      |                                        |              |

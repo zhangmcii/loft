@@ -13,6 +13,7 @@ log = logger.get_logger()
 
 # --------------------------- 点赞功能 ---------------------------
 @main.route("/praise/<int:id>", methods=["GET", "POST"])
+@jwt_required()
 def praise(id):
     """文章点赞"""
     log.info(f"文章点赞: id={id}")
@@ -59,6 +60,7 @@ def praise(id):
 
 
 @main.route("/praise/comment/<int:id>", methods=["GET", "POST"])
+@jwt_required()
 def praise_comment(id):
     """评论点赞"""
     log.info(f"评论点赞: id={id}")

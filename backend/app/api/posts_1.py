@@ -1,7 +1,7 @@
 import os
 from flask import request, current_app
-from flask.views import MethodView
-from flask_jwt_extended import current_user
+from .decorators import DecoratedMethodView
+from flask_jwt_extended import jwt_required, verify_jwt_in_request, current_user
 from .. import db
 from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notification, NotificationType
 from ..main.uploads import del_qiniu_image
@@ -13,12 +13,15 @@ from .. import logger
 log = logger.get_logger()
 
 
-class PostItemApi(MethodView):
-
-    def __init__(self):
-        pass
+class PostItemApi(DecoratedMethodView):
+    method_decorators = {
+        'get': [],
+        'delete': [jwt_required()],
+        'patch': [jwt_required()]
+    }
 
     def get(self, id):
+        """获取单篇文章"""
         log.info(f"获取文章: id={id}")
         post = Post.query.get_or_404(id)
         return success(data=post.to_json())
@@ -76,9 +79,11 @@ class PostItemApi(MethodView):
         return success(data=post.to_json())
 
 
-class PostGroupApi(MethodView):
-    def __init__(self):
-        pass
+class PostGroupApi(DecoratedMethodView):
+    method_decorators = {
+        'get': [],
+        'post': [jwt_required()],
+    }
 
     @staticmethod
     def query_post(page, per_page, tab_name=None):
@@ -125,6 +130,7 @@ class PostGroupApi(MethodView):
         db.session.commit()
 
     def get(self):
+        """获取所有文章"""
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get(
             "per_page", current_app.config["FLASKY_POSTS_PER_PAGE"], type=int
@@ -133,6 +139,7 @@ class PostGroupApi(MethodView):
         return success(data=posts, total=total)
 
     def post(self):
+        """发布文章"""
         if current_user.can(Permission.WRITE):
             try:
                 j = request.get_json()

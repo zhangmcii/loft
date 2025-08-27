@@ -1,0 +1,118 @@
+from .decorators import DecoratedMethodView
+from flask_jwt_extended import current_user, jwt_required
+from ..models import User, Role
+from .. import db
+from flask import request
+from ..utils.common import get_avatars_url
+from ..utils.response import success, error
+from .. import logger
+from ..decorators import admin_required
+
+# 日志
+log = logger.get_logger()
+
+
+# --------------------------- 编辑资料 ---------------------------
+
+
+class UsersApi(DecoratedMethodView):
+    method_decorators = {
+        'get': [],
+        'patch': [jwt_required()],
+    }
+
+    # def admin(self, user):
+    #     user_info = request.get_json()
+    #     user.email = user_info.get("email", '')
+    #     user.username = user_info.get("username", '')
+    #     user.confirmed = user_info.get("confirmed", '')
+    #     if user_info.get("role", ''):
+    #         user.role = Role.query.get(int(user_info.get("role")))
+    #     return
+
+    def get(self, id):
+        log.info(f"获取用户信息: id={id}")
+        user = User.query.get_or_404(id)
+        return success(data=user.to_json())
+
+    def patch(self, id):
+        """编辑用户资料"""
+        log.info(f"编辑用户资料: user_id={current_user.id}")
+        try:
+            user = User.query.get_or_404(id)
+            user_info = request.get_json()
+            user.nickname = user_info.get("nickname")
+            user.location = user_info.get("location")
+            user.about_me = user_info.get("about_me")
+
+            db.session.add(user)
+            db.session.commit()
+            return success(message="用户资料更新成功")
+        except Exception as e:
+            log.error(f"编辑用户资料失败: {str(e)}", exc_info=True)
+            db.session.rollback()
+            return error(500, f"编辑用户资料失败: {str(e)}")
+
+
+class UserImageApi(DecoratedMethodView):
+    method_decorators = {
+        'get': [],
+        'post': [jwt_required()],
+    }
+
+    def get(self, id):
+        user = User.query.get_or_404(id)
+        return success(data={"image": get_avatars_url(user.image)})
+
+    def post(self, id):
+        """存储用户图像地址"""
+        log.info(f"存储用户图像地址: user_id={id}")
+        if current_user and current_user.id == id:
+            try:
+                image = request.get_json().get("image")
+                user = User.query.get_or_404(id)
+                user.image = image
+                db.session.add(user)
+                db.session.commit()
+                return success(data={"image": get_avatars_url(image)})
+            except Exception as e:
+                log.error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
+                db.session.rollback()
+                return error(500, f"存储用户图像地址失败: {str(e)}")
+        else:
+            return error(400, f"非当前用户，修改失败")
+
+
+# class UserAdminApi(MethodView):
+#     decorators = [admin_required]
+#
+#     def patch(self, user_id):
+#         """管理员编辑用户资料"""
+#         log.info(f"管理员编辑用户资料: user_id={user_id}")
+#         try:
+#             user = User.query.get_or_404(user_id)
+#             user_info = request.get_json()
+#             user.email = user_info.get("email")
+#             user.username = user_info.get("username")
+#             user.confirmed = user_info.get("confirmed")
+#             user.role = Role.query.get(int(user_info.get("role")))
+#
+#             user.nickname = user_info.get("nickname")
+#             user.location = user_info.get("location")
+#             user.about_me = user_info.get("about_me")
+#
+#             db.session.add(user)
+#             db.session.commit()
+#             return success(message="用户资料更新成功")
+#         except Exception as e:
+#             log.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
+#             db.session.rollback()
+#             return error(500, f"编辑用户资料失败: {str(e)}")
+
+
+def register_user_api(bp, name):
+    users = UsersApi.as_view(f'{name}')
+    user_image = UserImageApi.as_view(f'{name}_image')
+    # admin = UserAdminApi.as_view(f'{name}_admin')
+    bp.add_url_rule(f'/{name}/<int:id>', view_func=users)
+    bp.add_url_rule(f'/{name}/<int:id>/image', view_func=user_image)

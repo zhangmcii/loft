@@ -11,7 +11,7 @@ export default {
     return $http.post(`/praise/comment/${commentId}`)
   },
   // 查找某文章下当前用户已点赞的评论id
-  get_has_praised_comment_id(postId){
-    return $http.get(`/has_praised/${postId}`)
-  },
+  // get_has_praised_comment_id(postId){
+  //   return $http.get(`/has_praised/${postId}`)
+  // },
 }

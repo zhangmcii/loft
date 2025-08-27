@@ -350,9 +350,9 @@ class User(db.Model):
             'role': self.role.id,
             'confirmed': self.confirmed,
 
-            'posts_url': url_for('api.get_user_posts', id=self.id),
-            'followed_posts_url': url_for('api.get_user_followed_posts',
-                                          id=self.id),
+            # 'posts_url': url_for('api.get_user_posts', id=self.id),
+            # 'followed_posts_url': url_for('api.get_user_followed_posts',
+            #                               id=self.id),
             'post_count': self.posts.count(),
             # 粉丝
             'followers_count': self.followers.count() - 1,

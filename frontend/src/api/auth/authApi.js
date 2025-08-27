@@ -10,9 +10,9 @@ export default {
   logined() {
     return $http.get('/logined')
   },
-  getPermission(perm) {
-    return $http.get(`/can/${perm}`)
-  },
+  // getPermission(perm) {
+  //   return $http.get(`/can/${perm}`)
+  // },
   register(params) {
     return $http.post(`${url_prefix}/register`, params)
   },

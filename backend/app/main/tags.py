@@ -5,6 +5,8 @@ from .. import db
 from flask import request
 from ..utils.response import success
 from .. import logger
+from ..decorators import admin_required
+
 
 # 日志
 log = logger.get_logger()
@@ -12,6 +14,7 @@ log = logger.get_logger()
 
 # --------------------------- 标签管理 ---------------------------
 @main.route("/tags_list")
+@jwt_required()
 def get_all_tags():
     """获取所有标签"""
     log.info("获取所有标签")
@@ -45,6 +48,8 @@ def edit_user_tag():
 
 
 @main.route("/update_tag", methods=["POST"])
+@admin_required
+@jwt_required()
 def update_tag():
     """更新公共标签库"""
     log.info("更新公共标签库")
