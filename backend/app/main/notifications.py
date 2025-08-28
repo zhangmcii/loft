@@ -3,7 +3,7 @@ from . import main
 from ..models import Notification, Follow, NotificationType
 from .. import db
 from flask import request
-from .. import socketio
+from ..utils.socket_helper import send_notification
 from ..utils.response import success
 from .. import logger
 # 日志
@@ -33,11 +33,7 @@ def new_post_notification(post_id):
         db.session.flush()  # 刷新以获取通知ID
 
         # 实时推送给粉丝
-        socketio.emit(
-            "new_notification",
-            notification.to_json(),
-            to=str(follow.follower_id),  # 发送到粉丝的房间
-        )
+        send_notification(follow.follower_id, notification.to_json())
 
     # 提交所有通知
     db.session.commit()

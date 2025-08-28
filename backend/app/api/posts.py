@@ -7,7 +7,7 @@ from .. import db
 from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notification, NotificationType
 from ..main.uploads import del_qiniu_image
 from ..utils.response import success, error
-from .. import socketio
+from ..utils.socket_helper import send_notification
 from .. import logger
 from .. import limiter
 
@@ -122,11 +122,7 @@ class PostGroupApi(DecoratedMethodView):
             db.session.flush()  # 刷新以获取通知ID
 
             # 实时推送给粉丝
-            socketio.emit(
-                "new_notification",
-                notification.to_json(),
-                to=str(follow.follower_id),  # 发送到粉丝的房间
-            )
+            send_notification(follow.follower_id, notification.to_json())
 
         # 提交所有通知
         db.session.commit()

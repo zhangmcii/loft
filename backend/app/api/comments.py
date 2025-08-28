@@ -7,7 +7,7 @@ from ..decorators import permission_required
 from .. import db
 from flask import current_app, request
 from ..utils.time_util import DateUtils
-from .. import socketio
+from ..utils.socket_helper import send_notification
 from .. import limiter
 from werkzeug.exceptions import TooManyRequests
 from ..utils.text_filter import DFAFilter
@@ -193,11 +193,7 @@ class CommentApi(DecoratedMethodView):
             db.session.commit()
             # 实时推送
             for notification in notifications:
-                socketio.emit(
-                    "new_notification",
-                    notification.to_json(),
-                    to=str(notification.receiver_id),
-                )
+                send_notification(notification.receiver_id, notification.to_json())
             current_comment = {
                 "id": comment.id,
                 "parentId": comment.root_comment_id,

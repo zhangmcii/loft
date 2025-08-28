@@ -128,10 +128,16 @@ export default {
       if (mergedData.length > this.currentUser.notice.MAX_ITEM) {
         this.currentUser.saveNotifications(mergedData.slice(0, 50))
       }
-      if (import.meta.env.DEV) {
-        console.log('收到实时通知:', data)
-      }
-      console.log('11收到实时通知:', data)
+      
+      // 显示通知提示
+      this.$notify({
+        title: '新通知',
+        message: `收到一条${d.type}通知`,
+        type: 'success',
+        duration: 3000
+      });
+      
+      console.log('收到实时通知:', data)
     },
     mergeNotifications(localData, serverUnRead) {
       // 创建映射防止重复

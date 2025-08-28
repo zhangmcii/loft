@@ -4,7 +4,7 @@ from . import api
 from ..models import Post, Comment, Praise, Notification, NotificationType
 from .. import db
 from flask import request
-from .. import socketio
+from ..utils.socket_helper import send_notification
 from ..utils.response import success, error
 from .. import logger
 
@@ -73,9 +73,7 @@ class PraisePostApi(DecoratedMethodView):
             db.session.commit()
 
             if current_user.id != post.author_id:
-                socketio.emit(
-                    "new_notification", notification.to_json(), to=str(post.author_id)
-                )  # 发送到作者的房间
+                send_notification(post.author_id, notification.to_json())
             return success(
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
@@ -129,11 +127,7 @@ class PraiseCommentApi(DecoratedMethodView):
             db.session.commit()
 
             if current_user.id != comment.author_id:
-                socketio.emit(
-                    "new_notification",
-                    notification.to_json(),
-                    to=str(comment.author_id),
-                )  # 发送到作者的房间
+                send_notification(comment.author_id, notification.to_json())
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
             log.error(f"评论点赞失败: {str(e)}", exc_info=True)

@@ -13,6 +13,7 @@ from .utils.logger import Logger
 from .utils.swagger import setup_swagger
 from dotenv import load_dotenv
 import os
+import logging
 
 def my_key_func():
     """根据当前用户id限速"""
@@ -30,6 +31,22 @@ def create_app(config_name):
     app = Flask(__name__)
     # 跨域
     CORS(app)
+    
+    # 配置WebSocket专用日志记录器
+    websocket_logger = logging.getLogger('websocket')
+    websocket_logger.setLevel(logging.DEBUG)
+    
+    # 确保日志目录存在
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+    
+    # 创建WebSocket日志处理器
+    ws_handler = logging.FileHandler('logs/websocket.log')
+    ws_handler.setFormatter(logging.Formatter(
+        '[ %(asctime)s - %(levelname)s ]: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    ))
+    websocket_logger.addHandler(ws_handler)
 
     # 开发模式执行celery启动命令时，需要加载环境变量
     if not os.getenv('APP_RUN'):

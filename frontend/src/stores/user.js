@@ -125,15 +125,37 @@ export const useCurrentUserStore = defineStore('currentUser', {
       localStorage.removeItem('blog')
       localStorage.removeItem('blogOtherUser')
     },
+    
+    // 登录方法
+    login(token, userInfo) {
+      this.token = token
+      this.userInfo = userInfo
+      this.isLogin = true
+      localStorage.setItem('blog', JSON.stringify({ token, userInfo }))
+      
+      // 登录后立即连接 WebSocket
+      this.connectSocket()
+    },
     connectSocket() {
       if (!this.socket) {
-        this.socket = io('', {
+        // 使用当前页面的主机和端口，而不是空字符串
+        const host = window.location.origin;
+        console.log('WebSocket connecting to:', host);
+        
+        // 确保token格式正确
+        const token = this.token.startsWith('Bearer ') ? this.token : `Bearer ${this.token}`;
+        console.log('WebSocket using token:', token);
+        
+        this.socket = io(host, {
           path: '/socket.io',
-          auth: { Authorization: this.token },
-          query: { token: this.token },
+          auth: { Authorization: token },
+          query: { token: token },
           transports: ['websocket'],
           reconnectionAttempts: 5,
-          reconnectionDelay: 5000
+          reconnectionDelay: 5000,
+          extraHeaders: {
+            Authorization: token
+          }
         })
 
         // 监听连接成功事件
