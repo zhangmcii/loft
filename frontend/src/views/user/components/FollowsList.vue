@@ -16,6 +16,7 @@
 
 <script>
 import followApi from '@/api/user/followApi.js'
+import { useCurrentUserStore } from '@/stores/user'
 export default {
   props: {
     refreshing: {
@@ -57,6 +58,10 @@ export default {
     return {
       value: ''
     }
+  },
+  setup() {
+    const currentUser = useCurrentUserStore()
+    return { currentUser }
   },
   computed: {
     internalRefreshing: {
@@ -101,13 +106,13 @@ export default {
     },
     onSearch() {
       if (this.tabAction == 'followed') {
-        followApi.searchFollowed(this.value).then((res) => {
+        followApi.getFollowing(this.currentUser.userInfo.username, 1, this.value).then((res) => {
           if (res.code == 200) {
             this.$emit('searchFollowed', res.data)
           }
         })
       } else {
-        followApi.searchFan(this.value).then((res) => {
+        followApi.getFan(this.currentUser.userInfo.username, 1, this.value).then((res) => {
           if (res.code == 200) {
             this.$emit('searchFan', res.data)
           }

@@ -1,10 +1,8 @@
 import os
-
-from dns.rdtypes.svcbbase import NoDefaultALPNParam
 from flask import request, current_app
 from .decorators import DecoratedMethodView
 from ..decorators import log_operate
-from flask_jwt_extended import jwt_required, verify_jwt_in_request, current_user
+from flask_jwt_extended import jwt_required, current_user
 from .. import db
 from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notification, NotificationType
 from ..main.uploads import del_qiniu_image
@@ -139,11 +137,18 @@ class PostGroupApi(DecoratedMethodView):
             post = Post(body=body, body_html=body_html, type=post_type, author=current_user)
             db.session.add(post)
             db.session.flush()
-            if images:
+            # images：  [ '', '' ] or [ {'url':'', 'pos':''},{} ]
+            # markdown
+            if images and isinstance(images[0], dict):
                 images = [
                     Image(url=image.get("url", ""), type=ImageType.POST, describe=image.get("pos", ""),
                           related_id=post.id)
                     for image in images]
+                db.session.add_all(images)
+            # 图文
+            elif images and isinstance(images[0], str):
+                images = [
+                    Image(url=image, type=ImageType.POST, related_id=post.id) for image in images]
                 db.session.add_all(images)
             db.session.commit()
             PostGroupApi.new_post_notification(post.id)

@@ -174,7 +174,6 @@ const like = (id, finish) => {
         ElMessage.error(res.message || '点赞失败')
       }
     }).catch(error => {
-      ElMessage.error('点赞失败，请稍后重试')
       console.error(error)
     })
   } else {
@@ -277,7 +276,19 @@ function getComment() {
     console.error(error)
   })
 }
-
+function has_praised() {
+  praiseApi.has_praised_comment_ids(props.postId).then((res) => {
+    // 适配新的统一接口返回格式
+    if (res.code === 200) {
+      config.user.likeIds = [...res.data]
+    } else {
+      ElMessage.error(res.message || '获取点赞状态失败')
+    }
+  }).catch(error => {
+    ElMessage.error('获取点赞状态失败，请稍后重试')
+    console.error(error)
+  })
+}
 watch(
   () => props.postId,
   () => {
@@ -289,6 +300,7 @@ watch(
     disable.value = false
 
     setTimeout(getComment, 200)
+    setTimeout(has_praised, 250)
   }
 )
 </script>

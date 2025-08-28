@@ -255,7 +255,7 @@ export default {
         return
       }
       
-      userApi.getUserByUsername(userName).then((res) => {
+      userApi.getUser(this.otherUser.userInfo.id).then((res) => {
         this.loading.userData = false
         
         // 适配新的统一接口返回格式

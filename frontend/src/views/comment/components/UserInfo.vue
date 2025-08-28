@@ -39,6 +39,11 @@ function chat(){
   otherUser.userInfo = props.scope
   router.push('/chat')
 }
+function toUser() {
+  // 接口都已改为根据用户id获取用户数据
+  otherUser.userInfo.id = props.scope.id
+  router.push(`/user/${props.scope.uName}`)
+}
 const isF = computed(() => {
   return currentUser.userInfo.followed.some((item) => {
     return item.uName === props.scope.uName
@@ -62,7 +67,7 @@ const isF = computed(() => {
     </template>
     <template #default>
       <div class="user-card">
-        <div class="user-avatar" @click="$router.push(`/user/${scope.uName}`)">
+        <div class="user-avatar" @click="toUser">
           <el-avatar alt="用户图像" style="margin-top: 5px" :size="40" fit="cover" :src="scope.avatar" />
         </div>
         <div class="user-content">

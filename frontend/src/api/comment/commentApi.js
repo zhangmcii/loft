@@ -9,7 +9,7 @@ export default {
   getComment(postId, page) {
     let params = {}
     params['page'] = page
-    return $http.get(`${url_prefix}/posts/${postId}/comments/`, { params: params })
+    return $http.get(`${url_prefix}/posts/${postId}/comments`, { params: params })
   },
   
   // 获取评论的回复

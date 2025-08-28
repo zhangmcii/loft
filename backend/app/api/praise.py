@@ -15,10 +15,7 @@ log = logger.get_logger()
 # --------------------------- 点赞功能 ---------------------------
 @api.route("/posts/<post_id>/comments/praised")
 def has_praised_comment_id(post_id):
-    """ 前端未使用
-        单元测试用到了
-        查找某文章下当前用户已点赞的评论id
-    d"""
+    """ 查找某文章下当前用户已点赞的评论id"""
     is_like = request.args.get('liked', '') == 'true'
     if not is_like:
         return error(400, message=f'参数错误, liked:{request.args.get('liked', '')}')
@@ -79,7 +76,7 @@ class PraisePostApi(DecoratedMethodView):
                 socketio.emit(
                     "new_notification", notification.to_json(), to=str(post.author_id)
                 )  # 发送到作者的房间
-
+                print('点赞文章 发送了')
             return success(
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
@@ -138,7 +135,7 @@ class PraiseCommentApi(DecoratedMethodView):
                     notification.to_json(),
                     to=str(comment.author_id),
                 )  # 发送到作者的房间
-
+                print('点赞评论 发送了')
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
             log.error(f"评论点赞失败: {str(e)}", exc_info=True)

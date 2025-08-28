@@ -444,6 +444,7 @@ class Post(db.Model):
                 self.timestamp),
             'author': self.author.username,
             'nick_name': self.author.nickname,
+            'user_id': self.author.id,
             'comment_count': self.comments.count(),
             'image': get_avatars_url(self.author.image),
             'praise_num': self.praise.count(),

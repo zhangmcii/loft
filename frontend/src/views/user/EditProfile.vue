@@ -171,7 +171,7 @@ export default {
     async submitAvatars() {
       const domin = import.meta.env.VITE_QINIU_DOMAIN
       const imageUrl = `http://${domin}/${this.imageKey[0]}`
-      await imageApi.saveImageUrl({ image: this.imageKey[0] }).then((res) => {
+      await imageApi.saveImageUrl(this.currentUser.userInfo.id, { image: this.imageKey[0] }).then((res) => {
         // 适配新的统一接口返回格式
         if (res.code === 200) {
           // 新格式

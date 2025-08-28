@@ -162,7 +162,7 @@ function beforePicUpload(fileList) {
 // compressedImages：已压缩的文件
 // targetPath： 七牛云存储的路径
 // uploadToken： 上传的凭证
-// 返回：key数组， 完整url数组
+// 返回：key数组 ['', ''] or [{'url':'', 'pos':''}, {}]， 完整url数组
 async function uploadFiles(compressedImages, targetPath, uploadToken) {
   const putExtra = {}
   const config = {

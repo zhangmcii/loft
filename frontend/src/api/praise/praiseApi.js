@@ -14,6 +14,12 @@ export default {
 
   // 评论点赞
   submitPraiseComment(commentId) {
-    return $http.post(`/comments/${commentId}/likes`);
+    return $http.post(`${url_prefix}/comments/${commentId}/likes`);
   },
+
+  has_praised_comment_ids(postId) {
+    let params = {}
+    params['liked'] = "true"
+    return $http.get(`${url_prefix}/posts/${postId}/comments/praised`, { params: params });
+  }
 };

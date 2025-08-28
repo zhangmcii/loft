@@ -2,7 +2,7 @@ from flask import Blueprint
 
 api = Blueprint('api', __name__)
 
-from . import users, errors, authentication, follow
+from . import users, errors, authentication, follow, upload
 
 from .posts import register_post_api
 from .notifications import register_notification_api

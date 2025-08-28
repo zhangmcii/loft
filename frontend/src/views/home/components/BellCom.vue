@@ -131,6 +131,7 @@ export default {
       if (import.meta.env.DEV) {
         console.log('收到实时通知:', data)
       }
+      console.log('11收到实时通知:', data)
     },
     mergeNotifications(localData, serverUnRead) {
       // 创建映射防止重复

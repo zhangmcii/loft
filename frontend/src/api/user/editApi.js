@@ -2,9 +2,6 @@ import { $http } from "@/utils/request.js";
 const url_prefix = "/api/v1";
 
 export default {
-  // editProfile(formUserData) {
-  //   return $http.post('/edit-profile', formUserData)
-  // },
   // 编辑用户资料
   editUser(userId, data) {
     return $http.patch(`${url_prefix}/users/${userId}`, data);
@@ -14,7 +11,7 @@ export default {
   editProfileAdmin(formUserData) {
     return $http.post(`${url_prefix}/edit-profile/${formUserData.id}`, formUserData);
   },
-  
+
   // 更新当前用户标签
   editUserTag(userId, data) {
     return $http.post(`${url_prefix}/users/${userId}/tags`, data);

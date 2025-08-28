@@ -8,10 +8,10 @@ from ..utils.time_util import DateUtils
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
 from .. import logger
+from ..api.users import get_user_data
 
 # 日志
 log = logger.get_logger()
-
 
 # --------------------------- 关注 ---------------------------
 @main.route("/follow/<username>")
@@ -29,7 +29,6 @@ def follow(username):
     try:
         current_user.follow(user)
         db.session.commit()
-        from .user_profile import get_user_data
         data = get_user_data(username)
         return success(data=data)
     except Exception as e:
@@ -53,7 +52,6 @@ def unfollow(username):
     try:
         current_user.unfollow(user)
         db.session.commit()
-        from .user_profile import get_user_data
         data = get_user_data(username)
         return success(data=data)
     except Exception as e:
