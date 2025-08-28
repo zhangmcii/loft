@@ -19,7 +19,7 @@ class ManageSocket:
         with self.lock:
             # 清理已存在的
             if sid in self.socket_user:
-                old_user = self.socket_user['sid']
+                old_user = self.socket_user[sid]
                 self.user_socket[old_user].discard(sid)
                 if not self.user_socket[old_user]:
                     del self.user_socket[old_user]

@@ -2,6 +2,7 @@
 import os
 from dotenv import load_dotenv
 from app.utils.common import get_local_ip
+from app.event import *
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 print(dotenv_path)
