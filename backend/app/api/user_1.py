@@ -36,8 +36,7 @@ class UsersApi(DecoratedMethodView):
         return success(data=user.to_json())
 
     def patch(self, id):
-        """编辑用户资料
-        """
+        """编辑用户资料"""
         log.info(f"编辑用户资料: user_id={id}")
         if not current_user or current_user.id != id:
             return error(400, message='操作不合法，非当前用户')

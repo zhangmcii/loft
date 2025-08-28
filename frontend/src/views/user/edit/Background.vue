@@ -63,7 +63,7 @@ async function submitdata() {
   // 至少加载1s
   const startTime = Date.now()
   // 保存url
-  await editApi.editUser({ bg_image: radio.value })
+  await editApi.editUser(currentUser.userInfo.id, { bg_image: radio.value })
   currentUser.userInfo = { ...currentUser.userInfo, bg_image: radio.value }
   const elapsedTime = Date.now() - startTime
   const delayTime = Math.max(0, 1000 - elapsedTime)

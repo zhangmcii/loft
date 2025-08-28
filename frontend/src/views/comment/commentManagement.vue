@@ -49,7 +49,7 @@ export default {
       this.getAllComments(this.currentPage)
     },
     disabled(item) {
-      commentApi.disable(item.id).then((res) => {
+      commentApi.enableOrDisable(item.id, 'disable').then((res) => {
         if (res.code == 200) {
           this.comments = res.data
           this.$message.warning('已禁用')
@@ -57,7 +57,7 @@ export default {
       })
     },
     enable(item) {
-      commentApi.enable(item.id).then((res) => {
+      commentApi.enableOrDisable(item.id, 'enable').then((res) => {
         if (res.code == 200) {
           this.comments = res.data
           this.$message.success('已开启')

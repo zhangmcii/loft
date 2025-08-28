@@ -161,7 +161,8 @@ export default {
       markdownContent: {
         body: '',
         bodyHtml: '',
-        images: []
+        images: [],
+        type: 'markdown'
       }
     }
   },
@@ -236,7 +237,7 @@ export default {
     async publishText() {
       // 替换换行符为 <br>
       const formattedContent = this.textContent.replace(/\n/g, '<br>')
-      return await postApi.publish_post({ body: formattedContent, bodyHtml: null })
+      return await postApi.publish_post({ body: formattedContent, bodyHtml: null, images: [], type: 'text' })
     },
     
     async publishImage() {
@@ -258,7 +259,7 @@ export default {
       )
       
       const formattedContent = this.imageContent.replace(/\n/g, '<br>')
-      return await postApi.publishRichPost({ content: formattedContent, imageUrls: imageKey })
+      return await postApi.publish_post({ body: formattedContent, images: imageKey, type: 'image' })
     },
     
     async publishMarkdown() {

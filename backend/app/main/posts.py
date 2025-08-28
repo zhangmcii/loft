@@ -93,7 +93,7 @@ def edit(id):
     log.info(f"编辑文章: id={id}")
     post = Post.query.get_or_404(id)
     if current_user.username != post.author.username and not current_user.can(
-        Permission.ADMIN
+            Permission.ADMIN
     ):
         log.warning(
             f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}"

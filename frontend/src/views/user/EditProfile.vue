@@ -89,7 +89,7 @@ export default {
         text: '正在保存',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-      await editApi.editUser({ location: this.localUserInfo.location })
+      await editApi.editUser(this.currentUser.userInfo.id, { location: this.localUserInfo.location })
       this.currentUser.userInfo = {
         ...this.currentUser.userInfo,
         location: this.localUserInfo.location
@@ -104,7 +104,7 @@ export default {
         text: '正在保存',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-      await editApi.editUser({ sex: value })
+      await editApi.editUser(this.currentUser.userInfo.id, { sex: value })
       this.localUserInfo.sex = value
       this.currentUser.userInfo = { ...this.currentUser.userInfo, sex: value }
       this.other.userInfo = { ...this.other.userInfo, sex: value }
@@ -117,7 +117,7 @@ export default {
         text: '正在保存',
         background: 'rgba(0, 0, 0, 0.7)'
       })
-      editApi.editUserTag({ tagAdd: this.tagAdd, tagRemove: this.tagRemove }).then((res) => {
+      editApi.editUserTag(this.currentUser.userInfo.id, { tagAdd: this.tagAdd, tagRemove: this.tagRemove }).then((res) => {
         // 适配新的统一接口返回格式
         if (res.code === 200) {
           // 新格式

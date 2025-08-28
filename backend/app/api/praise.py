@@ -13,7 +13,7 @@ log = logger.get_logger()
 
 
 # --------------------------- 点赞功能 ---------------------------
-@api.route("/posts/<post_id>/comments/has_praised")
+@api.route("/posts/<post_id>/comments/praised")
 def has_praised_comment_id(post_id):
     """ 前端未使用
         单元测试用到了

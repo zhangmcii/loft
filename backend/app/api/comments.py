@@ -257,7 +257,7 @@ class CommentManageApi(DecoratedMethodView):
         return comments, total
 
     def patch(self, comment_id):
-        """恢复评论"""
+        """禁用/恢复评论"""
         log.info(f"恢复评论: id={comment_id}")
         status = request.json.get('status')
         try:

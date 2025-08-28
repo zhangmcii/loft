@@ -1,17 +1,19 @@
-import { $http } from '@/utils/request.js'
+import { $http } from "@/utils/request.js";
+const url_prefix = "/api/v1";
+
 export default {
+  // 文章点赞
   submitPraise(postId) {
-    return $http.post(`/praise/${postId}`)
+    return $http.post(`${url_prefix}/posts/${postId}/likes`);
   },
-  getPraise(postId){
-    return $http.get(`/praise/${postId}`)
+
+  // 获取文章点赞总数
+  getPraise(postId) {
+    return $http.get(`${url_prefix}/posts/${postId}/likes`);
   },
-  
+
+  // 评论点赞
   submitPraiseComment(commentId) {
-    return $http.post(`/praise/comment/${commentId}`)
+    return $http.post(`/comments/${commentId}/likes`);
   },
-  // 查找某文章下当前用户已点赞的评论id
-  // get_has_praised_comment_id(postId){
-  //   return $http.get(`/has_praised/${postId}`)
-  // },
-}
+};

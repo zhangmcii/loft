@@ -16,6 +16,54 @@ log = logger.get_logger()
 
 
 # --------------------------- 关注 ---------------------------
+# 在关注列表中，根据用户昵称或者账号搜索
+@api.route('/search_followed', methods=['GET'])
+def search_followed():
+    search_query = request.args.get('name', '').strip()
+    log.info(f"搜索关注用户: query={search_query}")
+    # 关注者
+    user = User.query.filter_by(username=current_user.username).first()
+    if not user:
+        return error(404, "用户不存在")
+
+    followed_user_ids = user.followed.with_entities(Follow.followed_id).all()
+    followed_user_ids = [item[0] for item in followed_user_ids]
+    # 搜索用户名或账号
+    followed_users = User.query.filter(
+        User.id.in_(followed_user_ids),
+        db.or_(
+            User.username.ilike(f'%{search_query}%'),
+            User.nickname.ilike(f'%{search_query}%')
+        )
+    ).all()
+    follows = [{'username': item.username, 'image': get_avatars_url(item.image)}
+               for item in followed_users if item.username != user.username]
+    return success(data=follows)
+
+
+@api.route('/search_fan', methods=['GET'])
+def search_fan():
+    search_query = request.args.get('name', '').strip()
+    log.info(f"搜索粉丝: query={search_query}")
+    # 粉丝
+    user = User.query.filter_by(username=current_user.username).first()
+    if not user:
+        return error(404, "用户不存在")
+
+    followed_user_ids = user.followers.with_entities(Follow.follower_id).all()
+    followed_user_ids = [item[0] for item in followed_user_ids]
+    # 搜索用户名或账号
+    followed_users = User.query.filter(
+        User.id.in_(followed_user_ids),
+        db.or_(
+            User.username.ilike(f'%{search_query}%'),
+            User.nickname.ilike(f'%{search_query}%')
+        )
+    ).all()
+    follows = [{'username': item.username, 'image': get_avatars_url(item.image)}
+               for item in followed_users if item.username != user.username]
+    return success(data=follows)
+
 
 class UserFollowApi(DecoratedMethodView):
     """关注 & 粉丝"""

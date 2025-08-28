@@ -36,13 +36,13 @@ data.localUserInfo = cloneDeep(user.userInfo)
 const { isChange } = useChange(data, getAttr(data.type))
 
 async function saveNickname() {
-  await editApi.editUser({ nickname: data.localUserInfo.nickname })
+  await editApi.editUser(user.userInfo.id, { nickname: data.localUserInfo.nickname })
 }
 async function saveAboutMe() {
-  await editApi.editUser({ about_me: data.localUserInfo.about_me })
+  await editApi.editUser(user.userInfo.id, { about_me: data.localUserInfo.about_me })
 }
 async function saveSocialLinks() {
-  await editApi.editUser({ social_account: data.localUserInfo.social_account })
+  await editApi.editUser(user.userInfo.id, { social_account: data.localUserInfo.social_account })
 }
 async function save() {
   const loading = ElLoading.service({

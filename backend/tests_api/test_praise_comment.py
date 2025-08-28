@@ -85,7 +85,7 @@ class TestPraiseCommentCase:
         assert r.json.get('data').get('praise_total') == 1
 
         # 检查已点赞的评论ID
-        r = client.get(self.pre_fix+f'/posts/{post_id}/comments/has_praised?liked=true', headers=auth.get_headers())
+        r = client.get(self.pre_fix+f'/posts/{post_id}/comments/praised?liked=true', headers=auth.get_headers())
         assert r.status_code == 200
         assert r.json.get('code') == 200
         assert comment_id in r.json.get('data')

@@ -1,4 +1,6 @@
 import os
+
+from dns.rdtypes.svcbbase import NoDefaultALPNParam
 from flask import request, current_app
 from .decorators import DecoratedMethodView
 from ..decorators import log_operate
@@ -9,6 +11,7 @@ from ..main.uploads import del_qiniu_image
 from ..utils.response import success, error
 from .. import socketio
 from .. import logger
+from .. import limiter
 
 # 日志
 log = logger.get_logger()
@@ -130,6 +133,42 @@ class PostGroupApi(DecoratedMethodView):
         # 提交所有通知
         db.session.commit()
 
+    @staticmethod
+    def submit_to_db(post_type, body, body_html, images=None):
+        try:
+            post = Post(body=body, body_html=body_html, type=post_type, author=current_user)
+            db.session.add(post)
+            db.session.flush()
+            if images:
+                images = [
+                    Image(url=image.get("url", ""), type=ImageType.POST, describe=image.get("pos", ""),
+                          related_id=post.id)
+                    for image in images]
+                db.session.add_all(images)
+            db.session.commit()
+            PostGroupApi.new_post_notification(post.id)
+            log.info(f"创建新文章: user_id={current_user.id}, post_id={post.id}")
+        except Exception as e:
+            log.error(f"创建文章失败: {str(e)}", exc_info=True)
+            db.session.rollback()
+            raise f"创建文章失败: {str(e)}"
+
+    @staticmethod
+    def posts_publish(data: dict):
+        body = data.get("body", '')
+        body_html = data.get("bodyHtml", None)
+        images = data.get("images", [])
+        # 可选text, image, markdown
+        post_type = data.get('type', 'text')
+        match post_type:
+            case 'text':
+                PostGroupApi.submit_to_db(PostType.TEXT, body, body_html, images)
+            case 'image':
+                PostGroupApi.submit_to_db(PostType.IMAGE, body, body_html, images)
+            case 'markdown':
+                limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
+                PostGroupApi.submit_to_db(PostType.IMAGE, body, body_html, images)
+
     def get(self):
         """获取所有文章"""
         page = request.args.get("page", 1, type=int)
@@ -143,40 +182,11 @@ class PostGroupApi(DecoratedMethodView):
         """发布文章"""
         if current_user.can(Permission.WRITE):
             try:
-                j = request.get_json()
-                body_html = j.get("bodyHtml")
-                images = j.get("images")
-                post = Post(
-                    body=j.get("body"),
-                    body_html=body_html if body_html else None,
-                    type=PostType.IMAGE if body_html else PostType.TEXT,
-                    author=current_user,
-                )
-                db.session.add(post)
-                db.session.flush()
-                if images:
-                    images = [
-                        Image(
-                            url=image.get("url", ""),
-                            type=ImageType.POST,
-                            describe=image.get("pos", ""),
-                            related_id=post.id,
-                        )
-                        for image in images
-                    ]
-                    db.session.add_all(images)
-                db.session.commit()
-                PostGroupApi.new_post_notification(post.id)
-                log.info(
-                    f"创建新文章: user_id={current_user.id}, post_id={post.id}"
-                )
+                PostGroupApi.posts_publish(request.json)
             except Exception as e:
-                log.error(f"创建文章失败: {str(e)}", exc_info=True)
-                db.session.rollback()
-                return error(500, f"创建文章失败: {str(e)}")
-
-        posts, total = PostGroupApi.query_post(1, current_app.config["FLASKY_POSTS_PER_PAGE"])
-        return success(data=posts, total=total)
+                return error(500, f"{str(e)}")
+            posts, total = PostGroupApi.query_post(1, current_app.config["FLASKY_POSTS_PER_PAGE"])
+            return success(data=posts, total=total)
 
 
 def register_post_api(bp, *, post_item_url, post_group_url):

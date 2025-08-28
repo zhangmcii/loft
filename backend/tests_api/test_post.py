@@ -34,8 +34,8 @@ class TestApiCase:
         assert r.json.get('data')[-1].get('body') == '666'
         assert r.json.get('data')[-1].get('author') == 'test'
 
-        # 发布图文文章(要连接redis)
-        r = client.post('/rich_post', headers=auth.get_headers(), json={'content': '测试图文文章', 'imageUrls': ['123.png', '456.png']})
+        # 发布图文文章
+        r = client.post('/rich_post', headers=auth.get_headers(), json={'content': '测试图文文章', 'imageUrls': ['123.png', '456.png'], 'type': 'image'})
         response = r.json
         assert response.get('code') == 200
         new_post = response.get('data')[-1]
@@ -44,7 +44,7 @@ class TestApiCase:
 
 
         # 发布markdown文章
-        r = client.post(self.pre_fix+'/posts', headers=auth.get_headers(), json={'body': '测试markdown文章[图片](1)', 'bodyHtml': '测试markdown文章<img src="1" alt="图片">', 'images': [{'url':'abc.png', 'pos':1},{'url':'efg.png', 'pos':2}]})
+        r = client.post(self.pre_fix+'/posts', headers=auth.get_headers(), json={'body': '测试markdown文章[图片](1)', 'bodyHtml': '测试markdown文章<img src="1" alt="图片">', 'images': [{'url':'abc.png', 'pos':1},{'url':'efg.png', 'pos':2}], 'type': 'markdown'})
         assert r.json.get('code') == 200
         assert r.json.get('total') == 3
         data = r.json.get('data')
