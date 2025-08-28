@@ -347,7 +347,7 @@ class User(db.Model):
             'admin': self.is_administrator(),
 
             'email': self.email,
-            'role': self.role.id,
+            'roleId': self.role.id,
             'confirmed': self.confirmed,
 
             # 'posts_url': url_for('api.get_user_posts', id=self.id),

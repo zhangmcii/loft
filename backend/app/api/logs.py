@@ -1,7 +1,7 @@
 from .decorators import DecoratedMethodView
 from flask_jwt_extended import jwt_required
 from . import api
-from ..models import Log
+from ..models import Log, User
 from ..decorators import admin_required
 from .. import db
 from flask import request, current_app
@@ -20,7 +20,6 @@ def online():
     """获取在线用户信息"""
     log.info("获取在线用户信息")
     from ..utils.socket_util import ManageSocket
-    from ..models import User
 
     manage_socket = ManageSocket()
     # 在线人数信息

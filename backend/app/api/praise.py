@@ -76,7 +76,6 @@ class PraisePostApi(DecoratedMethodView):
                 socketio.emit(
                     "new_notification", notification.to_json(), to=str(post.author_id)
                 )  # 发送到作者的房间
-                print('点赞文章 发送了')
             return success(
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
@@ -135,7 +134,6 @@ class PraiseCommentApi(DecoratedMethodView):
                     notification.to_json(),
                     to=str(comment.author_id),
                 )  # 发送到作者的房间
-                print('点赞评论 发送了')
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
             log.error(f"评论点赞失败: {str(e)}", exc_info=True)

@@ -5,7 +5,7 @@ from . import api
 from ..models import Post, Comment, Notification, NotificationType, Permission
 from ..decorators import permission_required
 from .. import db
-from flask import jsonify, current_app, request
+from flask import current_app, request
 from ..utils.time_util import DateUtils
 from .. import socketio
 from .. import limiter
