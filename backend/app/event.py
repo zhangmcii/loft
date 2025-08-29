@@ -139,7 +139,7 @@ def verify_token_in_websocket():
         logging.warning(f"WebSocket连接失败: 用户ID {user_id} 不存在")
         raise ConnectionRefusedError("WebSocket身份验证失败，用户不存在")
         
-    return user_id
+    return user.username
 
 
 def record_user_connect(user_id):

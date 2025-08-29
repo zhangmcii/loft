@@ -153,7 +153,7 @@ class CommentApi(DecoratedMethodView):
 
     def post(self, post_id):
         """发布评论（适配direct_parent关系）"""
-        log.info(f"发布评论: post_id={post_id}")
+        log.info(f"{current_user.username}发布评论: post_id={post_id}")
         post = Post.query.get_or_404(post_id)
         data = request.get_json()
         at = data.get("at")
@@ -226,12 +226,7 @@ class CommentApi(DecoratedMethodView):
 class CommentManageApi(DecoratedMethodView):
     """评论管理"""
     method_decorators = {
-        'share': [jwt_required(), permission_required(Permission.MODERATE)],
-
-        'post': [jwt_required(), limiter.limit(
-            "1/second;3/minute",
-            exempt_when=lambda: current_user.role_id == 3
-        )]
+        'share': [jwt_required(), permission_required(Permission.MODERATE)]
     }
 
     @staticmethod
@@ -258,7 +253,7 @@ class CommentManageApi(DecoratedMethodView):
 
     def patch(self, comment_id):
         """禁用/恢复评论"""
-        log.info(f"恢复评论: id={comment_id}")
+        log.info(f"{current_user.username}恢复评论: id={comment_id}")
         status = request.json.get('status')
         try:
             comment = Comment.query.get_or_404(comment_id)

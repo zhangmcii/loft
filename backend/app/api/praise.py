@@ -47,7 +47,7 @@ class PraisePostApi(DecoratedMethodView):
 
     def post(self, post_id):
         """文章点赞"""
-        log.info(f"文章点赞: id={post_id}")
+        log.info(f"{current_user.username}文章点赞: id={post_id}")
         post = Post.query.get_or_404(post_id)
 
         # 防止用户重复点赞
@@ -104,7 +104,7 @@ class PraiseCommentApi(DecoratedMethodView):
 
     def post(self, comment_id):
         """评论点赞"""
-        log.info(f"评论点赞: id={comment_id}")
+        log.info(f"{current_user.username}评论点赞: id={comment_id}")
         comment = Comment.query.get_or_404(comment_id)
         # 防止用户重复点赞
         p = Praise.query.filter_by(author_id=current_user.id, comment_id=comment_id).first()
