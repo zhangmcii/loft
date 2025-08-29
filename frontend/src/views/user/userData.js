@@ -156,23 +156,6 @@ export default {
       }
     )
   },
-  activated() {
-    // 只刷新背景和属性，不请求接口
-    const routeUserName = this.$route.params.userName
-    const isViewingSelf = this.currentUser.isLogin && 
-      routeUserName === this.currentUser.userInfo.username
-
-    if (isViewingSelf) {
-      this.user = { ...this.currentUser.userInfo }
-      this.imgList = [this.user.image] // 修复兴趣图片不显示
-      this.isUserPage = true
-      this.setMainProperty()
-      this.loading.skeleton = false
-    } else {
-      this.setMainProperty()
-    }
-  },
-  mounted() {},
   methods: {
     setMainProperty() {
       if (!this.isUserPage) {
@@ -223,7 +206,6 @@ export default {
       return true
     },
     getUser() {
-      let userName = this.$route.params.userName
       const loading = ElLoading.service({
         lock: true,
         text: '加载中...',
@@ -233,29 +215,11 @@ export default {
       
       // 检查是否是查看当前登录用户的资料
       const isViewingSelf = this.currentUser.isLogin && 
-        userName === this.currentUser.userInfo.username
+        this.$route.params.userName === this.currentUser.userInfo.username
       
-      // 如果是查看自己的资料且已有数据，优先使用当前用户的数据
-      if (isViewingSelf && Object.keys(this.currentUser.userInfo).length > 0) {
-        this.user = { ...this.currentUser.userInfo }
-        this.imgList = [this.user.image]
-        this.loading.userData = false
-        this.loading.skeleton = false
-        this.setMainProperty()
-        loading.close()
-        return
-      }
-      
-      if (!userName) {
-        userName = this.otherUser.userInfo.username
-      }
-      if (!userName) {
-        this.$message.error('要显示资料的用户名为空！')
-        loading.close()
-        return
-      }
-      
-      userApi.getUser(this.otherUser.userInfo.id).then((res) => {
+      let param = isViewingSelf ? this.currentUser.userInfo.id : this.otherUser.userInfo.id
+     
+      userApi.getUser(param).then((res) => {
         this.loading.userData = false
         
         // 适配新的统一接口返回格式

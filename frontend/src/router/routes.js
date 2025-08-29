@@ -113,7 +113,6 @@ const routes = [
         path: '/user/:userName',
         name: 'user',
         component: () => import('../views/user/UserData.vue'),
-        meta: { keepAlive: true }
       },
 
       // 上传公共背景库图片
