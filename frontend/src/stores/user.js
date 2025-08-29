@@ -152,7 +152,7 @@ export const useCurrentUserStore = defineStore('currentUser', {
           if (this.socket?.connected) {
             this.socket.emit('heartbeat')
           }
-        }, 15000)
+        }, 30000)
       }
     },
     disconnectSocket() {

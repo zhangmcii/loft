@@ -1,11 +1,16 @@
-# -*- coding: utf-8 -*-。
+# -*- coding: utf-8 -*-
 import os
+import logging
 from dotenv import load_dotenv
 from app.utils.common import get_local_ip
+from app.utils.logger import setup_logging
 from app.event import *
 
+# 初始化全局日志系统
+setup_logging()
+
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-print(dotenv_path)
+logging.info(f"加载环境变量文件: {dotenv_path}")
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
@@ -87,5 +92,4 @@ def add(some):
 
 
 if __name__ == '__main__':
-    print('正在启动')
     socketio.run(app, host=os.getenv('FLASK_RUN_HOST'), port=os.getenv('FLASK_RUN_PORT'))

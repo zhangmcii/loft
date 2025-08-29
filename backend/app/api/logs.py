@@ -1,3 +1,4 @@
+import logging
 from .decorators import DecoratedMethodView
 from flask_jwt_extended import jwt_required
 from . import api
@@ -6,10 +7,6 @@ from ..decorators import admin_required
 from .. import db
 from flask import request, current_app
 from ..utils.response import success, error
-from .. import logger
-
-# 日志
-log = logger.get_logger()
 
 
 # --------------------------- 日志管理 ---------------------------
@@ -18,7 +15,7 @@ log = logger.get_logger()
 @jwt_required()
 def online():
     """获取在线用户信息"""
-    log.info("获取在线用户信息")
+    logging.info("获取在线用户信息")
     from ..utils.socket_util import ManageSocket
 
     manage_socket = ManageSocket()
@@ -27,7 +24,10 @@ def online():
     users = []
     for user_id in user_ids:
         u = User.query.get(user_id)
-        users.append({"username": u.username, "nickName": u.nickname})
+        if u:
+            users.append({"username": u.username, "nickName": u.nickname})
+        else:
+            logging.warning(f"在线用户ID {user_id} 在数据库中不存在")
     online_total = len(users)
     return success(data=users, extra={"total": online_total})
 
@@ -39,7 +39,7 @@ class LogApi(DecoratedMethodView):
 
     def get(self):
         """获取系统日志"""
-        log.info("获取系统日志")
+        logging.info("获取系统日志")
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get(
             "per_page", current_app.config["FLASKY_LOG_PER_PAGE"], type=int
@@ -49,24 +49,29 @@ class LogApi(DecoratedMethodView):
             page=page, per_page=per_page, error_out=False
         )
         logs = paginate.items
+        logging.debug(f"获取到 {len(logs)} 条日志记录")
         return success(data=[log.to_json() for log in logs], extra={"total": query.count()})
 
     def post(self):
         """删除系统日志"""
-        log.info("删除系统日志")
+        logging.info("删除系统日志")
         try:
             ids = request.get_json().get("ids", [])
             if not ids:
+                logging.info("没有提供要删除的日志ID")
                 return success(message="没有提供要删除的日志ID")
-            Log.query.filter(Log.id.in_(ids)).delete()
+                
+            deleted_count = Log.query.filter(Log.id.in_(ids)).delete()
             db.session.commit()
-            return success(message="日志删除成功")
+            logging.info(f"成功删除 {deleted_count} 条日志记录")
+            return success(message=f"成功删除 {deleted_count} 条日志记录")
         except Exception as e:
-            log.error(f"删除日志失败: {str(e)}", exc_info=True)
+            logging.error(f"删除日志失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"删除日志失败: {str(e)}")
 
 
 def register_log_api(bp, *, logs_url):
+    logging.debug(f"注册日志API: {logs_url}")
     _log = LogApi.as_view('logs')
     bp.add_url_rule(logs_url, view_func=_log)

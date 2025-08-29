@@ -1,79 +1,73 @@
-"""
-日志系统模块
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import logging
-from logging.handlers import TimedRotatingFileHandler
-import time
+import logging.handlers
+from datetime import datetime
 
-
-class Logger:
-    def __init__(self, app=None):
-        self.app = app
-        self.logger = None
-        
-        if app:
-            self.init_app(app)
+def setup_logging(app=None):
+    """
+    配置全局日志系统，使用根记录器
     
-    def init_app(self, app):
-        """初始化日志系统"""
-        log_level = app.config.get('LOG_LEVEL', logging.INFO)
-        log_dir = app.config.get('LOG_DIR', 'logs')
-        log_name = app.config.get('LOG_NAME', 'flask_app')
-        
-        # 确保日志目录存在
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        
-        # 创建日志记录器
-        self.logger = logging.getLogger(log_name)
-        self.logger.setLevel(log_level)
-        
-        # 清除已有的处理器
-        if self.logger.handlers:
-            self.logger.handlers.clear()
-        
-        # 创建格式化器
-        formatter = logging.Formatter(
-            '[ %(asctime)s - %(levelname)s - %(module)s - %(funcName)s ]: %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        
-        # 控制台处理器
-        # console_handler = logging.StreamHandler()
-        # console_handler.setFormatter(formatter)
-        # console_handler.setLevel(log_level)
-        # self.logger.addHandler(console_handler)
-        
-        # 文件处理器（按天切割）
-        log_file = os.path.join(log_dir, f"{log_name}.log")
-        file_handler = TimedRotatingFileHandler(
-            log_file,
-            when='midnight',
-            interval=1,
-            backupCount=30,  # 保留30天的日志
-            encoding='utf-8'
-        )
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(log_level)
-        self.logger.addHandler(file_handler)
-        
-        # 将日志记录器添加到应用上下文
-        app.logger = self.logger
-        
-        self.logger.info(f"日志系统初始化完成，日志级别: {log_level}")
+    Args:
+        app: Flask应用实例，可选
+    """
+    # 获取根记录器
+    root_logger = logging.getLogger()
     
-    def get_logger(self):
-        """获取日志记录器"""
-        if not self.logger:
-            raise RuntimeError("日志系统尚未初始化，请先调用init_app方法")
-        return self.logger
+    # 如果已经配置过处理器，则不重复配置
+    if root_logger.handlers:
+        return
+    
+    # 设置日志级别
+    root_logger.setLevel(logging.DEBUG)
+    
+    # 创建日志目录
+    log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs'))
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
+    # 日志文件路径
+    log_file = os.path.join(log_dir, f'app_{datetime.now().strftime("%Y%m%d")}.log')
+    
+    # 创建文件处理器
+    file_handler = logging.handlers.TimedRotatingFileHandler(
+        log_file, when='midnight', interval=1, backupCount=30, encoding='utf-8'
+    )
+    file_handler.setLevel(logging.DEBUG)
+    
+    # 创建控制台处理器
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    
+    # 创建格式化器
+    formatter = logging.Formatter(
+        '%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] - %(message)s'
+    )
+    
+    # 设置格式化器
+    file_handler.setFormatter(formatter)
+    console_handler.setFormatter(formatter)
+    
+    # 添加处理器到根记录器
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+    
+    # 如果提供了Flask应用，则配置Flask日志
+    if app:
+        # 将Flask的日志处理器替换为我们的处理器
+        for handler in app.logger.handlers:
+            app.logger.removeHandler(handler)
+        
+        # 设置Flask日志级别
+        app.logger.setLevel(logging.DEBUG)
+        
+        # 将Flask日志传递给父记录器
+        app.logger.propagate = True
+        
+    logging.info("日志系统初始化完成")
 
-
-# 创建全局日志实例
-logger = Logger()
-
-
-def get_logger():
-    """获取全局日志记录器"""
-    return log
+# 在模块导入时自动进行基本配置，确保在任何地方导入logging都能使用
+# 这样可以保证在应用启动前就能使用日志功能
+setup_logging()

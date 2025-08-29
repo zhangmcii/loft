@@ -1,3 +1,5 @@
+import os
+import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -9,10 +11,9 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config
 from .mycelery import celery_init_app
-from .utils.logger import Logger
 from .utils.swagger import setup_swagger
+from .utils.logger_compat import logger
 from dotenv import load_dotenv
-import os
 
 def my_key_func():
     """根据当前用户id限速"""
@@ -24,7 +25,6 @@ mail = Mail()
 redis = FlaskRedis()
 socketio = SocketIO()
 limiter = Limiter(my_key_func, storage_uri=f'redis://:1234@{os.getenv('REDIS_HOST') or os.getenv('FLASK_RUN_HOST')}:6379/3')
-logger = Logger()
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -47,6 +47,11 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
+    # 配置日志系统
+    # from .utils.logger import setup_logging
+    # setup_logging(app)
+    # logging.info(f"应用启动，环境: {config_name}")
+
     host = os.getenv('REDIS_HOST') or os.getenv('FLASK_RUN_HOST')
     app.config.from_mapping(
         CELERY=dict(
@@ -62,7 +67,6 @@ def create_app(config_name):
     celery_init_app(app)
     socketio.init_app(app, cors_allowed_origins="*", ping_timeout=30, ping_interval=60)
     limiter.init_app(app)
-    logger.init_app(app)
     
     # 设置Swagger UI
     setup_swagger(app)
@@ -78,7 +82,7 @@ def create_app(config_name):
 
     @app.errorhandler(Exception)
     def error_handler(e):
-        app.logger.error(f"全局异常: {str(e)}", exc_info=True)
+        logging.error(f"全局异常: {str(e)}", exc_info=True)
         if os.environ.get('FLASK_DEBUG', None):
             print(e)
         from .utils.response import server_error
