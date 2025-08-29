@@ -53,6 +53,7 @@ import imageCfg from '@/config/image.js'
 import { useCurrentUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 import { loginReminder } from '@/utils/common.js'
+import message from '@/utils/message'
 
 const currentUser = useCurrentUserStore()
 const props = defineProps({ postId: Number })
@@ -272,7 +273,8 @@ function getComment() {
       ElMessage.error(res.message || '获取评论失败')
     }
   }).catch(error => {
-    ElMessage.error('获取评论失败，请稍后重试')
+    // ElMessage.error('获取评论失败，请稍后重试')
+    message.error('获取评论失败，请稍后重试')
     console.error(error)
   })
 }
@@ -285,7 +287,8 @@ function has_praised() {
       ElMessage.error(res.message || '获取点赞状态失败')
     }
   }).catch(error => {
-    ElMessage.error('获取点赞状态失败，请稍后重试')
+    // ElMessage.error('获取点赞状态失败，请稍后重试')
+    message.error('获取点赞状态失败，请稍后重试')
     console.error(error)
   })
 }

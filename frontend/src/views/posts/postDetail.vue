@@ -9,6 +9,7 @@ import ReadProgress from '@/utils/components/ReadProgress.vue'
 import FontSizeAdjuster from '@/views/posts/components/FontSizeAdjuster.vue'
 import PostSearch from '@/views/posts/components/PostSearch.vue'
 import postApi from '@/api/posts/postApi.js'
+import message from '@/utils/message'
 
 export default {
   components: {
@@ -79,7 +80,8 @@ export default {
         }
       }).catch(error => {
         console.error('获取文章详情失败', error)
-        this.$message.error('获取文章详情失败，请稍后重试')
+        // this.$message.error('获取文章详情失败，请稍后重试')
+        message.error('获取文章详情失败，请稍后重试')
       })
     },
     updateFontSize(size) {

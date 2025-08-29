@@ -1,4 +1,4 @@
-import { ElMessage } from 'element-plus'
+import errorManager from '@/utils/message' 
 import router from '../router/index.js'
 import axios from 'axios'
 
@@ -13,7 +13,6 @@ const $http = axios.create({
  */
 function setInterceptors(...instance) {
   instance.forEach((i) => {
-    // 添加请求拦截器
     i.interceptors.request.use(
       function (config) {
         // 从localStorage中获取token。注意，不可以从pinia中读取，因为刷新页面，此时组件可能还未初始化完
@@ -37,15 +36,11 @@ function setInterceptors(...instance) {
           console.log(error)
         }
 
-        ElMessage({
-          message: error,
-          type: 'error'
-        })
+        errorManager.error(error)
         return Promise.reject(error)
       }
     )
-
-    // 添加响应拦截器
+    
     i.interceptors.response.use(
       function (response) {
         // 2xx 范围内的状态码都会触发该函数。
@@ -62,10 +57,7 @@ function setInterceptors(...instance) {
               return response.data
             } else {
               // 业务错误，显示错误消息
-              ElMessage({
-                message: response.data.message || '请求失败',
-                type: 'error'
-              })
+              errorManager.error(response.data.message || '请求失败')
               return Promise.reject(response.data.message)
             }
           } else {
@@ -84,17 +76,10 @@ function setInterceptors(...instance) {
         }
 
         if (error.response === undefined) {
-          ElMessage({
-            message: '服务器响应超时',
-            type: 'error'
-          })
+          errorManager.error('服务器响应超时')
           return Promise.reject(error)
         }
         if (error.response.status >= 500) {
-          // ElMessage({
-          //   message:'服务器出现错误',
-          //   type:'error'
-          // })
           router.push('/500')
           return Promise.reject(error)
         }
@@ -103,17 +88,11 @@ function setInterceptors(...instance) {
           return Promise.reject(error)
         }
         if (error.response.status === 400) {
-          ElMessage({
-            message: '接口报错',
-            type: 'error'
-          })
+          errorManager.error('接口报错')
           return Promise.reject(error)
         }
         if (error.response.status === 401) {
-          ElMessage({
-            message: '您的身份未认证, 请重新登录',
-            type: 'error'
-          })
+          errorManager.error('您的身份未认证, 请重新登录')
           router.push('/login')
           return Promise.reject(error)
         }
@@ -127,19 +106,13 @@ function setInterceptors(...instance) {
         } else {
           const data = error.response.data
           if (data === null || data === undefined) {
-            ElMessage({
-              message: '请求失败，请稍后重试！',
-              type: 'error'
-            })
+            errorManager.error('请求失败，请稍后重试！')
             return Promise.reject(error)
           } else {
             // 处理新的统一接口返回格式的错误
             const resCode = data.code
             if (resCode && typeof resCode == 'number' && resCode !== 200) {
-              ElMessage({
-                message: data.message || '请求失败，请稍后重试！',
-                type: 'error'
-              })
+              errorManager.error(data.message || '请求失败，请稍后重试！')
             }
             return Promise.reject(error)
           }

@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "start": "nodemon -L index.js"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@pureadmin/utils": "^2.5.0",
@@ -24,10 +23,8 @@
     "markdown-it": "^14.1.0",
     "mavon-editor": "^3.0.2",
     "mitt": "^3.0.1",
-    "nodemon": "^3.1.7",
     "pinia": "^2.2.2",
     "pinia-plugin-persistedstate": "^4.2.0",
-    "pre-commit": "^1.2.2",
     "qiniu-js": "^3.4.1",
     "sass": "^1.86.0",
     "socket.io-client": "^4.8.1",

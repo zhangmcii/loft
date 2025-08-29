@@ -8,27 +8,27 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from, next) => {
-  let j = JSON.parse(localStorage.getItem('blog'))
-  if (!j) {
-    j = {
-      token: '',
-      userInfo: {
-        roleId: '',
-      }
+  try {
+    const blogData = JSON.parse(localStorage.getItem('blog') || '{}')
+    const { token = '', userInfo = {} } = blogData
+    const { roleId = 0 } = userInfo
+    
+    const role = roleId === 3 ? 'admin' : roleId
+
+    if (to.meta?.roles && !to.meta.roles.includes(role)) {
+      next('/403')
+    } else if (to.meta?.requireAuth && !token) {
+      next('/login')
+    } else {
+      next()
     }
-  }
-  const r = j.userInfo.roleId
-
-  const role = r === 3 ? 'admin' : r
-
-  // 无权限跳转403页面
-  if (to.meta?.roles && !to.meta?.roles.includes(role)) {
-    next({ path: '/403' })
-  } else if (to.meta?.requireAuth && !j.token) {
-    // 判断是否需要登录
-    next({ path: '/login' })
-  } else {
-    next()
+  } catch (error) {
+    console.error('路由守卫解析用户数据失败:', error)
+    if (to.meta?.requireAuth) {
+      next('/login')
+    } else {
+      next()
+    }
   }
 })
 export default router
