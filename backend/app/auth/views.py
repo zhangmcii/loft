@@ -69,8 +69,15 @@ def register(validated_data):
 def apply_code():
     email = request.get_json().get('email')
     code = User.generate_code(email)
+    if current_user:
+        username = current_user.nickname if current_user.nickname else current_user.username
+    else:
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return error(code=400, message='您输入的邮箱未绑定过账号')
+        username = user.nickname if user.nickname else user.username
     # celery发送邮件
-    send_email.delay(email, 'Confirm Your Account', user='User', code=code)
+    send_email.delay(email, 'Confirm Your Account', username=username, code=code, year=DateUtils.get_year())
     return success()
 
 

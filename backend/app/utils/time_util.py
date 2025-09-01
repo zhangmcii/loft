@@ -18,6 +18,10 @@ class DateUtils:
         return datetime.now(DateUtils.Shanghai_tz).strftime('%Y-%m-%d %H:%M:%S')
 
     @staticmethod
+    def get_year():
+        return datetime.now().year
+
+    @staticmethod
     def preday_time() -> str:
         """返回前一天的日期时间
 
