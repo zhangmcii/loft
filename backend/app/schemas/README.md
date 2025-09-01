@@ -2,156 +2,104 @@
 
 ## 概述
 
-本项目使用 Pydantic 进行数据校验，提供了用户相关操作的完整校验模型。
+本项目使用 Pydantic 为用户认证相关的API接口提供数据校验功能。所有校验模型都位于 `app/schemas/` 目录下。
 
-## 校验模型
+## 可用的校验模型
 
-### 1. RegisterRequest - 注册请求校验
+### 1. RegisterRequest - 用户注册
+- `username`: 用户名 (3-20字符，只能包含字母、数字、下划线)
+- `password`: 密码 (6-128字符，必须包含字母和数字)
+- `email`: 邮箱地址 (标准邮箱格式)
 
-```python
-from app.schemas.user_schemas import RegisterRequest
+### 2. ChangePasswordRequest - 修改密码
+- `old_password`: 原密码 (必填)
+- `new_password`: 新密码 (6-128字符，必须包含字母和数字)
 
-# 校验规则：
-# - username: 3-20字符，支持字母、数字、下划线、中文
-# - password: 6-128字符，必须包含字母和数字
-# - confirm_password: 必须与password一致
-# - email: 标准邮箱格式
-# - verification_code: 4-6位纯数字
-```
+### 3. ForgotPasswordRequest - 忘记密码
+- `email`: 邮箱地址 (标准邮箱格式)
+- `new_password`: 新密码 (6-128字符，必须包含字母和数字)
+- `code`: 验证码 (4-10位数字)
 
-### 2. ChangePasswordRequest - 修改密码校验
+### 4. BindEmailRequest - 绑定邮箱
+- `email`: 邮箱地址 (标准邮箱格式)
+- `code`: 验证码 (4-10位数字)
 
-```python
-from app.schemas.user_schemas import ChangePasswordRequest
-
-# 校验规则：
-# - old_password: 原密码
-# - new_password: 6-128字符，必须包含字母和数字，不能与原密码相同
-# - confirm_password: 必须与new_password一致
-```
-
-### 3. ForgotPasswordRequest - 忘记密码校验
-
-```python
-from app.schemas.user_schemas import ForgotPasswordRequest
-
-# 校验规则：
-# - email: 标准邮箱格式
-# - verification_code: 4-6位纯数字
-# - new_password: 6-128字符，必须包含字母和数字
-# - confirm_password: 必须与new_password一致
-```
-
-### 4. BindEmailRequest - 绑定邮箱校验
-
-```python
-from app.schemas.user_schemas import BindEmailRequest
-
-# 校验规则：
-# - email: 标准邮箱格式
-# - verification_code: 4-6位纯数字
-# - password: 可选，用于身份验证
-```
-
-### 5. ChangeEmailRequest - 修改邮箱校验
-
-```python
-from app.schemas.user_schemas import ChangeEmailRequest
-
-# 校验规则：
-# - old_email: 标准邮箱格式
-# - new_email: 标准邮箱格式，不能与old_email相同
-# - verification_code: 4-6位纯数字
-# - password: 可选，用于身份验证
-```
+### 5. ChangeEmailRequest - 修改邮箱
+- `new_email`: 新邮箱地址 (标准邮箱格式)
+- `code`: 验证码 (4-10位数字)
 
 ## 使用方法
 
-### 方法一：使用装饰器（推荐）
+### 在Flask路由中使用
+
+#### 方法1: 使用装饰器（推荐）
 
 ```python
 from flask import Blueprint
 from app.schemas.user_schemas import RegisterRequest
 from app.utils.validation import validate_json
-from app.utils.response import response_success, response_error
+from app.utils.response import success
 
-bp = Blueprint('user', __name__)
-
-@bp.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST'])
 @validate_json(RegisterRequest)
-def register(validated_data: RegisterRequest):
-    """
-    注册接口
-    validated_data 已经是经过校验的 RegisterRequest 对象
-    """
-    try:
-        # 业务逻辑
-        username = validated_data.username
-        email = validated_data.email
-        # ...
-        
-        return response_success(message="注册成功")
-    except Exception as e:
-        return response_error(500, str(e))
+def register(validated_data):
+    # validated_data 是校验后的字典数据
+    username = validated_data.get('username')
+    password = validated_data.get('password')
+    email = validated_data.get('email')
+    
+    # 处理业务逻辑...
+    
+    return success(message="注册成功")
 ```
 
-### 方法二：手动校验
+#### 方法2: 手动校验
 
 ```python
-from flask import request
-from pydantic import ValidationError
+from flask import Blueprint
 from app.schemas.user_schemas import RegisterRequest
-from app.utils.response import response_error, response_success
+from app.utils.validation import validate_request_data
+from app.utils.response import success
 
-@bp.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register():
-    try:
-        # 获取请求数据
-        json_data = request.get_json()
-        
-        # 手动校验
-        validated_data = RegisterRequest(**json_data)
-        
-        # 业务逻辑
-        # ...
-        
-        return response_success(message="注册成功")
-        
-    except ValidationError as e:
-        error_msg = e.errors()[0]['msg']
-        return response_error(400, error_msg)
-    except Exception as e:
-        return response_error(500, str(e))
+    # 校验请求数据
+    validated_data, error_response = validate_request_data(RegisterRequest)
+    if error_response:
+        return error_response
+    
+    # 使用校验后的数据
+    username = validated_data.username
+    password = validated_data.password
+    email = validated_data.email
+    
+    # 处理业务逻辑...
+    
+    return success(message="注册成功")
 ```
 
-## 密码强度规则
+### 直接使用模型校验
 
-- 最少6个字符，最多128个字符
-- 必须包含至少一个字母（a-z 或 A-Z）
-- 必须包含至少一个数字（0-9）
-- 如果密码长度少于8位，建议包含特殊字符以提高安全性
+```python
+from app.schemas.user_schemas import RegisterRequest
+from app.utils.validation import validate_json_data
 
-## 用户名规则
+data = {
+    "username": "testuser",
+    "password": "password123",
+    "email": "test@example.com"
+}
 
-- 长度：3-20个字符
-- 允许的字符：
-  - 英文字母（a-z, A-Z）
-  - 数字（0-9）
-  - 下划线（_）
-  - 中文字符
-
-## 邮箱校验
-
-使用 Pydantic 的 `EmailStr` 类型，自动进行标准邮箱格式校验。
-
-## 验证码规则
-
-- 长度：4-6位
-- 必须为纯数字
+validated_data, error = validate_json_data(data, RegisterRequest)
+if error:
+    print(f"校验失败: {error}")
+else:
+    print(f"校验成功: {validated_data}")
+```
 
 ## 错误处理
 
-所有校验错误都会被自动转换为统一的响应格式：
+当数据校验失败时，系统会自动返回统一的错误响应格式：
 
 ```json
 {
@@ -165,30 +113,19 @@ def register():
 
 ```bash
 # 运行所有校验相关测试
-pytest backend/tests/test_schemas.py -v
-
-# 运行校验工具测试
-pytest backend/tests/test_validation_utils.py -v
+python -m pytest tests/test_user_schemas.py -v
 
 # 运行集成测试
-pytest backend/tests/test_user_validation_integration.py -v
+python -m pytest tests/test_validation_integration.py -v
 ```
 
 ## 扩展校验规则
 
-如需添加新的校验规则，可以：
-
-1. 在对应的模型中添加 `@validator` 装饰器
-2. 创建自定义校验函数
-3. 添加相应的单元测试
-
-示例：
+如需添加新的校验规则，可以在相应的模型中添加 `@validator` 装饰器：
 
 ```python
 @validator('username')
-def validate_username_not_reserved(cls, v):
-    """检查用户名是否为保留词"""
-    reserved_words = ['admin', 'root', 'system']
-    if v.lower() in reserved_words:
-        raise ValueError('该用户名为系统保留，请选择其他用户名')
+def validate_username(cls, v):
+    if 'admin' in v.lower():
+        raise ValueError('用户名不能包含admin')
     return v

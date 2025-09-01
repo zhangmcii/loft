@@ -1,148 +1,104 @@
 """
-用户API校验示例
-展示如何在实际API中使用Pydantic校验模型
+用户API校验使用示例
+展示如何在Flask路由中使用Pydantic校验模型
 """
 from flask import Blueprint, request
-from ..schemas.user_schemas import (
+from app.schemas.user_schemas import (
     RegisterRequest,
     ChangePasswordRequest,
     ForgotPasswordRequest,
     BindEmailRequest,
     ChangeEmailRequest
 )
-from ..utils.validation import validate_json
-from ..utils.response import success, error
+from app.utils.validation import validate_request_data
+from app.utils.response import success, error
 
 # 创建蓝图
 user_validation_bp = Blueprint('user_validation', __name__, url_prefix='/api/user')
 
 
 @user_validation_bp.route('/register', methods=['POST'])
-@validate_json(RegisterRequest)
-def register(validated_data: RegisterRequest):
-    """
-    用户注册接口
+def register():
+    """用户注册接口示例"""
+    # 使用Pydantic校验请求数据
+    validated_data, error_response = validate_request_data(RegisterRequest)
+    if error_response:
+        return error_response
     
-    Args:
-        validated_data: 经过校验的注册数据
+    # 校验通过，处理业务逻辑
+    username = validated_data.username
+    password = validated_data.password
+    email = validated_data.email
     
-    Returns:
-        统一响应格式
-    """
-    try:
-        # 这里是实际的业务逻辑
-        # 1. 检查用户名是否已存在
-        # 2. 检查邮箱是否已被使用
-        # 3. 验证验证码
-        # 4. 创建用户账号
-        
-        # 示例：模拟注册成功
-        user_data = {
-            'username': validated_data.username,
-            'email': validated_data.email,
-            'created_at': '2024-01-01 00:00:00'
-        }
-        
-        return success(data=user_data, message="注册成功")
-        
-    except Exception as e:
-        return error(500, f"注册失败: {str(e)}")
+    # 这里添加实际的注册逻辑
+    # user_service.create_user(username, password, email)
+    
+    return success({
+        "username": username,
+        "email": email
+    }, "注册成功")
 
 
 @user_validation_bp.route('/change-password', methods=['POST'])
-@validate_json(ChangePasswordRequest)
-def change_password(validated_data: ChangePasswordRequest):
-    """
-    修改密码接口
+def change_password():
+    """修改密码接口示例"""
+    validated_data, error_response = validate_request_data(ChangePasswordRequest)
+    if error_response:
+        return error_response
     
-    Args:
-        validated_data: 经过校验的修改密码数据
+    old_password = validated_data.old_password
+    new_password = validated_data.new_password
     
-    Returns:
-        统一响应格式
-    """
-    try:
-        # 这里是实际的业务逻辑
-        # 1. 验证原密码是否正确
-        # 2. 更新用户密码
-        # 3. 可能需要使所有session失效
-        
-        return success(message="密码修改成功")
-        
-    except Exception as e:
-        return error(500, f"密码修改失败: {str(e)}")
+    # 这里添加实际的修改密码逻辑
+    # user_service.change_password(current_user_id, old_password, new_password)
+    
+    return success(message="密码修改成功")
 
 
 @user_validation_bp.route('/forgot-password', methods=['POST'])
-@validate_json(ForgotPasswordRequest)
-def forgot_password(validated_data: ForgotPasswordRequest):
-    """
-    忘记密码接口
+def forgot_password():
+    """忘记密码接口示例"""
+    validated_data, error_response = validate_request_data(ForgotPasswordRequest)
+    if error_response:
+        return error_response
     
-    Args:
-        validated_data: 经过校验的忘记密码数据
+    email = validated_data.email
+    new_password = validated_data.new_password
+    code = validated_data.code
     
-    Returns:
-        统一响应格式
-    """
-    try:
-        # 这里是实际的业务逻辑
-        # 1. 验证邮箱是否存在
-        # 2. 验证验证码是否正确
-        # 3. 重置用户密码
-        
-        return success(message="密码重置成功")
-        
-    except Exception as e:
-        return error(500, f"密码重置失败: {str(e)}")
+    # 这里添加实际的重置密码逻辑
+    # user_service.reset_password(email, new_password, code)
+    
+    return success(message="密码重置成功")
 
 
 @user_validation_bp.route('/bind-email', methods=['POST'])
-@validate_json(BindEmailRequest)
-def bind_email(validated_data: BindEmailRequest):
-    """
-    绑定邮箱接口
+def bind_email():
+    """绑定邮箱接口示例"""
+    validated_data, error_response = validate_request_data(BindEmailRequest)
+    if error_response:
+        return error_response
     
-    Args:
-        validated_data: 经过校验的绑定邮箱数据
+    email = validated_data.email
+    code = validated_data.code
     
-    Returns:
-        统一响应格式
-    """
-    try:
-        # 这里是实际的业务逻辑
-        # 1. 验证验证码是否正确
-        # 2. 检查邮箱是否已被其他用户使用
-        # 3. 如果需要密码验证，验证当前密码
-        # 4. 绑定邮箱到当前用户
-        
-        return success(message="邮箱绑定成功")
-        
-    except Exception as e:
-        return error(500, f"邮箱绑定失败: {str(e)}")
+    # 这里添加实际的绑定邮箱逻辑
+    # user_service.bind_email(current_user_id, email, code)
+    
+    return success({"email": email}, "邮箱绑定成功")
 
 
 @user_validation_bp.route('/change-email', methods=['POST'])
-@validate_json(ChangeEmailRequest)
-def change_email(validated_data: ChangeEmailRequest):
-    """
-    修改邮箱接口
+def change_email():
+    """修改邮箱接口示例"""
+    validated_data, error_response = validate_request_data(ChangeEmailRequest)
+    if error_response:
+        return error_response
     
-    Args:
-        validated_data: 经过校验的修改邮箱数据
+    new_email = validated_data.new_email
+    code = validated_data.code
     
-    Returns:
-        统一响应格式
-    """
-    try:
-        # 这里是实际的业务逻辑
-        # 1. 验证原邮箱是否为当前用户的邮箱
-        # 2. 验证验证码是否正确
-        # 3. 检查新邮箱是否已被其他用户使用
-        # 4. 如果需要密码验证，验证当前密码
-        # 5. 更新用户邮箱
-        
-        return success(message="邮箱修改成功")
-        
-    except Exception as e:
-        return error(500, f"邮箱修改失败: {str(e)}")
+    # 这里添加实际的修改邮箱逻辑
+    # user_service.change_email(current_user_id, new_email, code)
+    
+    return success({"new_email": new_email}, "邮箱修改成功")

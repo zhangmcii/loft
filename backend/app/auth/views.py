@@ -6,9 +6,15 @@ from ..models import User
 from .. import db
 from ..mycelery.tasks import send_email
 from ..utils.time_util import DateUtils
-from ..utils.common import get_avatars_url
-from ..models import Follow
 from ..utils.response import success, error
+from ..utils.validation import validate_json
+from ..schemas import (
+    RegisterRequest,
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    BindEmailRequest,
+    ChangeEmailRequest
+)
 
 
 @auth.before_app_request
@@ -32,17 +38,26 @@ def login():
 
 
 @auth.route('/register', methods=['POST'])
-def register():
-    j = request.get_json()
-    if not j.get('password'):
-        return error(message='密码不能设置为空字符串')
-    u = User.query.filter_by(username=j.get('username')).first()
+@validate_json(RegisterRequest)
+def register(validated_data):
+    # 检查用户名是否已存在
+    u = User.query.filter_by(username=validated_data.username).first()
     if u:
         return error(message='该用户名已被注册，请换一个')
-    email = j.get('email')
-    if email == '':
-        email = None
-    user = User(email=email, username=j.get('username'), password=j.get('password'), image=j.get('image', ''))
+    
+    # 检查邮箱是否已存在
+    if validated_data.email:
+        existing_email = User.query.filter_by(email=validated_data.email).first()
+        if existing_email:
+            return error(message='该邮箱已被注册，请换一个')
+    
+    email = validated_data.email if validated_data.email else None
+    user = User(
+        email=email, 
+        username=validated_data.username, 
+        password=validated_data.password, 
+        image=getattr(validated_data, 'image', '')
+    )
     db.session.add(user)
     db.session.commit()
     return success()
@@ -71,9 +86,11 @@ def apply_code():
 
 @auth.route('/confirm', methods=['POST'])
 @jwt_required()
-def confirm():
-    email = request.get_json().get('email')
-    code = request.get_json().get('code')
+@validate_json(BindEmailRequest)
+def confirm(validated_data):
+    email = validated_data.email
+    code = validated_data.code
+    
     if current_user.email and email != current_user.email:
         return error(message='输入的邮件与用户的邮件不一致')
     if current_user.confirm(email, code):
@@ -87,17 +104,16 @@ def confirm():
 
 @auth.route('/changeEmail', methods=['POST'])
 @jwt_required()
-def change_email():
-    email = request.get_json().get('email')
-    code = request.get_json().get('code')
-    password = request.get_json().get('password')
+@validate_json(ChangeEmailRequest)
+def change_email(validated_data):
+    email = validated_data.new_email
+    code = validated_data.code
+    
     if User.query.filter_by(email=email).first():
         return error(message='填写的邮箱已经存在')
     if current_user.email == email:
         return error(message='请更换新的邮箱地址')
-    # 密码
-    if not current_user.verify_password(password):
-        return error(message='密码错误')
+    
     # 验证码
     if current_user.change_email(email, code):
         db.session.commit()
@@ -107,24 +123,23 @@ def change_email():
 
 @auth.route('/changePassword', methods=['POST'])
 @jwt_required()
-def change_password():
-    oldPassword = request.get_json().get('oldPassword')
-    newPassword = request.get_json().get('newPassword')
-    if not newPassword:
-        return error(message='密码不能设置为空字符串')
-    if current_user.verify_password(oldPassword):
-        current_user.password = newPassword
+@validate_json(ChangePasswordRequest)
+def change_password(validated_data):
+    if current_user.verify_password(validated_data.old_password):
+        current_user.password = validated_data.new_password
         db.session.add(current_user)
         db.session.commit()
         return success()
-    return error(message='密码错误')
+    return error(message='原密码错误')
 
 
 @auth.route('/resetPassword', methods=['POST'])
-def reset_password():
-    email = request.get_json().get('email')
-    code = request.get_json().get('code')
-    password = request.get_json().get('password')
+@validate_json(ForgotPasswordRequest)
+def reset_password(validated_data):
+    email = validated_data.email
+    code = validated_data.code
+    password = validated_data.new_password
+    
     # 验证码
     if User.compare_code(email, code):
         user = User.query.filter_by(email=email).first()

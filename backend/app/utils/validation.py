@@ -1,85 +1,123 @@
 """
 数据校验工具函数
 """
-from functools import wraps
-from flask import request
+from typing import Type, Tuple, Optional
+from flask import request, Response
 from pydantic import BaseModel, ValidationError
-from ..utils.response import error
+from .response import error
 
 
-def validate_json(schema_class: BaseModel):
+def validate_request_data(model_class: Type[BaseModel]) -> Tuple[Optional[BaseModel], Optional[Response]]:
     """
-    JSON数据校验装饰器
+    校验请求数据
     
     Args:
-        schema_class: Pydantic模型类
+        model_class: Pydantic模型类
+        
+    Returns:
+        Tuple[Optional[BaseModel], Optional[Response]]: 
+        - 如果校验成功，返回 (validated_data, None)
+        - 如果校验失败，返回 (None, error_response)
+    """
+    try:
+        # 获取JSON数据
+        json_data = request.get_json()
+        if json_data is None:
+            return None, error(400, "请求数据格式错误")
+        
+        # 使用Pydantic模型校验数据
+        validated_data = model_class(**json_data)
+        return validated_data, None
+        
+    except ValidationError as e:
+        # 提取第一个错误信息
+        error_msg = e.errors()[0]['msg']
+        return None, error(400, error_msg)
     
+    except Exception as e:
+        return None, error(500, f"数据校验失败,{e}")
+
+
+def validate_json_data(data: dict, model_class: Type[BaseModel]) -> Tuple[Optional[BaseModel], Optional[str]]:
+    """
+    校验字典数据（用于测试和非Flask上下文）
+    
+    Args:
+        data: 要校验的数据字典
+        model_class: Pydantic模型类
+        
+    Returns:
+        Tuple[Optional[BaseModel], Optional[str]]:
+        - 如果校验成功，返回 (validated_data, None)
+        - 如果校验失败，返回 (None, error_message)
+    """
+    try:
+        validated_data = model_class(**data)
+        return validated_data, None
+    except ValidationError as e:
+        error_msg = e.errors()[0]['msg']
+        return None, error_msg
+    except Exception as e:
+        return None, str(e)
+
+
+def validate_data_with_response(data: dict, model_class: Type[BaseModel]) -> Tuple[Optional[BaseModel], Optional[Response]]:
+    """
+    校验数据并返回Flask响应对象（用于API中）
+    
+    Args:
+        data: 要校验的数据字典
+        model_class: Pydantic模型类
+        
+    Returns:
+        Tuple[Optional[BaseModel], Optional[Response]]:
+        - 如果校验成功，返回 (validated_data, None)
+        - 如果校验失败，返回 (None, error_response)
+    """
+    try:
+        validated_data = model_class(**data)
+        return validated_data, None
+    except ValidationError as e:
+        error_msg = e.errors()[0]['msg']
+        return None, error(400, error_msg)
+    except Exception as e:
+        return None, error(500, f"数据校验失败,{e}")
+
+
+def validate_json(model_class: Type[BaseModel]):
+    """
+    装饰器：校验JSON请求数据
+    
+    Args:
+        model_class: Pydantic模型类
+        
     Returns:
         装饰器函数
     """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
+    from functools import wraps
+    
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
             try:
                 # 获取JSON数据
                 json_data = request.get_json()
-                if not json_data:
-                    return error(400, "请求数据不能为空")
+                if json_data is None:
+                    return error(400, "请求数据格式错误")
                 
                 # 使用Pydantic模型校验数据
-                validated_data = schema_class(**json_data)
+                validated_data = model_class(**json_data)
                 
-                # 将校验后的数据传递给视图函数
-                return func(validated_data, *args, **kwargs)
+                # 将校验后的数据作为参数传递给原函数
+                return f(validated_data, *args, **kwargs)
                 
             except ValidationError as e:
                 # 提取第一个错误信息
                 error_msg = e.errors()[0]['msg']
-                field_name = e.errors()[0]['loc'][0] if e.errors()[0]['loc'] else '未知字段'
-                return error(400, f"{field_name}: {error_msg}")
-            except ValueError as e:
-                return error(400, str(e))
+                return error(400, error_msg)
+            
             except Exception as e:
-                return error(500, f"数据校验失败: {str(e)}")
+                return error(500, f"数据校验失败,{e}")
         
-        return wrapper
-    return decorator
-
-
-def validate_form(schema_class: BaseModel):
-    """
-    表单数据校验装饰器
-    
-    Args:
-        schema_class: Pydantic模型类
-    
-    Returns:
-        装饰器函数
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                # 获取表单数据
-                form_data = request.form.to_dict()
-                if not form_data:
-                    return error(400, "请求数据不能为空")
-                
-                # 使用Pydantic模型校验数据
-                validated_data = schema_class(**form_data)
-                
-                # 将校验后的数据传递给视图函数
-                return func(validated_data, *args, **kwargs)
-                
-            except ValidationError as e:
-                # 提取第一个错误信息
-                error_msg = e.errors()[0]['msg']
-                field_name = e.errors()[0]['loc'][0] if e.errors()[0]['loc'] else '未知字段'
-                return error(400, f"{field_name}: {error_msg}")
-            except ValueError as e:
-                return error(400, str(e))
-            except Exception as e:
-                return error(500, f"数据校验失败: {str(e)}")
-        
-        return wrapper
+        return decorated_function
     return decorator
