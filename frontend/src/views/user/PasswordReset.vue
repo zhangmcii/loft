@@ -12,8 +12,8 @@ export default {
     var validatePass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
-      } else if (value.length < 6) {
-        callback(new Error('密码长度不能少于6个字符'))
+      } else if (value.length < 3) {
+        callback(new Error('密码长度不能少于3个字符'))
       } else {
         callback()
       }
@@ -52,7 +52,7 @@ export default {
     applyCode() {
       this.value = Date.now() + 1000 * 60
       this.showButton = !this.showButton
-      authApi.applyCode({ email: this.form.email, action: 'reset' }).then((res) => {
+      authApi.applyCode({ email: this.form.email }).then((res) => {
         if (res.code == 200) {
           this.$message.success('验证码已发送')
         } else {
@@ -111,7 +111,7 @@ export default {
       <el-form-item prop="code" label="验证码">
         <el-input v-model="form.code" style="width: 40%" />
       </el-form-item>
-      <el-form-item prop="new_password" label="密码">
+      <el-form-item prop="new_password" label="新密码">
         <el-input v-model="form.new_password" type="password" show-password />
       </el-form-item>
       <el-form-item>

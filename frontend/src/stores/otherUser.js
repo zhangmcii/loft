@@ -21,7 +21,7 @@ export const useOtherUserStore = defineStore('otherUser', {
   }),
   getters: {
     isCommentManage: (state) => state.userInfo.roleId >= 2,
-    isConfirmed: (state) => state.userInfo.isConfirmed == true,
+    isConfirmed: (state) => state.userInfo.confirmed == true,
     isAdmin: (state) => state.userInfo.isAdmin == true,
     priorityName: (state) =>
       state.userInfo.nickname ? state.userInfo.nickname : state.userInfo.username,

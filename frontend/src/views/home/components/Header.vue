@@ -80,7 +80,7 @@
               title-style="margin-left:10px"
               clickable
               @click="handleCellClick('/changeEmail')"
-              v-if="currentUser.userInfo.isConfirmed"
+              v-if="currentUser.isConfirmed"
             ></van-cell>
             <van-cell
               title="绑定邮箱"

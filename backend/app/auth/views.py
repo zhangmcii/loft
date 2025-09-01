@@ -68,18 +68,8 @@ def register(validated_data):
 @DateUtils.record_time
 def apply_code():
     email = request.get_json().get('email')
-    action = request.get_json().get('action')
-    # if action == 'confirm' and User.query.filter_by(email=email).first():
-    #     return jsonify(data='', msg='fail', detail='填写的邮箱已经存在')
-    # if action == 'confirm' and current_user.email and email != current_user.email:
-    #     return jsonify(data='', msg='fail', detail='请输入该用户的正确的邮件')
-    # if (action == 'confirm' or action == 'change') and not current_user.email:
-    if action == 'confirm' or action == 'change':
-        current_user.email = request.get_json().get('email')
-        db.session.add(current_user)
-        db.session.commit()
     code = User.generate_code(email)
-    # 重置密码
+    # celery发送邮件
     send_email.delay(email, 'Confirm Your Account', user='User', code=code)
     return success()
 

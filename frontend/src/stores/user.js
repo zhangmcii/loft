@@ -16,7 +16,7 @@ export const useCurrentUserStore = defineStore('currentUser', {
         username: '',
         nickname: '',
         roleId: 0,
-        isConfirmed: false,
+        confirmed: false,
         bg_image: '',
         image: '',
         about_me: '',
@@ -64,7 +64,7 @@ export const useCurrentUserStore = defineStore('currentUser', {
   getters: {
     isLogin: (state) => state.token != '',
     isCommentManage: (state) => state.userInfo.roleId >= 2,
-    isConfirmed: (state) => state.userInfo.isConfirmed == true,
+    isConfirmed: (state) => state.userInfo.confirmed == true,
     isAdmin: (state) => state.userInfo.roleId == 3,
     priorityName: (state) =>
       state.userInfo.nickname ? state.userInfo.nickname : state.userInfo.username,

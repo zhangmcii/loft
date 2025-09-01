@@ -48,7 +48,7 @@ export default {
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
       })
-      authApi.applyCode({ new_email: this.form.new_email, action: 'change' }).then((res) => {
+      authApi.applyCode({ email: this.form.new_email}).then((res) => {
         if (res.code == 200) {
           this.$message.success('验证码已发送')
         } else {

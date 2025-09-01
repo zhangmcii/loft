@@ -57,16 +57,16 @@ class ChangePasswordRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     """忘记密码请求校验模型"""
     email: EmailStr = Field(..., description="邮箱地址")
-    new_password: str = Field(..., min_length=6, max_length=128, description="新密码")
+    new_password: str = Field(..., min_length=3, max_length=16, description="新密码")
     code: str = Field(..., min_length=4, max_length=10, description="验证码")
     
     @field_validator('new_password')
     @classmethod
     def validate_new_password(cls, v):
-        if not re.search(r'[A-Za-z]', v):
-            raise ValueError('新密码必须包含至少一个字母')
-        if not re.search(r'\d', v):
-            raise ValueError('新密码必须包含至少一个数字')
+        # if not re.search(r'[A-Za-z]', v):
+        #     raise ValueError('新密码必须包含至少一个字母')
+        # if not re.search(r'\d', v):
+        #     raise ValueError('新密码必须包含至少一个数字')
         return v
     
     @field_validator('code')

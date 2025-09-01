@@ -12,7 +12,7 @@ from . import redis
 from .exceptions import ValidationError
 from enum import Enum
 from sqlalchemy import and_, event
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class Permission:
     FOLLOW = 1
@@ -268,6 +268,9 @@ class User(db.Model):
     def change_email(self, new_email, code):
         if User.compare_code(new_email, code):
             self.email = new_email
+            self.social_account['email'] = new_email
+            # 标记 social_account 已修改
+            flag_modified(self, "social_account")
             db.session.add(self)
             return True
         else:
