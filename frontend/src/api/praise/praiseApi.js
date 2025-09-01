@@ -17,6 +17,7 @@ export default {
     return $http.post(`${url_prefix}/comments/${commentId}/likes`);
   },
 
+  // 查找某文章下当前用户已点赞的评论id
   has_praised_comment_ids(postId) {
     let params = {}
     params['liked'] = "true"

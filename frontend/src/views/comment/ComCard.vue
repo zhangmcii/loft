@@ -303,7 +303,9 @@ watch(
     disable.value = false
 
     setTimeout(getComment, 200)
-    setTimeout(has_praised, 250)
+    if(currentUser.isLogin){
+      setTimeout(has_praised, 250)
+    }
   }
 )
 </script>

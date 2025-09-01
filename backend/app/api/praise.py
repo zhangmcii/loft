@@ -15,7 +15,7 @@ log = logger.get_logger()
 # --------------------------- 点赞功能 ---------------------------
 @api.route("/posts/<post_id>/comments/praised")
 def has_praised_comment_id(post_id):
-    """ 查找某文章下当前用户已点赞的评论id"""
+    """查找某文章下当前用户已点赞的评论id"""
     is_like = request.args.get('liked', '') == 'true'
     if not is_like:
         return error(400, message=f'参数错误, liked:{request.args.get('liked', '')}')
