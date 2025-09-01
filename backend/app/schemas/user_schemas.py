@@ -2,7 +2,6 @@
 用户相关的Pydantic数据校验模型
 """
 import re
-from typing import Optional
 from pydantic import BaseModel, Field, field_validator, EmailStr
 
 
@@ -95,7 +94,8 @@ class ChangeEmailRequest(BaseModel):
     """修改邮箱请求校验模型"""
     new_email: EmailStr = Field(..., description="新邮箱地址")
     code: str = Field(..., min_length=4, max_length=10, description="验证码")
-    
+    password: str = Field(..., min_length=3, max_length=16, description="密码")
+
     @field_validator('code')
     @classmethod
     def validate_code(cls, v):

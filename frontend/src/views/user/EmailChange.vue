@@ -11,12 +11,12 @@ export default {
   data() {
     return {
       form: {
-        email: '',
+        new_email: '',
         code: '',
         password: ''
       },
       rules: {
-        email: [
+        new_email: [
           { required: true, message: '请输入邮箱地址', trigger: 'blur' },
           {
             type: 'email',
@@ -48,7 +48,7 @@ export default {
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
       })
-      authApi.applyCode({ email: this.form.email, action: 'change' }).then((res) => {
+      authApi.applyCode({ new_email: this.form.new_email, action: 'change' }).then((res) => {
         if (res.code == 200) {
           this.$message.success('验证码已发送')
         } else {
@@ -82,7 +82,7 @@ export default {
     },
     validateEmail() {
       if (this.$refs.formRef) {
-        this.$refs.formRef.validateField('email', (errorMessage) => {
+        this.$refs.formRef.validateField('new_email', (errorMessage) => {
           this.isEmailValid = errorMessage
         })
       }
@@ -109,7 +109,7 @@ export default {
             <div class="step-text">填写新邮箱</div>
           </div>
           <div class="step-line"></div>
-          <div class="step" :class="{ active: form.email && form.code }">
+          <div class="step" :class="{ active: form.new_email && form.code }">
             <div class="step-number">2</div>
             <div class="step-text">验证身份</div>
           </div>
@@ -127,10 +127,10 @@ export default {
           :rules="rules"
           ref="formRef"
         >
-          <el-form-item prop="email" label="新的邮箱地址">
+          <el-form-item prop="new_email" label="新的邮箱地址">
             <div class="input-group">
               <el-input 
-                v-model="form.email" 
+                v-model="form.new_email" 
                 placeholder="请输入新的邮箱地址" 
                 @blur="validateEmail"
                 prefix-icon="el-icon-message"

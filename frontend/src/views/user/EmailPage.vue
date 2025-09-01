@@ -13,7 +13,6 @@ export default {
       form: {
         email: '',
         code: '',
-        password: '',
       },
       rules: {
         email: [

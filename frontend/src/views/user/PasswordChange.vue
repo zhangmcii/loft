@@ -29,7 +29,7 @@ export default {
     }
 
     var validateConfirmPassword = (rule, value, callback) => {
-      if (value !== this.form.newPassword) {
+      if (value !== this.form.new_password) {
         callback(new Error('两次密码不一致'))
       } else {
         callback()
@@ -38,13 +38,13 @@ export default {
 
     return {
       form: {
-        oldPassword: '',
-        newPassword: '',
+        old_password: '',
+        new_password: '',
         confirmNewPassword: ''
       },
       rules: {
-        oldPassword: [{required: true, validator: validateOldPassword, trigger: 'blur' }],
-        newPassword: [{required: true, validator: validateNewPassword, trigger: 'blur' }],
+        old_password: [{required: true, validator: validateOldPassword, trigger: 'blur' }],
+        new_password: [{required: true, validator: validateNewPassword, trigger: 'blur' }],
         confirmNewPassword: [{required: true, validator: validateConfirmPassword, trigger: 'blur' }]
       },
       loading: false,
@@ -110,9 +110,9 @@ export default {
           ref="form"
           label-width="auto"
         >
-          <el-form-item prop="oldPassword" label="当前密码">
+          <el-form-item prop="old_password" label="当前密码">
             <el-input 
-              v-model="form.oldPassword" 
+              v-model="form.old_password" 
               type="password" 
               show-password 
               prefix-icon="el-icon-key"
@@ -124,38 +124,38 @@ export default {
             <span><i class="el-icon-refresh"></i> 设置新密码</span>
           </div>
           
-          <el-form-item prop="newPassword" label="新密码">
+          <el-form-item prop="new_password" label="新密码">
             <el-input 
-              v-model="form.newPassword" 
+              v-model="form.new_password" 
               type="password" 
               show-password 
               prefix-icon="el-icon-lock"
               placeholder="请输入新密码"
             />
-            <div class="password-strength" v-if="form.newPassword">
+            <div class="password-strength" v-if="form.new_password">
               <div class="strength-label">密码强度:</div>
               <div class="strength-meter">
                 <div 
                   class="strength-bar" 
                   :class="[
-                    form.newPassword.length < 6 ? 'weak' : 
-                    form.newPassword.length < 10 ? 'medium' : 'strong'
+                    form.new_password.length < 6 ? 'weak' : 
+                    form.new_password.length < 10 ? 'medium' : 'strong'
                   ]"
                   :style="{
-                    width: `${Math.min(100, form.newPassword.length * 10)}%`
+                    width: `${Math.min(100, form.new_password.length * 10)}%`
                   }"
                 ></div>
               </div>
               <div 
                 class="strength-text"
                 :class="[
-                  form.newPassword.length < 6 ? 'weak-text' : 
-                  form.newPassword.length < 10 ? 'medium-text' : 'strong-text'
+                  form.new_password.length < 6 ? 'weak-text' : 
+                  form.new_password.length < 10 ? 'medium-text' : 'strong-text'
                 ]"
               >
                 {{ 
-                  form.newPassword.length < 6 ? '弱' : 
-                  form.newPassword.length < 10 ? '中' : '强' 
+                  form.new_password.length < 6 ? '弱' : 
+                  form.new_password.length < 10 ? '中' : '强' 
                 }}
               </div>
             </div>

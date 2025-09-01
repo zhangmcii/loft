@@ -1,5 +1,3 @@
-import pytest
-from app.models import User, Post, Comment, Notification, NotificationType
 from base64 import b64encode
 
 

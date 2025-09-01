@@ -1,5 +1,3 @@
-import pytest
-from app.models import User, Role
 from base64 import b64encode
 
 

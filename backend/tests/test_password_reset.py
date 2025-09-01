@@ -23,8 +23,8 @@ class TestPasswordResetCase:
 
         # 修改密码
         r = client.post('/auth/changePassword', headers=auth.get_headers(), json={
-            'oldPassword': 'test',
-            'newPassword': 'new_password'
+            'old_password': 'test',
+            'new_password': 'new_password'
         })
         assert r.status_code == 200
         assert r.json.get('code') == 200

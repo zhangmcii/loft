@@ -108,12 +108,16 @@ def confirm(validated_data):
 def change_email(validated_data):
     email = validated_data.new_email
     code = validated_data.code
-    
+    password = validated_data.password
+
     if User.query.filter_by(email=email).first():
         return error(message='填写的邮箱已经存在')
     if current_user.email == email:
         return error(message='请更换新的邮箱地址')
-    
+
+    # 密码
+    if not current_user.verify_password(password):
+        return error(message='密码错误')
     # 验证码
     if current_user.change_email(email, code):
         db.session.commit()

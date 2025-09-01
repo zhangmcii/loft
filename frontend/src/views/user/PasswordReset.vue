@@ -22,7 +22,7 @@ export default {
       form: {
         email: '',
         code: '',
-        password: ''
+        new_password: ''
       },
       rules: {
         email: [
@@ -34,7 +34,7 @@ export default {
           }
         ],
         code: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
-        password: [{ required: true, validator: validatePass, trigger: 'blur' }]
+        new_password: [{ required: true, validator: validatePass, trigger: 'blur' }]
       },
       isEmailValid: false,
       value: '',
@@ -45,7 +45,7 @@ export default {
   },
   computed: {
     isSubmit() {
-      return !(this.isEmailValid && this.form.code && this.form.password)
+      return !(this.isEmailValid && this.form.code && this.form.new_password)
     }
   },
   methods: {
@@ -111,8 +111,8 @@ export default {
       <el-form-item prop="code" label="验证码">
         <el-input v-model="form.code" style="width: 40%" />
       </el-form-item>
-      <el-form-item prop="password" label="密码">
-        <el-input v-model="form.password" type="password" show-password />
+      <el-form-item prop="new_password" label="密码">
+        <el-input v-model="form.new_password" type="password" show-password />
       </el-form-item>
       <el-form-item>
         <ButtonClick
