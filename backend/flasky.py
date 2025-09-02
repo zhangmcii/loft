@@ -3,11 +3,11 @@ import os
 import logging
 from dotenv import load_dotenv
 from app.utils.common import get_local_ip
-from app.utils.logger import setup_logging
+from app.utils.logger import ensure_basic_logging
 from app.event import *
 
-# 初始化全局日志系统
-setup_logging()
+# 确保基本日志配置
+ensure_basic_logging()
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 logging.info(f"加载环境变量文件: {dotenv_path}")

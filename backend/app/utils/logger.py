@@ -70,7 +70,7 @@ def setup_logging(app=None):
     if not root_logger.handlers:
         root_logger.addHandler(file_handler)
         root_logger.addHandler(console_handler)
-    logging.info("基本日志系统初始化完成")
+        logging.info("基本日志系统初始化完成")
 
     # 如果提供了Flask应用，则配置Flask日志
     if app:
@@ -93,6 +93,13 @@ def setup_logging(app=None):
             logging.info("应用日志系统初始化完成")
 
 
-# 在模块导入时自动进行基本配置，确保在任何地方导入logging都能使用
-# 这样可以保证在应用启动前就能使用日志功能
-setup_logging()
+# 移除模块导入时的自动初始化，改为按需初始化
+# setup_logging() 应该在应用创建时显式调用
+_basic_setup_done = False
+
+def ensure_basic_logging():
+    """确保基本日志配置只执行一次"""
+    global _basic_setup_done
+    if not _basic_setup_done:
+        setup_logging()
+        _basic_setup_done = True

@@ -17,12 +17,12 @@ class ManageSocket:
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls)
-            logging.info("创建WebSocket管理器实例")
         return cls._instance
 
     def __init__(self):
         # 只在首次初始化时设置属性
         if not hasattr(self, 'initialized'):
+            logging.info("创建WebSocket管理器实例")
             logging.info("初始化WebSocket管理器")
             self.user_socket = {}  # { user_id: set(sid_1, sid_2) }
             self.socket_user = {}  # { socket_id: user_id }

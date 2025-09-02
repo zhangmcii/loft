@@ -14,7 +14,7 @@ from .mycelery import celery_init_app
 from .utils.swagger import setup_swagger
 from .utils.logger_compat import logger
 from dotenv import load_dotenv
-from .utils.logger import setup_logging
+from .utils.logger import setup_logging, ensure_basic_logging
 
 
 def my_key_func():
@@ -49,8 +49,9 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    print('app000', app)
-    # 配置日志系统
+    # 确保基本日志配置
+    ensure_basic_logging()
+    # 配置应用日志系统
     setup_logging(app)
     logging.info(f"应用启动，环境: {config_name}")
 
