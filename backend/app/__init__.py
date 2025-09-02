@@ -49,7 +49,6 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    print('app000', app)
     # 配置日志系统
     setup_logging(app)
     logging.info(f"应用启动，环境: {config_name}")

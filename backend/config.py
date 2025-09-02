@@ -5,15 +5,12 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+
     JWT_SECRET_KEY = "super-secret"
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=60 * 20)
 
-    # 日志配置
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
-    LOG_DIR = os.path.join(basedir, 'logs')
-    LOG_NAME = 'flask_app'
-
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    # 邮件配置
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.qq.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in \
@@ -56,7 +53,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     # mysql
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-                              'mysql+pymysql://LAPTOP-R3BSJ27E:1234@' + os.getenv('FLASK_RUN_HOST',
+                              'mysql+pymysql://root:1234@' + os.getenv('FLASK_RUN_HOST',
                                                                                   '127.0.0.1') + ':3306/backend_flask?charset=utf8mb4'
     # redis  格式：redis://:<password>@<host>:<port>/<db>
     REDIS_URL = os.environ.get('DEV_REDIS_URL') or "redis://:1234@" + os.getenv('FLASK_RUN_HOST',

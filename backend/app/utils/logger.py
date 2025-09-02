@@ -66,12 +66,6 @@ def setup_logging(app=None):
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)
 
-    # 只在没有处理器时添加，避免重复添加
-    if not root_logger.handlers:
-        root_logger.addHandler(file_handler)
-        root_logger.addHandler(console_handler)
-    logging.info("基本日志系统初始化完成")
-
     # 如果提供了Flask应用，则配置Flask日志
     if app:
         # 移除原有处理器
@@ -90,9 +84,8 @@ def setup_logging(app=None):
             root_logger.addHandler(mail_handler)
 
             logging.info(f"已配置邮件处理器")
-            logging.info("应用日志系统初始化完成")
-
-
-# 在模块导入时自动进行基本配置，确保在任何地方导入logging都能使用
-# 这样可以保证在应用启动前就能使用日志功能
-setup_logging()
+        logging.info("flask应用日志系统初始化完成")
+    else:
+        root_logger.addHandler(file_handler)
+        root_logger.addHandler(console_handler)
+        logging.info("基本日志系统初始化完成")
