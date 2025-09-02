@@ -5,7 +5,7 @@ function front_to_remote(){
     win_path="/e/project/vue-proj/responsive_new"
     m_path="/Users/nizhenshi/Documents/proj/lof/frontend"
 
-    intel_path="/Users/v/Documents/proj_1/Loft/frontend"
+    intel_path="/Users/v/Documents/proj_1/loft_1/frontend"
 
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
         # MSYS或Cygwin环境通常在Windows上运行

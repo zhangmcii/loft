@@ -815,3 +815,14 @@ findScroller(document.body);
  <el-backtop target=".scrollbar-container" :right="20" :bottom="100" />
 ~~~
 参考：https://juejin.cn/post/7272283132664365112?searchId=202508152049008F48141D136848CE3AD0
+
+
+# 后端docker容器日志挂在到宿主机目录
+```
+mkdir -p /var/log/loft
+chmod 777 /var/log/loft
+docker run -v /var/log/loft:/home/flasky/logs
+```
+注意：不要直接挂载到宿主机的/root目录下
+把目录挂载到了 /home/flasky/logs，但宿主机目录是在 /root/...，root 用户才能写，而容器里的进程不一定是 root。
+

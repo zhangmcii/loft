@@ -39,7 +39,7 @@ def setup_logging(app=None):
     root_logger = logging.getLogger()
 
     # 设置日志级别
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(logging.INFO)
 
     # 创建日志目录
     log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs'))
@@ -53,11 +53,11 @@ def setup_logging(app=None):
     file_handler = logging.handlers.TimedRotatingFileHandler(
         log_file, when='midnight', interval=1, backupCount=30, encoding='utf-8'
     )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
 
     # 创建控制台处理器
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO)
 
     # 创建格式化器
     formatter = logging.Formatter(
