@@ -10,12 +10,13 @@ from sqlalchemy import and_
 from ..utils.response import success, bad_request
 from .. import logger
 from qiniu import Auth, BucketManager, build_batch_delete
+from ..utils.common import get_avatars_url
 
 # 日志
 log = logger.get_logger()
 
 # 初始化Auth状态
-q = Auth(os.getenv("QINIU_ACCESS_KEY",'fdfddgfg'), os.getenv("QINIU_SECRET_KEY", 'dfdffgfgfg'))
+q = Auth(os.getenv("QINIU_ACCESS_KEY", 'fdfddgfg'), os.getenv("QINIU_SECRET_KEY", 'dfdffgfgfg'))
 # 初始化BucketManager
 bucket = BucketManager(q)
 
@@ -80,19 +81,10 @@ def del_qiniu_image(keys, bucket_name=os.getenv("QINIU_BUCKET_NAME")):
     bucket.batch(ops)
 
 
-@api.route("/dir_name")
-def query_qiniu_key():
-    """查询七牛云某个bucket指定目录的所有文件名"""
-    log.info("查询七牛云目录文件")
-    # 前缀
-    prefix = request.args.get("prefix", "userBackground/static")
-    current_page = int(request.args.get("currentPage", 1))
-    page_size = int(request.args.get("pageSize", 6))
-    complete_url = bool(int(request.args.get("completeUrl", True)))
+def dir_file_name(prefix="userBackground/static", current_page=1, page_size=6, complete_url=True, bucket_name=os.getenv("QINIU_BUCKET_NAME")):
     # 列举条目
     limit = 50
-    # bucket名字
-    bucket_name = request.args.get("bucket", os.getenv("QINIU_BUCKET_NAME"))
+
     # 列举出除'/'的所有文件以及以'/'为分隔的所有前缀
     delimiter = None
     # 标记
@@ -103,15 +95,23 @@ def query_qiniu_key():
 
     start = (current_page - 1) * page_size
     end = start + page_size
-    # 第一个元素丢弃
-    from ..utils.common import get_avatars_url
-    return success(
-        data=[
-            get_avatars_url(item.get("key")) if complete_url else item.get("key")
-            for item in item_list[start + 1 : end + 1]
-        ],
-        total=len(item_list) - 1,
-    )
+    return [get_avatars_url(item.get("key")) if complete_url else item.get("key") for item in
+            item_list[start + 1: end + 1]], len(item_list) - 1
+
+
+@api.route("/dir_name")
+def query_qiniu_key():
+    """查询七牛云某个bucket指定目录的所有文件名"""
+    log.info("查询七牛云目录文件")
+    # 前缀
+    prefix = request.args.get("prefix", "userBackground/static")
+    current_page = int(request.args.get("currentPage", 1))
+    page_size = int(request.args.get("pageSize", 6))
+    complete_url = bool(int(request.args.get("completeUrl", True)))
+    # bucket名字
+    bucket_name = request.args.get("bucket", os.getenv("QINIU_BUCKET_NAME"))
+    data, total = dir_file_name(prefix, current_page, page_size, complete_url, bucket_name)
+    return success(data=data, total=total)
 
 
 @api.route("/user/<int:user_id>/interest_images", methods=["POST"])

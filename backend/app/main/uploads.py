@@ -9,6 +9,7 @@ from flask import request
 from sqlalchemy import and_
 from ..utils.response import success, bad_request
 from .. import logger
+from ..api.upload import dir_file_name
 from qiniu import Auth, BucketManager, build_batch_delete
 
 # 日志
@@ -90,29 +91,10 @@ def query_qiniu_key():
     current_page = int(request.args.get("currentPage", 1))
     page_size = int(request.args.get("pageSize", 6))
     complete_url = bool(int(request.args.get("completeUrl", True)))
-    # 列举条目
-    limit = 50
     # bucket名字
     bucket_name = request.args.get("bucket", os.getenv("QINIU_BUCKET_NAME"))
-    # 列举出除'/'的所有文件以及以'/'为分隔的所有前缀
-    delimiter = None
-    # 标记
-    marker = None
-    ret, eof, info = bucket.list(bucket_name, prefix, marker, limit, delimiter)
-    j = json.loads(info.text_body)
-    item_list = j.get("items")
-
-    start = (current_page - 1) * page_size
-    end = start + page_size
-    # 第一个元素丢弃
-    from ..utils.common import get_avatars_url
-    return success(
-        data=[
-            get_avatars_url(item.get("key")) if complete_url else item.get("key")
-            for item in item_list[start + 1 : end + 1]
-        ],
-        total=len(item_list) - 1,
-    )
+    data, total = dir_file_name(prefix, current_page, page_size, complete_url, bucket_name)
+    return success(data=data, total=total)
 
 
 @main.route("/user/<int:user_id>/interest_images", methods=["POST"])

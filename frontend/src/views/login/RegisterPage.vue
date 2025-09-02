@@ -135,13 +135,11 @@ export default {
       const valid = await this.validateForm()
       if (valid) {
         this.loading = true
-        const image = await imageCfg.random()
         authApi
           .register({
             email: this.ruleForm.email,
             username: this.ruleForm.user,
             password: this.ruleForm.password,
-            image: image
           })
           .then((res) => {
             this.loading = false

@@ -1,3 +1,5 @@
+import random
+import logging
 from flask import request
 from flask_jwt_extended import create_access_token, jwt_required, current_user
 from ..decorators import admin_required
@@ -8,6 +10,7 @@ from ..mycelery.tasks import send_email
 from ..utils.time_util import DateUtils
 from ..utils.response import success, error
 from ..utils.validation import validate_json
+from ..api.upload import dir_file_name
 from ..schemas import (
     RegisterRequest,
     ChangePasswordRequest,
@@ -36,6 +39,9 @@ def login():
         return success(data=user.to_json(), token='Bearer ' + token)
     return error(code=400, message='账号或密码错误')
 
+def get_random_user_avatars():
+    avatars, total = dir_file_name('userAvatars/',1, 10,  False)
+    return avatars[random.randint(0, total-1)]
 
 @auth.route('/register', methods=['POST'])
 @validate_json(RegisterRequest)
@@ -52,11 +58,13 @@ def register(validated_data):
             return error(message='该邮箱已被注册，请换一个')
     
     email = validated_data.email if validated_data.email else None
+    random_image = get_random_user_avatars()
+    logging.info(f'随机图像为：{random_image}')
     user = User(
         email=email, 
         username=validated_data.username, 
         password=validated_data.password, 
-        image=getattr(validated_data, 'image', '')
+        image=random_image
     )
     db.session.add(user)
     db.session.commit()
