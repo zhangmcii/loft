@@ -15,7 +15,7 @@ def send_email(to, subject, template, **kwargs):
     app = current_app._get_current_object()
     try:
         message = Message(subject=subject, recipients=[to])
-        message.html = render_template('email_temp.html', **kwargs)
+        message.html = render_template('code_email.html', **kwargs)
         t_mail = Thread(target=send_t, args=(app, message,), kwargs={})
         t_mail.start()
         return jsonify(data='', msg='success')

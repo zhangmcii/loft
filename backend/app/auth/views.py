@@ -85,7 +85,7 @@ def apply_code():
             return error(code=400, message='您输入的邮箱未绑定过账号')
         username = user.nickname if user.nickname else user.username
     # celery发送邮件
-    send_email.delay(email, 'Confirm Your Account', username=username, code=code, year=DateUtils.get_year())
+    send_email.delay(email, 'Confirm Your Account','code_email.html', username=username, code=code, year=DateUtils.get_year())
     return success()
 
 
