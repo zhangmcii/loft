@@ -35,7 +35,7 @@ def handle_disconnect():
 def handle_heartbeat():
     user_id = verify_token_in_websocket()
     status_manager.update_last_active(user_id)
-    logging.debug(f"用户 {user_id} 发送心跳包")
+    logging.info(f"用户 {user_id} 发送心跳包")
 
 
 @socketio.on('enter_chat')
@@ -58,7 +58,7 @@ def handle_enter_chat(data):
             Message.is_read == False
         ).update({'is_read': True}, synchronize_session='fetch')
         
-        logging.debug(f"已将 {updated_messages} 条消息标记为已读")
+        logging.info(f"已将 {updated_messages} 条消息标记为已读")
         
         # 标记通知为已读
         updated_notifications = Notification.query.filter_by(
@@ -68,7 +68,7 @@ def handle_enter_chat(data):
             is_read=False
         ).update({'is_read': True})
         
-        logging.debug(f"已将 {updated_notifications} 条通知标记为已读")
+        logging.info(f"已将 {updated_notifications} 条通知标记为已读")
         
         db.session.commit()
     except Exception as e:
@@ -90,7 +90,7 @@ def handle_send_message(data):
     
     try:
         receiver_status = status_manager.get_user_status(receiver_id)
-        logging.debug(f"接收者 {receiver_id} 状态: {receiver_status}")
+        logging.info(f"接收者 {receiver_id} 状态: {receiver_status}")
         
         if receiver_status and receiver_status.get('active_chat') == str(sender_id):
             logging.info(f"用户 {receiver_id} 当前正在与发送者 {sender_id} 聊天")
@@ -110,7 +110,7 @@ def handle_send_message(data):
                 
         db.session.commit()
         socketio.emit('message_sent', msg.to_json(), room=request.sid)
-        logging.debug(f"消息 ID:{msg.id} 发送成功")
+        logging.info(f"消息 ID:{msg.id} 发送成功")
     except Exception as e:
         db.session.rollback()
         logging.error(f"消息发送失败: {str(e)}", exc_info=True)
@@ -128,7 +128,7 @@ def verify_token_in_websocket():
         # 手动解码 Token
         decoded_token = decode_token(raw_token)
         user_id = decoded_token["sub"]
-        logging.debug(f"WebSocket连接token验证成功，用户ID: {user_id}")
+        logging.info(f"WebSocket连接token验证成功，用户ID: {user_id}")
     except Exception as e:
         logging.error(f"WebSocket身份验证失败: {str(e)}", exc_info=True)
         raise ConnectionRefusedError("WebSocket身份验证失败，token解析错误")

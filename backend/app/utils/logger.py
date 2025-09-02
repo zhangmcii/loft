@@ -4,6 +4,7 @@
 import os
 import logging
 import logging.handlers
+from logging.handlers import SMTPHandler
 from datetime import datetime
 
 def setup_logging(app=None):
@@ -13,12 +14,8 @@ def setup_logging(app=None):
     Args:
         app: Flask应用实例，可选
     """
-    # 获取根记录器
+     # 获取根记录器
     root_logger = logging.getLogger()
-    
-    # 如果已经配置过处理器，则不重复配置
-    if root_logger.handlers:
-        return
     
     # 设置日志级别
     root_logger.setLevel(logging.DEBUG)
@@ -45,28 +42,43 @@ def setup_logging(app=None):
     formatter = logging.Formatter(
         '%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] - %(message)s'
     )
-    
-    # 设置格式化器
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)
+
+    # 只在没有处理器时添加，避免重复添加
+    if not root_logger.handlers:
+        root_logger.addHandler(file_handler)
+        root_logger.addHandler(console_handler)
+    logging.info("基本日志系统初始化完成")
     
-    # 添加处理器到根记录器
-    root_logger.addHandler(file_handler)
-    root_logger.addHandler(console_handler)
-    
+
     # 如果提供了Flask应用，则配置Flask日志
     if app:
-        # 将Flask的日志处理器替换为我们的处理器
-        for handler in app.logger.handlers:
+        # 移除原有处理器
+        for handler in list(app.logger.handlers):
             app.logger.removeHandler(handler)
-        
-        # 设置Flask日志级别
-        app.logger.setLevel(logging.DEBUG)
-        
-        # 将Flask日志传递给父记录器
+        # 添加新的处理器
+        app.logger.addHandler(file_handler)
+        app.logger.addHandler(console_handler)
+        app.logger.setLevel(logging.INFO)
         app.logger.propagate = True
-        
-    logging.info("日志系统初始化完成")
+
+        # 邮件处理器
+        if not app.debug:
+            mail_handler = SMTPHandler(
+                mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+                fromaddr=app.config['MAIL_DEFAULT_SENDER'],
+                toaddrs=['1912592745@qq.com'],
+                subject='Flask App Error',
+                credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD']),
+                secure=() if app.config.get("MAIL_USE_TLS") else None
+            )
+            mail_handler.setLevel(logging.ERROR)
+            mail_handler.setFormatter(formatter)
+            root_logger.addHandler(mail_handler)
+            logging.info(f"已配置邮件处理器")
+            logging.info("应用日志系统初始化完成")
+
 
 # 在模块导入时自动进行基本配置，确保在任何地方导入logging都能使用
 # 这样可以保证在应用启动前就能使用日志功能

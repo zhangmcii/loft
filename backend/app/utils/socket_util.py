@@ -45,15 +45,15 @@ class ManageSocket:
                     old_user = self.socket_user[sid]
                     if old_user in self.user_socket:
                         self.user_socket[old_user].discard(sid)
-                        logging.debug(f"移除旧映射: 用户 {old_user} 的连接 {sid}")
+                        logging.info(f"移除旧映射: 用户 {old_user} 的连接 {sid}")
                         if not self.user_socket[old_user]:
                             del self.user_socket[old_user]
-                            logging.debug(f"用户 {old_user} 没有活跃连接，移除记录")
+                            logging.info(f"用户 {old_user} 没有活跃连接，移除记录")
                 
                 # 添加新映射
                 if user_id not in self.user_socket:
                     self.user_socket[user_id] = set()
-                    logging.debug(f"为用户 {user_id} 创建新的连接集合")
+                    logging.info(f"为用户 {user_id} 创建新的连接集合")
                 
                 self.user_socket[user_id].add(sid)
                 self.socket_user[sid] = user_id
@@ -75,7 +75,7 @@ class ManageSocket:
             try:
                 # 返回副本避免线程安全问题
                 sockets = self.user_socket.get(user_id, set()).copy()
-                logging.debug(f"获取用户 {user_id} 的连接，共 {len(sockets)} 个")
+                logging.info(f"获取用户 {user_id} 的连接，共 {len(sockets)} 个")
                 return sockets
             except Exception as e:
                 logging.error(f"获取用户连接时出错: {str(e)}", exc_info=True)
@@ -94,7 +94,7 @@ class ManageSocket:
                     user_id = self.socket_user[sid]
                     if user_id in self.user_socket:
                         self.user_socket[user_id].discard(sid)
-                        logging.debug(f"移除用户 {user_id} 的连接 {sid}")
+                        logging.info(f"移除用户 {user_id} 的连接 {sid}")
                         if not self.user_socket[user_id]:
                             del self.user_socket[user_id]
                             logging.info(f"用户 {user_id} 已断开所有连接")
@@ -114,7 +114,7 @@ class ManageSocket:
         """
         with self.lock:
             count = len(self.user_socket)
-            logging.debug(f"当前在线用户数: {count}")
+            logging.info(f"当前在线用户数: {count}")
             return count
     
     def cleanup_stale_connections(self):

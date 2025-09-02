@@ -49,7 +49,7 @@ class LogApi(DecoratedMethodView):
             page=page, per_page=per_page, error_out=False
         )
         logs = paginate.items
-        logging.debug(f"获取到 {len(logs)} 条日志记录")
+        logging.info(f"获取到 {len(logs)} 条日志记录")
         return success(data=[log.to_json() for log in logs], extra={"total": query.count()})
 
     def post(self):
@@ -72,6 +72,6 @@ class LogApi(DecoratedMethodView):
 
 
 def register_log_api(bp, *, logs_url):
-    logging.debug(f"注册日志API: {logs_url}")
+    logging.info(f"注册日志API: {logs_url}")
     _log = LogApi.as_view('logs')
     bp.add_url_rule(logs_url, view_func=_log)

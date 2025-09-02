@@ -14,6 +14,8 @@ from .mycelery import celery_init_app
 from .utils.swagger import setup_swagger
 from .utils.logger_compat import logger
 from dotenv import load_dotenv
+from .utils.logger import setup_logging
+
 
 def my_key_func():
     """根据当前用户id限速"""
@@ -47,10 +49,10 @@ def create_app(config_name):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
+    print('app000', app)
     # 配置日志系统
-    # from .utils.logger import setup_logging
-    # setup_logging(app)
-    # logging.info(f"应用启动，环境: {config_name}")
+    setup_logging(app)
+    logging.info(f"应用启动，环境: {config_name}")
 
     host = os.getenv('REDIS_HOST') or os.getenv('FLASK_RUN_HOST')
     app.config.from_mapping(
