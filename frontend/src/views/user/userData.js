@@ -50,7 +50,17 @@ export default {
           movies: []
         },
         social_account: {},
-        tags: []
+        tags: [],
+        // 新增数据字段
+        badges: [],
+        interests: [],
+        recentActivities: [],
+        posts_count: 0,
+        likes_count: 0,
+        profile_views: 0,
+        total_likes: 0,
+        active_days: 0,
+        interaction_rate: '0%'
       },
       userName: '',
       posts: [{}],
@@ -233,6 +243,34 @@ export default {
         
         this.user = userData;
         
+        // 添加模拟的扩展数据（实际项目中应从API获取）
+        if (!this.user.badges) {
+          this.user.badges = [
+            { id: 1, icon: '🏆', name: '活跃用户', description: '连续登录30天' },
+            { id: 2, icon: '⭐', name: '优质内容', description: '获得100个赞' }
+          ]
+        }
+        
+        if (!this.user.interests) {
+          this.user.interests = ['摄影', '旅行', '美食', '读书', '电影']
+        }
+        
+        if (!this.user.recentActivities) {
+          this.user.recentActivities = [
+            { id: 1, time: new Date(Date.now() - 3600000), content: '发布了新动态' },
+            { id: 2, time: new Date(Date.now() - 7200000), content: '点赞了一篇文章' },
+            { id: 3, time: new Date(Date.now() - 86400000), content: '关注了新用户' }
+          ]
+        }
+        
+        // 更新统计数据
+        this.user.posts_count = this.user.posts_count || Math.floor(Math.random() * 100)
+        this.user.likes_count = this.user.likes_count || Math.floor(Math.random() * 500)
+        this.user.profile_views = this.user.profile_views || Math.floor(Math.random() * 1000)
+        this.user.total_likes = this.user.total_likes || Math.floor(Math.random() * 2000)
+        this.user.active_days = this.user.active_days || Math.floor(Math.random() * 365)
+        this.user.interaction_rate = this.user.interaction_rate || `${Math.floor(Math.random() * 100)}%`
+        
         // 更新对应的存储
         if (isViewingSelf) {
           this.currentUser.setUserInfo(userData)
@@ -363,6 +401,9 @@ export default {
         return
       }
       this.$router.push('/chat')
+    },
+    formatTime(time) {
+      return dayjs(time).format('MM-DD HH:mm')
     }
   }
 }

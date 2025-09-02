@@ -126,6 +126,18 @@
                           @click="followedDetail"
                         />
                       </el-col>
+                      <el-col :span="6">
+                        <el-statistic
+                          title="动态"
+                          :value="user.posts_count || 0"
+                        />
+                      </el-col>
+                      <el-col :span="6">
+                        <el-statistic
+                          title="获赞"
+                          :value="user.likes_count || 0"
+                        />
+                      </el-col>
                     </el-row>
                   </template>
                 </el-skeleton>
@@ -140,6 +152,82 @@
             </el-col>
           </el-row>
         </div>
+
+        <!-- 新增功能区域 -->
+        <div class="enhanced-sections">
+          <!-- 徽章成就区域 -->
+          <el-card class="badges-section glass" v-if="user.badges && user.badges.length > 0">
+            <div class="card-title">
+              <span>徽章成就</span>
+            </div>
+            <div class="badges-grid">
+              <div class="badge-item" v-for="badge in user.badges" :key="badge.id">
+                <div class="badge-icon">{{ badge.icon }}</div>
+                <div class="badge-info">
+                  <span class="badge-name">{{ badge.name }}</span>
+                  <span class="badge-desc">{{ badge.description }}</span>
+                </div>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 兴趣标签区域 -->
+          <el-card class="interests-section glass" v-if="user.interests && user.interests.length > 0">
+            <div class="card-title">
+              <span>我的标签</span>
+            </div>
+            <div class="interests-tags">
+              <el-tag 
+                class="interest-tag" 
+                v-for="tag in user.interests" 
+                :key="tag"
+                size="small"
+                round
+              >
+                {{ tag }}
+              </el-tag>
+            </div>
+          </el-card>
+
+          <!-- 最近动态预览 -->
+          <el-card class="activities-section glass" v-if="user.recentActivities && user.recentActivities.length > 0">
+            <div class="card-title">
+              <span>最近动态</span>
+            </div>
+            <div class="activities-list">
+              <div class="activity-item" v-for="activity in user.recentActivities.slice(0, 3)" :key="activity.id">
+                <div class="activity-time">{{ formatTime(activity.time) }}</div>
+                <div class="activity-content">{{ activity.content }}</div>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- 数据统计区域 -->
+          <el-card class="statistics-section glass">
+            <div class="card-title">
+              <span>数据统计</span>
+            </div>
+            <div class="stats-grid">
+              <div class="stats-item">
+                <div class="stats-value">{{ user.profile_views || 0 }}</div>
+                <div class="stats-label">主页访问</div>
+              </div>
+              <div class="stats-item">
+                <div class="stats-value">{{ user.total_likes || 0 }}</div>
+                <div class="stats-label">总获赞数</div>
+              </div>
+              <div class="stats-item">
+                <div class="stats-value">{{ user.active_days || 0 }}</div>
+                <div class="stats-label">活跃天数</div>
+              </div>
+              <div class="stats-item">
+                <div class="stats-value">{{ user.interaction_rate || '0%' }}</div>
+                <div class="stats-label">互动率</div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+
         <ButtonAnimate
           content="喜欢的电影"
           :isActive="activeInterest === 'movie'"
@@ -480,6 +568,180 @@
   .follow {
     width: 100%;
     height: 40px;
+  }
+}
+
+// 新增功能区域样式
+.enhanced-sections {
+  width: 90%;
+  margin: 0 auto;
+  
+  .el-card {
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// 徽章成就样式
+.badges-section {
+  .badges-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    .badge-item {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 6px 10px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+      }
+      
+      .badge-icon {
+        font-size: 16px;
+        margin-right: 6px;
+      }
+      
+      .badge-info {
+        display: flex;
+        flex-direction: column;
+        
+        .badge-name {
+          font-size: 12px;
+          font-weight: 500;
+          color: #fff;
+        }
+        
+        .badge-desc {
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+  }
+}
+
+// 兴趣标签样式
+.interests-section {
+  .interests-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    
+    .interest-tag {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// 最近动态样式
+.activities-section {
+  .activities-list {
+    .activity-item {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .activity-time {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 4px;
+      }
+      
+      .activity-content {
+        font-size: 12px;
+        color: #fff;
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// 数据统计样式
+.statistics-section {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    
+    .stats-item {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      
+      .stats-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 2px;
+      }
+      
+      .stats-label {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+}
+
+// 响应式布局优化
+@media (min-width: 768px) {
+  .enhanced-sections {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    width: 95%;
+    
+    .badges-section,
+    .interests-section {
+      grid-column: span 1;
+    }
+    
+    .activities-section,
+    .statistics-section {
+      grid-column: span 1;
+    }
+  }
+  
+  .statistics-section .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .user-info-container {
+    width: 95%;
+  }
+  
+  .enhanced-sections {
+    width: 95%;
   }
 }
 </style>
