@@ -21,10 +21,10 @@
         <div class="publish-header">
           <h3>选择发布类型</h3>
         </div>
-        
+
         <div class="publish-types">
-          <div 
-            class="publish-type-item" 
+          <div
+            class="publish-type-item"
             :class="{ active: activeType === 'text' }"
             @click="selectPublishType('text')"
           >
@@ -32,9 +32,9 @@
             <span>说说</span>
             <div class="type-desc">发布简短的文字内容</div>
           </div>
-          
-          <div 
-            class="publish-type-item" 
+
+          <div
+            class="publish-type-item"
             :class="{ active: activeType === 'image' }"
             @click="selectPublishType('image')"
           >
@@ -42,9 +42,9 @@
             <span>图文</span>
             <div class="type-desc">发布图片和文字内容</div>
           </div>
-          
-          <div 
-            class="publish-type-item" 
+
+          <div
+            class="publish-type-item"
             :class="{ active: activeType === 'markdown' }"
             @click="selectPublishType('markdown')"
           >
@@ -105,14 +105,17 @@
 
           <!-- Markdown发布 -->
           <div v-if="activeType === 'markdown'" class="markdown-publish">
-            <MarkdownEditor ref="md" @contentChange="(n) => (markdownContent = n)" />
+            <MarkdownEditor
+              ref="md"
+              @contentChange="(n) => (markdownContent = n)"
+            />
           </div>
         </div>
 
         <div class="publish-actions">
           <el-button @click="showPublishPanel = false">取消</el-button>
-          <el-button 
-            type="primary" 
+          <el-button
+            type="primary"
             :loading="publishing"
             :disabled="!canPublish"
             @click="publishContent"
@@ -126,164 +129,177 @@
 </template>
 
 <script>
-import Emoji from '@/utils/components/Emoji.vue'
-import MarkdownEditor from '@/utils/components/MarkdownEditor.vue'
-import postApi from '@/api/posts/postApi.js'
-import uploadApi from '@/api/upload/uploadApi.js'
-import { useCurrentUserStore } from '@/stores/user'
-import emitter from '@/utils/emitter.js'
-import { compressImages, uploadFiles, beforePicUpload } from '@/utils/common.js'
+import Emoji from "@/utils/components/Emoji.vue";
+import MarkdownEditor from "@/utils/components/MarkdownEditor.vue";
+import postApi from "@/api/posts/postApi.js";
+import uploadApi from "@/api/upload/uploadApi.js";
+import { useCurrentUserStore } from "@/stores/user";
+import emitter from "@/utils/emitter.js";
+import {
+  compressImages,
+  uploadFiles,
+  beforePicUpload,
+} from "@/utils/common.js";
 
 export default {
-  name: 'PublishEntry',
+  name: "PublishEntry",
   components: {
     Emoji,
-    MarkdownEditor
+    MarkdownEditor,
   },
-  emits: ['newPost', 'loadingBegin'],
+  emits: ["newPost", "loadingBegin"],
   data() {
     return {
       showPublishPanel: false,
-      activeType: 'text',
+      activeType: "text",
       publishing: false,
-      
+
       // 说说内容
-      textContent: '',
-      
+      textContent: "",
+
       // 图文内容
-      imageContent: '',
+      imageContent: "",
       imageFiles: [],
       compressedImages: [],
       previewVisible: false,
-      previewUrl: '',
-      
+      previewUrl: "",
+
       // Markdown内容
       markdownContent: {
-        body: '',
-        bodyHtml: '',
+        body: "",
+        bodyHtml: "",
         images: [],
-        type: 'markdown'
-      }
-    }
+        type: "markdown",
+      },
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const currentUser = useCurrentUserStore();
+    return { currentUser };
   },
   computed: {
     canPublish() {
       switch (this.activeType) {
-        case 'text':
-          return this.textContent.trim() !== ''
-        case 'image':
-          return this.imageContent.trim() !== '' && this.imageFiles.length > 0
-        case 'markdown':
-          return this.markdownContent.body.trim() !== ''
+        case "text":
+          return this.textContent.trim() !== "";
+        case "image":
+          return this.imageContent.trim() !== "" && this.imageFiles.length > 0;
+        case "markdown":
+          return this.markdownContent.body.trim() !== "";
         default:
-          return false
+          return false;
       }
-    }
+    },
   },
   methods: {
     selectPublishType(type) {
-      this.activeType = type
+      this.activeType = type;
     },
-    
+
     insertEmoji(name) {
-      this.textContent += name
+      this.textContent += name;
     },
-    
+
     handlePictureCardPreview(file) {
-      this.previewUrl = file.url
-      this.previewVisible = true
+      this.previewUrl = file.url;
+      this.previewVisible = true;
     },
-    
+
     async publishContent() {
-      this.publishing = true
-      this.$emit('loadingBegin', true)
-      
+      this.publishing = true;
+      this.$emit("loadingBegin", true);
+
       try {
-        let result
-        
+        let result;
+
         switch (this.activeType) {
-          case 'text':
-            result = await this.publishText()
-            break
-          case 'image':
-            result = await this.publishImage()
-            break
-          case 'markdown':
-            result = await this.publishMarkdown()
-            break
+          case "text":
+            result = await this.publishText();
+            break;
+          case "image":
+            result = await this.publishImage();
+            break;
+          case "markdown":
+            result = await this.publishMarkdown();
+            break;
         }
-        
+
         if (result && result.code === 200) {
-          this.$message.success('发布成功!')
-          this.resetForm()
-          this.showPublishPanel = false
-          this.$emit('newPost', result.data)
+          this.$message.success("发布成功!");
+          this.resetForm();
+          this.showPublishPanel = false;
+          this.$emit("newPost", result.data);
         } else {
-          this.$message.error('发布失败!')
+          this.$message.error("发布失败!");
         }
       } catch (error) {
-        console.error('发布失败:', error)
-        this.$message.error('发布失败: ' + (error.message || '未知错误'))
+        console.error("发布失败:", error);
+        this.$message.error("发布失败: " + (error.message || "未知错误"));
       } finally {
-        this.publishing = false
-        this.$emit('loadingBegin', false)
+        this.publishing = false;
+        this.$emit("loadingBegin", false);
       }
     },
-    
+
     async publishText() {
       // 替换换行符为 <br>
-      const formattedContent = this.textContent.replace(/\n/g, '<br>')
-      return await postApi.publish_post({ body: formattedContent, bodyHtml: null, images: [], type: 'text' })
+      const formattedContent = this.textContent.replace(/\n/g, "<br>");
+      return await postApi.publish_post({
+        body: formattedContent,
+        bodyHtml: null,
+        images: [],
+        type: "text",
+      });
     },
-    
+
     async publishImage() {
       if (!beforePicUpload(this.imageFiles)) {
-        throw new Error('图片格式或大小不符合要求')
+        throw new Error("图片格式或大小不符合要求");
       }
-      
+
       // 压缩图像
-      this.compressedImages = await compressImages(this.imageFiles, [])
-      
+      this.compressedImages = await compressImages(this.imageFiles, []);
+
       // 获取上传凭证
-      const uploadToken = await this.getUploadToken()
-      
+      const uploadToken = await this.getUploadToken();
+
       // 上传图片
       const { imageKey } = await uploadFiles(
         this.compressedImages,
         this.currentUser.uploadArticlesBaseUrl,
         uploadToken
-      )
-      
-      const formattedContent = this.imageContent.replace(/\n/g, '<br>')
-      return await postApi.publish_post({ body: formattedContent, images: imageKey, type: 'image' })
+      );
+
+      const formattedContent = this.imageContent.replace(/\n/g, "<br>");
+      return await postApi.publish_post({
+        body: formattedContent,
+        images: imageKey,
+        type: "image",
+      });
     },
-    
+
     async publishMarkdown() {
-      const images = await this.$refs.md.uploadPhotos()
-      this.markdownContent.images = images
-      return await postApi.publish_post(this.markdownContent)
+      const images = await this.$refs.md.uploadPhotos();
+      this.markdownContent.images = images;
+      return await postApi.publish_post(this.markdownContent);
     },
-    
+
     async getUploadToken() {
-      const response = await uploadApi.get_upload_token()
-      return response.data.upload_token
+      const response = await uploadApi.get_upload_token();
+      return response.data.upload_token;
     },
-    
+
     resetForm() {
-      this.textContent = ''
-      this.imageContent = ''
-      this.imageFiles = []
-      this.compressedImages = []
+      this.textContent = "";
+      this.imageContent = "";
+      this.imageFiles = [];
+      this.compressedImages = [];
       if (this.$refs.md) {
-        this.$refs.md.clean()
+        this.$refs.md.clean();
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -296,11 +312,11 @@ export default {
   right: 20px;
   bottom: 80px;
   z-index: 999;
-  
+
   .el-button {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     &:hover {
       transform: scale(1.1) rotate(15deg);
     }
@@ -314,11 +330,11 @@ export default {
 
 .publish-options {
   padding: 0 20px 20px;
-  
+
   .publish-header {
     margin-bottom: 20px;
     text-align: center;
-    
+
     h3 {
       font-size: 18px;
       font-weight: 500;
@@ -331,7 +347,7 @@ export default {
   display: flex;
   justify-content: space-around;
   margin-bottom: 24px;
-  
+
   .publish-type-item {
     display: flex;
     flex-direction: column;
@@ -341,31 +357,31 @@ export default {
     cursor: pointer;
     transition: all 0.3s ease;
     width: 30%;
-    
+
     &:hover {
       background-color: #f5f7fa;
     }
-    
+
     &.active {
       background-color: #ecf5ff;
       border: 1px solid #d9ecff;
-      
+
       .publish-icon {
         color: #409eff;
       }
     }
-    
+
     .publish-icon {
       font-size: 24px;
       margin-bottom: 8px;
     }
-    
+
     span {
       font-size: 16px;
       font-weight: 500;
       margin-bottom: 4px;
     }
-    
+
     .type-desc {
       font-size: 12px;
       color: #909399;
@@ -377,22 +393,24 @@ export default {
 .publish-content {
   margin-bottom: 24px;
   min-height: 200px;
-  
-  .text-publish, .image-publish, .markdown-publish {
+
+  .text-publish,
+  .image-publish,
+  .markdown-publish {
     animation: fadeIn 0.3s ease;
   }
-  
+
   .emoji-container {
     margin-top: 8px;
   }
-  
+
   .note {
     margin-top: 8px;
     color: #909399;
   }
 }
 
-.image-text{
+.image-text {
   margin-bottom: 5px;
 }
 .publish-actions {

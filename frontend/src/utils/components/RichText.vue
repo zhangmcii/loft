@@ -1,13 +1,13 @@
 <script>
-import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
+import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 export default {
   props: {
     bodyInit: {
-      default: null
+      default: null,
     },
     bodyHtmlInit: {
-      default: null
-    }
+      default: null,
+    },
   },
   components: { Editor, Toolbar },
   data() {
@@ -16,36 +16,44 @@ export default {
       body: null,
       bodyHtml: null,
       toolbarConfig: {},
-      editorConfig: { placeholder: '书写片段,温润流年。' },
-      mode: 'default'
-    }
+      editorConfig: { placeholder: "书写片段,温润流年。" },
+      mode: "default",
+    };
   },
   mounted() {
-    this.toolbarConfig.excludeKeys = ['group-image', 'group-video','insertTable','fullScreen']
+    this.toolbarConfig.excludeKeys = [
+      "group-image",
+      "group-video",
+      "insertTable",
+      "fullScreen",
+    ];
   },
   methods: {
     onCreated(editor) {
-      this.editor = Object.seal(editor)
-      if (this.bodyInit) this.editor.insertText(this.bodyInit)
-      if (this.bodyHtmlInit) this.editor.setHtml(this.bodyHtmlInit)
+      this.editor = Object.seal(editor);
+      if (this.bodyInit) this.editor.insertText(this.bodyInit);
+      if (this.bodyHtmlInit) this.editor.setHtml(this.bodyHtmlInit);
       // 监听内容变化
-      editor.on('change', () => {
-        this.body = this.editor.getText()
-        this.$emit('content_change', { body: this.body, bodyHtml: this.bodyHtml })
-      })
+      editor.on("change", () => {
+        this.body = this.editor.getText();
+        this.$emit("content_change", {
+          body: this.body,
+          bodyHtml: this.bodyHtml,
+        });
+      });
     },
     clean() {
-      this.body = ''
-      this.bodyHtml = ''
-    }
+      this.body = "";
+      this.bodyHtml = "";
+    },
   },
   beforeUnmount() {
-    const editor = this.editor
-    if (editor == null) return
+    const editor = this.editor;
+    if (editor == null) return;
     // 组件销毁时，及时销毁编辑器
-    editor.destroy()
-  }
-}
+    editor.destroy();
+  },
+};
 </script>
 
 <template>

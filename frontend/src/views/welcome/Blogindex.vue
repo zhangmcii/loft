@@ -1,25 +1,25 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
-import BanTouchMask from './BanTouchMask.vue'
-import CenterLogo from './CenterLogo.vue'
-import useMobileVhCssVar from './hooks/useMobileVhCssVar'
+import { onMounted, ref, watch } from "vue";
+import BanTouchMask from "./BanTouchMask.vue";
+import CenterLogo from "./CenterLogo.vue";
+import useMobileVhCssVar from "./hooks/useMobileVhCssVar";
 
 defineOptions({
-  name: 'App'
-})
+  name: "App",
+});
 
-const animationEnd = ref(false)
-const drawerVisible = ref(false)
-const backgroundLoaded = ref(false)
+const animationEnd = ref(false);
+const drawerVisible = ref(false);
+const backgroundLoaded = ref(false);
 
-useMobileVhCssVar()
+useMobileVhCssVar();
 
 // 控制着中间字按钮的出现时机。
 onMounted(() => {
   setTimeout(() => {
-    animationEnd.value = true
-  }, 1300)
-})
+    animationEnd.value = true;
+  }, 1300);
+});
 
 // 会把主页背景部分变黑，导致无法预览，故注释掉
 // watch([backgroundLoaded, animationEnd], () => {

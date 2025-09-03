@@ -30,9 +30,8 @@ const pathResolve = (dir = ".", metaUrl = import.meta.url) => {
 /** 设置别名 */
 const alias = {
   "@": pathResolve("../src"),
-  "@build": pathResolve()
+  "@build": pathResolve(),
 };
-
 
 /** 处理环境变量 */
 const wrapperEnv = (envConf) => {
@@ -43,7 +42,7 @@ const wrapperEnv = (envConf) => {
     VITE_ROUTER_HISTORY: "",
     VITE_CDN: false,
     VITE_HIDE_HOME: "false",
-    VITE_COMPRESSION: "none"
+    VITE_COMPRESSION: "none",
   };
 
   for (const envName of Object.keys(envConf)) {
@@ -67,7 +66,7 @@ const wrapperEnv = (envConf) => {
 const fileListTotal = [];
 
 /** 获取指定文件夹中所有文件的总大小 */
-const getPackageSize = options => {
+const getPackageSize = (options) => {
   const { folder = "dist", callback, format = true } = options;
   readdir(folder, (err, files) => {
     if (err) throw err;
@@ -85,7 +84,7 @@ const getPackageSize = options => {
         } else if (stats.isDirectory()) {
           getPackageSize({
             folder: `${folder}/${item}/`,
-            callback: checkEnd
+            callback: checkEnd,
           });
         }
       });

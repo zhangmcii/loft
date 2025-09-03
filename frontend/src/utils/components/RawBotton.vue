@@ -6,14 +6,14 @@ export default {
   props: {
     showEmoji: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
-    return {}
+    return {};
   },
-  methods: {}
-}
+  methods: {},
+};
 </script>
 <style scoped>
 .emoji-button1 {

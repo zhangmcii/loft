@@ -1,7 +1,7 @@
 <script>
-import authApi from '@/api/auth/authApi.js'
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
+import authApi from "@/api/auth/authApi.js";
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 
 export default {
   components: {
@@ -10,84 +10,86 @@ export default {
   },
   data() {
     var validatePass = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请输入密码'))
+      if (value === "") {
+        callback(new Error("请输入密码"));
       } else if (value.length < 3) {
-        callback(new Error('密码长度不能少于3个字符'))
+        callback(new Error("密码长度不能少于3个字符"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
     return {
       form: {
-        email: '',
-        code: '',
-        new_password: ''
+        email: "",
+        code: "",
+        new_password: "",
       },
       rules: {
         email: [
-          { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+          { required: true, message: "请输入邮箱地址", trigger: "blur" },
           {
-            type: 'email',
-            message: '请输入正确的邮箱地址',
-            trigger: ['blur', 'change']
-          }
+            type: "email",
+            message: "请输入正确的邮箱地址",
+            trigger: ["blur", "change"],
+          },
         ],
-        code: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
-        new_password: [{ required: true, validator: validatePass, trigger: 'blur' }]
+        code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+        new_password: [
+          { required: true, validator: validatePass, trigger: "blur" },
+        ],
       },
       isEmailValid: false,
-      value: '',
+      value: "",
       showButton: true,
       loading: false,
-      isChange: false
-    }
+      isChange: false,
+    };
   },
   computed: {
     isSubmit() {
-      return !(this.isEmailValid && this.form.code && this.form.new_password)
-    }
+      return !(this.isEmailValid && this.form.code && this.form.new_password);
+    },
   },
   methods: {
     applyCode() {
-      this.value = Date.now() + 1000 * 60
-      this.showButton = !this.showButton
+      this.value = Date.now() + 1000 * 60;
+      this.showButton = !this.showButton;
       authApi.applyCode({ email: this.form.email }).then((res) => {
         if (res.code == 200) {
-          this.$message.success('验证码已发送')
+          this.$message.success("验证码已发送");
         } else {
-          this.$message.error('验证码发送失败')
+          this.$message.error("验证码发送失败");
         }
-      })
+      });
     },
     resetPassword() {
       authApi.resetPassword(this.form).then((res) => {
-         if (res.code == 200) {
-          this.$message.success('密码重置成功')
-          this.$router.push('/login')
+        if (res.code == 200) {
+          this.$message.success("密码重置成功");
+          this.$router.push("/login");
         } else {
-          this.$message.error('密码重置失败')
+          this.$message.error("密码重置失败");
         }
-      })
+      });
     },
     submitForm() {
-      this.loading = true
-      this.resetPassword()
-      this.loading = false
-      this.isChange = false
+      this.loading = true;
+      this.resetPassword();
+      this.loading = false;
+      this.isChange = false;
     },
     finish() {
-      this.showButton = !this.showButton
+      this.showButton = !this.showButton;
     },
     validateEmail() {
       if (this.$refs.formRef) {
-        this.$refs.formRef.validateField('email', (errorMessage) => {
-          this.isEmailValid = errorMessage
-        })
+        this.$refs.formRef.validateField("email", (errorMessage) => {
+          this.isEmailValid = errorMessage;
+        });
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <template>
@@ -119,8 +121,8 @@ export default {
             </div>
             <el-form-item prop="email" label="邮箱地址">
               <div class="email-input-group">
-                <el-input 
-                  v-model="form.email" 
+                <el-input
+                  v-model="form.email"
                   placeholder="请输入您的邮箱地址"
                   size="large"
                   @blur="validateEmail"
@@ -130,23 +132,23 @@ export default {
                     <el-icon><i-ep-Message /></el-icon>
                   </template>
                 </el-input>
-                <el-button 
-                  @click="applyCode" 
-                  type="primary" 
+                <el-button
+                  @click="applyCode"
+                  type="primary"
                   size="large"
-                  :disabled="!isEmailValid" 
+                  :disabled="!isEmailValid"
                   v-if="showButton"
                   class="send-code-btn"
                 >
                   发送验证码
                 </el-button>
                 <div v-else class="countdown-wrapper">
-                  <el-countdown 
-                    prefix="重新发送 " 
+                  <el-countdown
+                    prefix="重新发送 "
                     suffix=" 秒后可重发"
-                    format="ss" 
-                    :value="value" 
-                    @finish="finish" 
+                    format="ss"
+                    :value="value"
+                    @finish="finish"
                   />
                 </div>
               </div>
@@ -159,8 +161,8 @@ export default {
               <div class="step-title">输入验证码</div>
             </div>
             <el-form-item prop="code" label="验证码">
-              <el-input 
-                v-model="form.code" 
+              <el-input
+                v-model="form.code"
                 placeholder="请输入6位验证码"
                 size="large"
                 maxlength="6"
@@ -173,15 +175,18 @@ export default {
             </el-form-item>
           </div>
 
-          <div class="form-step" :class="{ 'step-completed': form.new_password }">
+          <div
+            class="form-step"
+            :class="{ 'step-completed': form.new_password }"
+          >
             <div class="step-header">
               <div class="step-number">3</div>
               <div class="step-title">设置新密码</div>
             </div>
             <el-form-item prop="new_password" label="新密码">
-              <el-input 
-                v-model="form.new_password" 
-                type="password" 
+              <el-input
+                v-model="form.new_password"
+                type="password"
                 show-password
                 placeholder="请输入新密码（至少3个字符）"
                 size="large"
@@ -265,7 +270,7 @@ export default {
 
 .form-step.step-completed {
   background: #f0f9ff;
-  border-color: #409EFF;
+  border-color: #409eff;
 }
 
 .form-step:last-of-type {
@@ -294,7 +299,7 @@ export default {
 }
 
 .step-completed .step-number {
-  background: #409EFF;
+  background: #409eff;
   color: white;
 }
 
@@ -305,7 +310,7 @@ export default {
 }
 
 .step-completed .step-title {
-  color: #409EFF;
+  color: #409eff;
 }
 
 .email-input-group {
@@ -370,7 +375,7 @@ export default {
 }
 
 :deep(.el-input.is-focus .el-input__wrapper) {
-  box-shadow: 0 0 0 1px #409EFF;
+  box-shadow: 0 0 0 1px #409eff;
 }
 
 :deep(.el-button) {
@@ -386,7 +391,7 @@ export default {
 
 :deep(.el-countdown) {
   font-size: 14px;
-  color: #409EFF;
+  color: #409eff;
   font-weight: 500;
 }
 
@@ -395,29 +400,29 @@ export default {
   .password-reset-container {
     padding: 16px;
   }
-  
+
   .reset-form-wrapper {
     padding: 24px 20px;
   }
-  
+
   .form-step {
     padding: 20px 16px;
   }
-  
+
   .email-input-group {
     flex-direction: column;
   }
-  
+
   .send-code-btn {
     width: 100%;
     margin-top: 8px;
   }
-  
+
   .countdown-wrapper {
     width: 100%;
     margin-top: 8px;
   }
-  
+
   .code-input {
     max-width: 100%;
   }

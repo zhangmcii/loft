@@ -1,15 +1,6 @@
 from flask import Blueprint
 
-main = Blueprint('main', __name__)
+main = Blueprint("main", __name__)
 
-from . import views, errors
-from . import user_profile
-from . import posts
-from . import follow
-from . import comments
-from . import praise
-from . import notifications
-from . import messages
-from . import uploads
-from . import tags
-from . import logs
+from . import (comments, errors, follow, logs, messages, notifications, posts,
+               praise, tags, uploads, user_profile, views)

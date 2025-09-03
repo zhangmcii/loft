@@ -3,14 +3,14 @@
 </template>
 <script>
 export default {
-  name: 'BaseMask',
+  name: "BaseMask",
   props: {
     mode: {
       type: String,
-      default: 'dark'
-    }
-  }
-}
+      default: "dark",
+    },
+  },
+};
 </script>
 
 <style lang="scss">

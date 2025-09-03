@@ -1,15 +1,17 @@
 import logging
-from .decorators import DecoratedMethodView
+
+from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
-from .users import get_user_data
-from . import api
-from ..models import User, Follow, Permission
+
 from .. import db
-from flask import request, current_app
-from ..utils.time_util import DateUtils
-from ..utils.common import get_avatars_url
-from ..utils.response import success, error, not_found
 from ..decorators import permission_required
+from ..models import Follow, Permission, User
+from ..utils.common import get_avatars_url
+from ..utils.response import error, not_found, success
+from ..utils.time_util import DateUtils
+from . import api
+from .decorators import DecoratedMethodView
+from .users import get_user_data
 
 
 # --------------------------- 关注 ---------------------------
@@ -22,12 +24,15 @@ def search_followed(user, search_query):
     followed_users = User.query.filter(
         User.id.in_(followed_user_ids),
         db.or_(
-            User.username.ilike(f'%{search_query}%'),
-            User.nickname.ilike(f'%{search_query}%')
-        )
+            User.username.ilike(f"%{search_query}%"),
+            User.nickname.ilike(f"%{search_query}%"),
+        ),
     ).all()
-    follows = [{'username': item.username, 'image': get_avatars_url(item.image)}
-               for item in followed_users if item.username != user.username]
+    follows = [
+        {"username": item.username, "image": get_avatars_url(item.image)}
+        for item in followed_users
+        if item.username != user.username
+    ]
     return follows
 
 
@@ -39,12 +44,15 @@ def search_fan(user, search_query):
     followed_users = User.query.filter(
         User.id.in_(followed_user_ids),
         db.or_(
-            User.username.ilike(f'%{search_query}%'),
-            User.nickname.ilike(f'%{search_query}%')
-        )
+            User.username.ilike(f"%{search_query}%"),
+            User.nickname.ilike(f"%{search_query}%"),
+        ),
     ).all()
-    followers = [{'username': item.username, 'image': get_avatars_url(item.image)}
-                 for item in followed_users if item.username != user.username]
+    followers = [
+        {"username": item.username, "image": get_avatars_url(item.image)}
+        for item in followed_users
+        if item.username != user.username
+    ]
     return followers
 
 
@@ -56,7 +64,7 @@ def followers(username):
     if user is None:
         return not_found("用户名不存在")
 
-    query = request.args.get('name', '')
+    query = request.args.get("name", "")
     if query:
         followers = search_followed(user, query)
         return success(data=followers)
@@ -71,8 +79,8 @@ def followers(username):
     for item in pagination.items:
         if item.follower.username != username:
             is_following_back = (
-                    Follow.query.filter_by(follower=user, followed=item.follower).first()
-                    is not None
+                Follow.query.filter_by(follower=user, followed=item.follower).first()
+                is not None
             )
             follows.append(
                 {
@@ -96,7 +104,7 @@ def followed_by(username):
         return not_found("用户名不存在")
 
     # 在关注列表中，根据用户昵称或者账号搜索
-    query = request.args.get('name', '')
+    query = request.args.get("name", "")
     if query:
         follows = search_followed(user, query)
         return success(data=follows)
@@ -111,8 +119,8 @@ def followed_by(username):
     for item in pagination.items:
         if item.followed.username != username:
             is_following_back = (
-                    Follow.query.filter_by(follower=item.followed, followed=user).first()
-                    is not None
+                Follow.query.filter_by(follower=item.followed, followed=user).first()
+                is not None
             )
             follows.append(
                 {
@@ -133,10 +141,10 @@ class UserFollowApi(DecoratedMethodView):
     decorators = []
 
     method_decorators = {
-        'share': [jwt_required(), permission_required(Permission.FOLLOW)],
+        "share": [jwt_required(), permission_required(Permission.FOLLOW)],
     }
 
-    def follow_or_unfollow(self, username, action='follow'):
+    def follow_or_unfollow(self, username, action="follow"):
         logging.info(f"关注用户: {current_user.username} -> {username}")
         user = User.query.filter_by(username=username).first()
         if user is None:
@@ -194,5 +202,5 @@ class UserFollowApi(DecoratedMethodView):
 
 
 def register_follow_api(bp, *, follow_url):
-    user_follow = UserFollowApi.as_view('users_follow')
+    user_follow = UserFollowApi.as_view("users_follow")
     bp.add_url_rule(follow_url, view_func=user_follow)

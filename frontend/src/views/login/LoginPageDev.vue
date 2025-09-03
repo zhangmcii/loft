@@ -1,113 +1,116 @@
 <script>
-import authApi from '@/api/auth/authApi.js'
-import { useCurrentUserStore } from '@/stores/user'
+import authApi from "@/api/auth/authApi.js";
+import { useCurrentUserStore } from "@/stores/user";
 export default {
   data() {
     var validateUser = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请输入账户'))
+      if (value === "") {
+        callback(new Error("请输入账户"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
     var validatePass = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请输入密码'))
+      if (value === "") {
+        callback(new Error("请输入密码"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
     return {
       ruleForm: {
-        user: '',
-        pass: ''
+        user: "",
+        pass: "",
       },
       rules: {
-        user: [{ validator: validateUser, trigger: 'blur' }],
-        pass: [{ validator: validatePass, trigger: 'blur' }]
+        user: [{ validator: validateUser, trigger: "blur" }],
+        pass: [{ validator: validatePass, trigger: "blur" }],
       },
       // 是否记住账号密码
       isRemember: false,
-      loading: false
-    }
+      loading: false,
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const currentUser = useCurrentUserStore();
+    return { currentUser };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       if (to.query?.username) {
-        vm.ruleForm.user = to.query.username
+        vm.ruleForm.user = to.query.username;
       } else {
-        vm.getAccount()
+        vm.getAccount();
       }
-    })
+    });
   },
   computed: {
     formHasValue() {
-      return this.ruleForm.user !== '' && this.ruleForm.pass !== ''
-    }
+      return this.ruleForm.user !== "" && this.ruleForm.pass !== "";
+    },
   },
   methods: {
     login() {
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          this.loading = true
-          authApi.login(this.ruleForm.user, this.ruleForm.pass).then((res) => {
-            this.loading = false
-            // 适配新的统一接口返回格式
-            if (res.code === 200) {
-              // 判断是否勾选记住密码
-              this.hasRemember()
-              const u = res.data
-              this.currentUser.setUserInfo(u)
-              this.currentUser.token = res.token
-              this.$message({
-                message: '登录成功',
-                type: 'success',
-                duration: 1700
-              })
-              this.$router.push({ path: '/posts' })
-            } else {
-              this.$message({
-                message: res.message || '账号或密码错误',
-                type: 'error',
-                duration: 1700
-              })
-            }
-          }).catch(error => {
-            this.loading = false
-          })
+          this.loading = true;
+          authApi
+            .login(this.ruleForm.user, this.ruleForm.pass)
+            .then((res) => {
+              this.loading = false;
+              // 适配新的统一接口返回格式
+              if (res.code === 200) {
+                // 判断是否勾选记住密码
+                this.hasRemember();
+                const u = res.data;
+                this.currentUser.setUserInfo(u);
+                this.currentUser.token = res.token;
+                this.$message({
+                  message: "登录成功",
+                  type: "success",
+                  duration: 1700,
+                });
+                this.$router.push({ path: "/posts" });
+              } else {
+                this.$message({
+                  message: res.message || "账号或密码错误",
+                  type: "error",
+                  duration: 1700,
+                });
+              }
+            })
+            .catch((error) => {
+              this.loading = false;
+            });
         } else {
-          this.$message.error('请修正表单中的错误')
+          this.$message.error("请修正表单中的错误");
         }
-      })
+      });
     },
     //  检查本地存储是否有记住的账号密码，如果有则填充到输入框中
     getAccount() {
-      const savedUsername = localStorage.getItem('loginUsername')
-      const savedPassword = localStorage.getItem('loginPassword')
+      const savedUsername = localStorage.getItem("loginUsername");
+      const savedPassword = localStorage.getItem("loginPassword");
       if (savedUsername && savedPassword) {
-        this.ruleForm.user = savedUsername
-        this.ruleForm.pass = savedPassword
-        this.isRemember = true
+        this.ruleForm.user = savedUsername;
+        this.ruleForm.pass = savedPassword;
+        this.isRemember = true;
       }
     },
     // 判断是否勾选记住密码
     hasRemember() {
       if (this.isRemember) {
         // 保存账号密码到本地存储
-        localStorage.setItem('loginUsername', this.ruleForm.user)
-        localStorage.setItem('loginPassword', this.ruleForm.pass)
+        localStorage.setItem("loginUsername", this.ruleForm.user);
+        localStorage.setItem("loginPassword", this.ruleForm.pass);
       } else {
         // 清除本地存储的账号密码
-        localStorage.removeItem('loginUsername')
-        localStorage.removeItem('loginPassword')
+        localStorage.removeItem("loginUsername");
+        localStorage.removeItem("loginPassword");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <template>
@@ -116,29 +119,58 @@ export default {
     <p>云端阁楼，随想悠悠，静候时光</p>
   </div>
 
-  <el-form :model="ruleForm" label-position="left" status-icon :rules="rules" ref="ruleForm" style="max-width: 600px">
+  <el-form
+    :model="ruleForm"
+    label-position="left"
+    status-icon
+    :rules="rules"
+    ref="ruleForm"
+    style="max-width: 600px"
+  >
     <el-form-item prop="user">
-      <el-input v-model="ruleForm.user" size="large" placeholder="请输入用户名" />
+      <el-input
+        v-model="ruleForm.user"
+        size="large"
+        placeholder="请输入用户名"
+      />
     </el-form-item>
     <el-form-item prop="pass">
-      <el-input v-model="ruleForm.pass" show-password size="large" placeholder="密码" />
+      <el-input
+        v-model="ruleForm.pass"
+        show-password
+        size="large"
+        placeholder="密码"
+      />
     </el-form-item>
   </el-form>
   <el-row justify="space-between">
-    <el-col :span="4"><el-checkbox label="记住密码" v-model="isRemember"></el-checkbox></el-col>
+    <el-col :span="4"
+      ><el-checkbox label="记住密码" v-model="isRemember"></el-checkbox
+    ></el-col>
     <el-col :span="6">
       <div class="text">
-        <el-link class="forget-pass" @click="$router.push('/resetPassword')">忘记密码？</el-link>
+        <el-link class="forget-pass" @click="$router.push('/resetPassword')"
+          >忘记密码？</el-link
+        >
       </div>
     </el-col>
   </el-row>
 
-  <el-button type="primary" round :disabled="!formHasValue" @click="login" :loading="loading">登录</el-button>
+  <el-button
+    type="primary"
+    round
+    :disabled="!formHasValue"
+    @click="login"
+    :loading="loading"
+    >登录</el-button
+  >
 
   <!-- <el-divider> 其他登录方式 </el-divider> -->
   <div class="register-container">
     <el-text class="register-account">还没有账号?</el-text>
-    <el-link class="register" @click="$router.push('/register')">创建账号 </el-link>
+    <el-link class="register" @click="$router.push('/register')"
+      >创建账号
+    </el-link>
   </div>
   <div class="visit">
     <el-text class="register" @click="$router.push('/posts')">游客访问</el-text>
@@ -147,9 +179,9 @@ export default {
 
 <style scoped>
 * {
-  font-family: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, 'Helvetica Neue', arial,
-    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+  font-family: -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
+    "Helvetica Neue", arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   /* color: #323639; */
   font-size: 14px;
   /* 移动端点击可点击元素时，出现蓝色默认背景色 */

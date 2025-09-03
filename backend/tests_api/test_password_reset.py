@@ -1,8 +1,6 @@
-import pytest
-from app.models import User, Role
-from app import redis
+# from app.models import User, Role
+# from app import redis
 from base64 import b64encode
-import re
 
 
 class TestPasswordResetCase:
@@ -10,9 +8,10 @@ class TestPasswordResetCase:
 
     def get_api_headers(self, username, password):
         return {
-            'Authorization': 'Basic ' + b64encode((username + ":" + password).encode('utf-8')).decode('utf-8'),
-            'Accept': 'application/json',
-            'Content-type': 'application/json'
+            "Authorization": "Basic "
+            + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
+            "Accept": "application/json",
+            "Content-type": "application/json",
         }
 
     def test_change_password(self, client, auth):
@@ -22,27 +21,26 @@ class TestPasswordResetCase:
         auth.login()
 
         # 修改密码
-        r = client.post('/auth/changePassword', headers=auth.get_headers(), json={
-            'old_password': 'test',
-            'new_password': 'new_password'
-        })
+        r = client.post(
+            "/auth/changePassword",
+            headers=auth.get_headers(),
+            json={"old_password": "test", "new_password": "new_password"},
+        )
         assert r.status_code == 200
-        assert r.json.get('code') == 200
+        assert r.json.get("code") == 200
 
         # 使用旧密码登录应该失败
-        r = client.post('/auth/login', json={
-            'uiAccountName': 'test',
-            'uiPassword': 'test'
-        })
-        assert r.json.get('code') == 400
+        r = client.post(
+            "/auth/login", json={"uiAccountName": "test", "uiPassword": "test"}
+        )
+        assert r.json.get("code") == 400
 
         # 使用新密码登录应该成功
-        r = client.post('/auth/login', json={
-            'uiAccountName': 'test',
-            'uiPassword': 'new_password'
-        })
-        assert r.json.get('code') == 200
-        assert 'token' in r.json
+        r = client.post(
+            "/auth/login", json={"uiAccountName": "test", "uiPassword": "new_password"}
+        )
+        assert r.json.get("code") == 200
+        assert "token" in r.json
 
     # def test_password_reset_flow(self, client, auth, monkeypatch):
     #     """测试忘记密码流程"""
@@ -53,7 +51,7 @@ class TestPasswordResetCase:
     #     # 模拟验证码生成，始终返回固定验证码
     #     def mock_generate_code(email, expiration=60*3):
     #         return '123456'
-        
+
     #     # 模拟验证码比较，始终返回True
     #     def mock_compare_code(email, code):
     #         return True
@@ -61,7 +59,7 @@ class TestPasswordResetCase:
     #     # 模拟redis删除值
     #     def mock_delete_code(email):
     #         pass
-        
+
     #     # 应用模拟函数
     #     monkeypatch.setattr(User, 'generate_code', mock_generate_code)
     #     monkeypatch.setattr(User, 'compare_code', mock_compare_code)

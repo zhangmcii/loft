@@ -4,7 +4,9 @@
 -->
 <template>
   <div class="scroll-container">
-    <el-text class="mx-1 scroll-text" v-if="text.length <= 18">{{ text }}</el-text>
+    <el-text class="mx-1 scroll-text" v-if="text.length <= 18">{{
+      text
+    }}</el-text>
     <el-text
       class="mx-1 scroll-text"
       :style="{ 'animation-duration': `${animationDuration}s` }"
@@ -17,32 +19,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
   text: {
     type: String,
-    required: true
+    required: true,
   },
   speed: {
     type: Number,
-    default: 2 // 文字移动速度，值越小越快
-  }
-})
-const isPaused = ref(false)
+    default: 2, // 文字移动速度，值越小越快
+  },
+});
+const isPaused = ref(false);
 // 计算动画持续时间，速度越快，持续时间越短
 const animationDuration = computed(() => {
-  return 10 / props.speed
-})
+  return 10 / props.speed;
+});
 const pauseAnimation = () => {
-  isPaused.value = true
-  document.querySelector('.scroll-text').style.animationPlayState = 'paused'
-}
+  isPaused.value = true;
+  document.querySelector(".scroll-text").style.animationPlayState = "paused";
+};
 
 const resumeAnimation = () => {
-  isPaused.value = false
-  document.querySelector('.scroll-text').style.animationPlayState = 'running'
-}
+  isPaused.value = false;
+  document.querySelector(".scroll-text").style.animationPlayState = "running";
+};
 </script>
 
 <style scoped>

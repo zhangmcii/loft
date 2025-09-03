@@ -3,46 +3,52 @@ export default {
   props: {
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     throttle: {
       type: Object,
       default() {
-        return { leading: 300, trailing: 300, initVal: true }
-      }
+        return { leading: 300, trailing: 300, initVal: true };
+      },
     },
     showAvatar: {
       type: Boolean,
-      default: true
+      default: true,
     },
     row: {
       type: Number,
-      default: 4
+      default: 4,
     },
     count: {
       type: Number,
-      default: 3
+      default: 3,
     },
     cardStyle: {
       type: Object,
       default() {
-        return {}
-      }
+        return {};
+      },
     },
     useNew: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
-    return {}
+    return {};
   },
-  methods: {}
-}
+  methods: {},
+};
 </script>
 
 <template>
-  <el-skeleton v-if="!useNew" animated :loading="loading" :count="count" :throttle="throttle">
+  <el-skeleton
+    v-if="!useNew"
+    animated
+    :loading="loading"
+    :count="count"
+    :throttle="throttle"
+  >
     <template #template>
       <el-card shadow="hover" :style="cardStyle">
         <div class="skeleton-container">
@@ -53,7 +59,11 @@ export default {
           />
           <div class="item">
             <el-skeleton-item variant="text" style="width: 40%" />
-            <el-skeleton-item variant="text" v-for="item in row - 2" :key="item" />
+            <el-skeleton-item
+              variant="text"
+              v-for="item in row - 2"
+              :key="item"
+            />
             <el-skeleton-item variant="text" style="width: 60%" />
           </div>
         </div>
@@ -63,7 +73,13 @@ export default {
   </el-skeleton>
 
   <!-- 适配新版首页文章预览界面 -->
-  <el-skeleton animated :loading="loading" :count="count" :throttle="throttle" v-else>
+  <el-skeleton
+    animated
+    :loading="loading"
+    :count="count"
+    :throttle="throttle"
+    v-else
+  >
     <template #template>
       <div class="container">
         <div class="container-head">
@@ -80,7 +96,11 @@ export default {
 
         <div class="container-content">
           <el-skeleton-item variant="text" style="width: 40%" />
-          <el-skeleton-item variant="text" v-for="item in row - 2" :key="item" />
+          <el-skeleton-item
+            variant="text"
+            v-for="item in row - 2"
+            :key="item"
+          />
           <el-skeleton-item variant="text" style="width: 60%" />
         </div>
 

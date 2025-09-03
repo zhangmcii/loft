@@ -6,34 +6,34 @@ export default {
       default() {
         return [
           {
-            url: '',
-            describe: ''
-          }
-        ]
-      }
-    }
+            url: "",
+            describe: "",
+          },
+        ];
+      },
+    },
   },
   data() {
     return {
-      activeName: 'first',
-      preList: []
-    }
+      activeName: "first",
+      preList: [],
+    };
   },
   watch: {
     interest: {
       handler(newVal) {
         this.preList = newVal.map((item) => {
-          return item.url
-        })
+          return item.url;
+        });
       },
       deep: true,
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   computed: {},
   mounted() {},
-  methods: {}
-}
+  methods: {},
+};
 </script>
 
 <template>

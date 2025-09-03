@@ -1,13 +1,15 @@
 import logging
-from .decorators import DecoratedMethodView
+
+from flask import current_app, request
 from flask_jwt_extended import jwt_required
-from . import api
-from ..models import Log, User
-from ..decorators import admin_required
+
 from .. import db
-from flask import request, current_app
-from ..utils.response import success, error
+from ..decorators import admin_required
+from ..models import Log, User
+from ..utils.response import error, success
 from ..utils.socket_util import ManageSocket
+from . import api
+from .decorators import DecoratedMethodView
 
 
 # --------------------------- 日志管理 ---------------------------
@@ -31,7 +33,7 @@ def online():
 
 class LogApi(DecoratedMethodView):
     method_decorators = {
-        'share': [jwt_required(), admin_required],
+        "share": [jwt_required(), admin_required],
     }
 
     def get(self):
@@ -57,7 +59,7 @@ class LogApi(DecoratedMethodView):
             if not ids:
                 logging.info("没有提供要删除的日志ID")
                 return success(message="没有提供要删除的日志ID")
-                
+
             deleted_count = Log.query.filter(Log.id.in_(ids)).delete()
             db.session.commit()
             logging.info(f"成功删除 {deleted_count} 条日志记录")
@@ -70,5 +72,5 @@ class LogApi(DecoratedMethodView):
 
 def register_log_api(bp, *, logs_url):
     logging.info(f"注册日志API: {logs_url}")
-    _log = LogApi.as_view('logs')
+    _log = LogApi.as_view("logs")
     bp.add_url_rule(logs_url, view_func=_log)

@@ -1,74 +1,79 @@
 <script>
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
-import uploadCard from '@/views/user/components/uploadCard.vue'
-import ButtonAnimate from '@/utils/components/ButtonAnimate.vue'
-import interest from '@/views/user/components/Interest.vue'
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import uploadCard from "@/views/user/components/uploadCard.vue";
+import ButtonAnimate from "@/utils/components/ButtonAnimate.vue";
+import interest from "@/views/user/components/Interest.vue";
 
 export default {
-  name: 'BlogPost',
+  name: "BlogPost",
   props: {},
   components: {
     PageHeadBack,
     uploadCard,
     interest,
-    ButtonAnimate
+    ButtonAnimate,
   },
   data() {
     return {
       formDataMovie: {
         coverImage: [],
-        name1: '',
-        name2: '',
-        name3: ''
+        name1: "",
+        name2: "",
+        name3: "",
       },
       formDataBook: {
         coverImage: [],
-        name1: '',
-        name2: '',
-        name3: ''
+        name1: "",
+        name2: "",
+        name3: "",
       },
       showLog: false,
       showPre: false,
       preData: {
         movies: [],
-        books: []
+        books: [],
       },
-      activeInterest: 'movie'
-    }
+      activeInterest: "movie",
+    };
   },
   computed: {
     // 预览按钮可点击
     isPre() {
-      return this.formDataMovie.coverImage.length > 0 || this.formDataBook.coverImage.length > 0
-    }
+      return (
+        this.formDataMovie.coverImage.length > 0 ||
+        this.formDataBook.coverImage.length > 0
+      );
+    },
   },
   mounted() {},
   methods: {
     pre() {
       if (this.formDataMovie.coverImage) {
-        this.preData.movies = this.formDataMovie.coverImage.map((item, index) => {
-          return {
-            url: item.url,
-            describe: this.formDataMovie['name' + (index + 1)]
+        this.preData.movies = this.formDataMovie.coverImage.map(
+          (item, index) => {
+            return {
+              url: item.url,
+              describe: this.formDataMovie["name" + (index + 1)],
+            };
           }
-        })
+        );
       }
       if (this.formDataBook.coverImage) {
         this.preData.books = this.formDataBook.coverImage.map((item, index) => {
           return {
             url: item.url,
-            describe: this.formDataBook['name' + (index + 1)]
-          }
-        })
+            describe: this.formDataBook["name" + (index + 1)],
+          };
+        });
       }
-      this.showPre = !this.showPre
-      console.log('11', this.preData)
+      this.showPre = !this.showPre;
+      console.log("11", this.preData);
     },
     setActive(type) {
-      this.activeInterest = type
-    }
-  }
-}
+      this.activeInterest = type;
+    },
+  },
+};
 </script>
 
 <template>
@@ -76,12 +81,23 @@ export default {
     <div class="page-head">
       <el-text>各分类下最多展示3张图片</el-text>
       <Transition>
-        <el-button size="small" round type="primary" plain v-show="isPre" @click="pre"
+        <el-button
+          size="small"
+          round
+          type="primary"
+          plain
+          v-show="isPre"
+          @click="pre"
           >预览</el-button
         >
       </Transition>
     </div>
-    <uploadCard ref="movie" v-model:formData="formDataMovie" type="movie" class="upload-card" />
+    <uploadCard
+      ref="movie"
+      v-model:formData="formDataMovie"
+      type="movie"
+      class="upload-card"
+    />
     <uploadCard ref="book" v-model:formData="formDataBook" type="book" />
 
     <el-dialog v-model="showPre" width="400">

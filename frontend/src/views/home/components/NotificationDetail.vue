@@ -1,74 +1,81 @@
 <script>
-import { Scrollbar } from 'vue-amazing-ui'
-import NotificationTitle from './NotificationTitle.vue'
-import date from '@/utils/date.js'
+import { Scrollbar } from "vue-amazing-ui";
+import NotificationTitle from "./NotificationTitle.vue";
+import date from "@/utils/date.js";
 
 export default {
   props: {
     notifications: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     dot: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   components: {
     Scrollbar,
-    NotificationTitle
+    NotificationTitle,
   },
   data() {
-    return {}
+    return {};
   },
   mounted() {},
   methods: {
     formatTime(time) {
-      return date.dateShow(time)
+      return date.dateShow(time);
     },
     getNotificationTypeClass(type) {
       const typeMap = {
-        '评论': 'type-comment',
-        '回复': 'type-reply',
-        '点赞': 'type-like',
-        '@': 'type-mention',
-        '私信': 'type-message',
-        '新文章': 'type-post'
-      }
-      return typeMap[type] || 'type-default'
+        评论: "type-comment",
+        回复: "type-reply",
+        点赞: "type-like",
+        "@": "type-mention",
+        私信: "type-message",
+        新文章: "type-post",
+      };
+      return typeMap[type] || "type-default";
     },
     getNotificationTypeIcon(type) {
       const iconMap = {
-        '评论': '💬',
-        '回复': '↩️',
-        '点赞': '❤️',
-        '@': '@',
-        '私信': '✉️',
-        '新文章': '📝'
-      }
-      return iconMap[type] || '🔔'
-    }
-  }
-}
+        评论: "💬",
+        回复: "↩️",
+        点赞: "❤️",
+        "@": "@",
+        私信: "✉️",
+        新文章: "📝",
+      };
+      return iconMap[type] || "🔔";
+    },
+  },
+};
 </script>
 
 <template>
   <Scrollbar class="notification-scrollbar" v-if="notifications.length > 0">
     <ul class="notifications-list">
       <template v-for="item in notifications" :key="item.title">
-        <li 
-          class="notification-item" 
-          :class="{ 'unread': !item.isRead }"
+        <li
+          class="notification-item"
+          :class="{ unread: !item.isRead }"
           @click="$emit('read', item)"
         >
           <div class="notification-content">
             <span v-if="!item.isRead" class="unread-indicator"></span>
-            
+
             <div class="avatar-wrapper">
-              <img :src="item.image" class="avatar-image" :alt="`${item.triggerNickName || '用户'}的头像`" />
-              <div class="notification-type-badge" :class="getNotificationTypeClass(item.type)">
+              <img
+                :src="item.image"
+                class="avatar-image"
+                :alt="`${item.triggerNickName || '用户'}的头像`"
+              />
+              <div
+                class="notification-type-badge"
+                :class="getNotificationTypeClass(item.type)"
+              >
                 {{ getNotificationTypeIcon(item.type) }}
-             </div>
+              </div>
             </div>
 
             <div class="message-content">
@@ -83,9 +90,9 @@ export default {
                   <span class="action-icon">💬</span>
                   查看对话
                 </button>
-                <button 
-                  class="action-button" 
-                  v-else 
+                <button
+                  class="action-button"
+                  v-else
                   @click.stop="$emit('viewPost', item)"
                 >
                   <span class="action-icon">📄</span>

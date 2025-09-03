@@ -4,32 +4,37 @@ export default {
     postImages: {
       type: Array,
       default() {
-        return []
-      }
-    }
+        return [];
+      },
+    },
   },
   computed: {
     gridTemplateColumns() {
-      const count = this.postImages.length
-      if (count === 1) return '1fr'
-      if (count === 2 || count === 4) return '1fr 1fr'
-      return '1fr 1fr 1fr'
+      const count = this.postImages.length;
+      if (count === 1) return "1fr";
+      if (count === 2 || count === 4) return "1fr 1fr";
+      return "1fr 1fr 1fr";
     },
     containerWidth() {
-      const count = this.postImages.length
-      if (count === 1) return '220px'
-      if (count === 2 || count === 4) return '320px'
-      return '370px'
-    }
-  }
-}
+      const count = this.postImages.length;
+      if (count === 1) return "220px";
+      if (count === 2 || count === 4) return "320px";
+      return "370px";
+    },
+  },
+};
 </script>
 
 <template>
   <div class="container" :style="{ width: containerWidth }">
     <div class="preview" :style="{ gridTemplateColumns }">
       <photo-provider :photo-closable="true" :should-transition="true">
-        <photo-consumer v-for="(url, index) in postImages" :intro="url" :key="url" :src="url">
+        <photo-consumer
+          v-for="(url, index) in postImages"
+          :intro="url"
+          :key="url"
+          :src="url"
+        >
           <el-image alt="文章图片" :src="url" lazy fit="cover">
             <template #error>
               <div class="image-slot">

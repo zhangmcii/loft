@@ -1,6 +1,6 @@
 <script>
-import date from '@/utils/date.js'
-import { useOtherUserStore } from '@/stores/otherUser'
+import date from "@/utils/date.js";
+import { useOtherUserStore } from "@/stores/otherUser";
 export default {
   props: {
     post: {
@@ -8,44 +8,44 @@ export default {
       default() {
         return {
           id: 1,
-          body: '',
+          body: "",
           body_html: null,
-          timestamp: '',
-          author: '--',
-          nick_name: '',
+          timestamp: "",
+          author: "--",
+          nick_name: "",
           user_id: 1,
           commentCount: 20,
           disabled: false,
-          image: '',
+          image: "",
           comment_count: 0,
           praise_num: 0,
           has_praised: false,
-          post_images: []
-        }
-      }
-    }
+          post_images: [],
+        };
+      },
+    },
   },
   data() {
-    return {}
+    return {};
   },
-   setup() {
-      const otherUser = useOtherUserStore()
-      return { otherUser }
-    },
+  setup() {
+    const otherUser = useOtherUserStore();
+    return { otherUser };
+  },
   mounted() {},
   computed: {
     from_now() {
-      return date.dateShow(this.post.timestamp)
-    }
+      return date.dateShow(this.post.timestamp);
+    },
   },
   methods: {
     toUser() {
       // 接口都已改为根据用户id获取用户数据
-      this.otherUser.userInfo.id = this.post.user_id
-      this.$router.push(`/user/${this.post.author}`)
-    }
-  }
-}
+      this.otherUser.userInfo.id = this.post.user_id;
+      this.$router.push(`/user/${this.post.author}`);
+    },
+  },
+};
 </script>
 
 <template>

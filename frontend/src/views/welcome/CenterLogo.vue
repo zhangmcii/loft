@@ -1,47 +1,46 @@
 <script setup>
-import { GLOBAL_CONFIG } from '@/config/welcomeCfg.js'
-import { randomNum } from '@/utils/common'
-import { onMounted, ref } from 'vue'
+import { GLOBAL_CONFIG } from "@/config/welcomeCfg.js";
+import { randomNum } from "@/utils/common";
+import { onMounted, ref } from "vue";
 // import LocalLogo from '@/asset/logo.svg?component'
 
 defineOptions({
-  name: 'CenterLogo'
-})
+  name: "CenterLogo",
+});
 
 defineProps({
   drawerVisible: Boolean,
-  touchable: Boolean
-})
+  touchable: Boolean,
+});
 
 const emit = defineEmits({
-  backgroundLoaded: []
-})
+  backgroundLoaded: [],
+});
 
-const bgLoaded = ref(false)
-const slogan = ref('')
+const bgLoaded = ref(false);
+const slogan = ref("");
 
 /**
  * 加载背景图片
  */
 function loadBackground() {
-  var img = new Image()
-  img.src = GLOBAL_CONFIG.BACKGROUND_IMG_URL
-  img.addEventListener('load', () => {
-    bgLoaded.value = true
-    emit('backgroundLoaded')
-  })
+  var img = new Image();
+  img.src = GLOBAL_CONFIG.BACKGROUND_IMG_URL;
+  img.addEventListener("load", () => {
+    bgLoaded.value = true;
+    emit("backgroundLoaded");
+  });
 }
 
-
 function randomSlogan() {
-  const slogans = GLOBAL_CONFIG.SLOGANS
-  slogan.value = slogans[randomNum(0, slogans.length - 1)]
+  const slogans = GLOBAL_CONFIG.SLOGANS;
+  slogan.value = slogans[randomNum(0, slogans.length - 1)];
 }
 
 onMounted(() => {
-  randomSlogan()
-  loadBackground()
-})
+  randomSlogan();
+  loadBackground();
+});
 </script>
 
 <template>
@@ -54,14 +53,16 @@ onMounted(() => {
       <!-- <LocalLogo :class="['main-logo', { 'main-logo-top': touchable }]" /> -->
       <div :class="['hello', { hello_bottom: touchable }]">
         <div>{{ slogan }}</div>
-        <div class="hello_bottom_text"><div class="slide-up">访问 随想阁楼</div></div>
+        <div class="hello_bottom_text">
+          <div class="slide-up">访问 随想阁楼</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-@import url('@/asset/css/animate.scss');
+@import url("@/asset/css/animate.scss");
 .logo-area {
   background-size: cover !important;
   background-position: center !important;
@@ -78,7 +79,7 @@ onMounted(() => {
     filter: blur(5px);
   }
   .img-shadow {
-    content: '';
+    content: "";
     width: 100%;
     height: 100%;
     position: absolute;

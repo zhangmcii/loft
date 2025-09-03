@@ -1,22 +1,25 @@
-import os
-import time
 import json
-from flask_jwt_extended import jwt_required, current_user
-from . import api
-from ..models import Image, ImageType
-from .. import db
-from flask import request
-from sqlalchemy import and_
-from ..utils.response import success, bad_request
-
-from qiniu import Auth, BucketManager, build_batch_delete
-from ..utils.common import get_avatars_url
-
 # 日志
 import logging
+import os
+import time
+
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+from qiniu import Auth, BucketManager, build_batch_delete
+from sqlalchemy import and_
+
+from .. import db
+from ..models import Image, ImageType
+from ..utils.common import get_avatars_url
+from ..utils.response import bad_request, success
+from . import api
 
 # 初始化Auth状态
-q = Auth(os.getenv("QINIU_ACCESS_KEY", 'fdfddgfg'), os.getenv("QINIU_SECRET_KEY", 'dfdffgfgfg'))
+q = Auth(
+    os.getenv("QINIU_ACCESS_KEY", "fdfddgfg"),
+    os.getenv("QINIU_SECRET_KEY", "dfdffgfgfg"),
+)
 # 初始化BucketManager
 bucket = BucketManager(q)
 
@@ -81,7 +84,13 @@ def del_qiniu_image(keys, bucket_name=os.getenv("QINIU_BUCKET_NAME")):
     bucket.batch(ops)
 
 
-def dir_file_name(prefix="userBackground/static", current_page=1, page_size=6, complete_url=True, bucket_name=os.getenv("QINIU_BUCKET_NAME")):
+def dir_file_name(
+    prefix="userBackground/static",
+    current_page=1,
+    page_size=6,
+    complete_url=True,
+    bucket_name=os.getenv("QINIU_BUCKET_NAME"),
+):
     # 列举条目
     limit = 50
 
@@ -95,8 +104,10 @@ def dir_file_name(prefix="userBackground/static", current_page=1, page_size=6, c
 
     start = (current_page - 1) * page_size
     end = start + page_size
-    return [get_avatars_url(item.get("key")) if complete_url else item.get("key") for item in
-            item_list[start + 1: end + 1]], len(item_list) - 1
+    return [
+        get_avatars_url(item.get("key")) if complete_url else item.get("key")
+        for item in item_list[start + 1 : end + 1]
+    ], len(item_list) - 1
 
 
 @api.route("/dir_name")
@@ -110,7 +121,9 @@ def query_qiniu_key():
     complete_url = bool(int(request.args.get("completeUrl", True)))
     # bucket名字
     bucket_name = request.args.get("bucket", os.getenv("QINIU_BUCKET_NAME"))
-    data, total = dir_file_name(prefix, current_page, page_size, complete_url, bucket_name)
+    data, total = dir_file_name(
+        prefix, current_page, page_size, complete_url, bucket_name
+    )
     return success(data=data, total=total)
 
 

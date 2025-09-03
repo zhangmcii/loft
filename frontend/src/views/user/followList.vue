@@ -1,49 +1,49 @@
 <script>
-import followApi from '@/api/user/followApi.js'
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
-import FollowsList from '@/views/user/components/FollowsList.vue'
-import FollowRow from '@/views/user/components/FollowRow.vue'
-import arrayUtil from '@/utils/arrayUtil.js'
-import { useCurrentUserStore } from '@/stores/user'
+import followApi from "@/api/user/followApi.js";
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import FollowsList from "@/views/user/components/FollowsList.vue";
+import FollowRow from "@/views/user/components/FollowRow.vue";
+import arrayUtil from "@/utils/arrayUtil.js";
+import { useCurrentUserStore } from "@/stores/user";
 export default {
   components: {
     PageHeadBack,
     FollowsList,
-    FollowRow
+    FollowRow,
   },
   data() {
     return {
-      userName: '',
-      action: 'follower',
+      userName: "",
+      action: "follower",
       follows: {
         fan: [],
-        followed: []
+        followed: [],
       },
       fanTab: {
-        finished: false
+        finished: false,
       },
       followedTab: {
-        finished: false
+        finished: false,
       },
       loading: false,
       error: false,
       refreshing: false,
-      currentPage: 1
-    }
+      currentPage: 1,
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const currentUser = useCurrentUserStore();
+    return { currentUser };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      vm.action = to.params.action
-      vm.userName = to.params.userName
-    })
+      vm.action = to.params.action;
+      vm.userName = to.params.userName;
+    });
   },
-  computed:{
+  computed: {
     isCurrentUser() {
-      return this.userName == this.currentUser.userInfo.username
+      return this.userName == this.currentUser.userInfo.username;
     },
   },
   methods: {
@@ -55,23 +55,23 @@ export default {
           if (res.code === 200) {
             // 新格式
             res.data.map((item) => {
-              this.follows.fan.push(item)
-            })
-            this.loading = false
-            this.currentPage++
+              this.follows.fan.push(item);
+            });
+            this.loading = false;
+            this.currentPage++;
             if (this.follows.fan.length >= (res.total || 0)) {
-              this.fanTab.finished = true
+              this.fanTab.finished = true;
             }
           } else {
-            this.loading = false
-            this.error = true
+            this.loading = false;
+            this.error = true;
           }
         })
         .catch(() => {
-          this.loading = false
-          this.error = true
-          this.fanTab.finished = true
-        })
+          this.loading = false;
+          this.error = true;
+          this.fanTab.finished = true;
+        });
     },
     getFollowing() {
       followApi
@@ -81,76 +81,79 @@ export default {
           if (res.code === 200) {
             // 新格式
             res.data.map((item) => {
-              this.follows.followed.push(item)
-            })
-            this.loading = false
-            this.currentPage++
+              this.follows.followed.push(item);
+            });
+            this.loading = false;
+            this.currentPage++;
             if (this.follows.followed.length >= (res.total || 0)) {
-              this.followedTab.finished = true
+              this.followedTab.finished = true;
             }
           } else {
-            this.loading = false
-            this.error = true
+            this.loading = false;
+            this.error = true;
           }
         })
         .catch(() => {
-          this.loading = false
-          this.error = true
-          this.followedTab.finished = true
-        })
+          this.loading = false;
+          this.error = true;
+          this.followedTab.finished = true;
+        });
     },
     getFollowList() {
       if (this.refreshing) {
-        if (this.action == 'follower') {
-          this.follows.fan = []
+        if (this.action == "follower") {
+          this.follows.fan = [];
         } else {
-          this.follows.followed = []
+          this.follows.followed = [];
         }
-        this.refreshing = false
+        this.refreshing = false;
       }
-      if (this.action == 'follower') {
-        this.getFan()
-      } else if (this.action == 'followed') {
-        this.getFollowing()
+      if (this.action == "follower") {
+        this.getFan();
+      } else if (this.action == "followed") {
+        this.getFollowing();
       }
     },
     onRefresh() {
-      if (this.action == 'follower') {
-        this.fanTab.finished = false
-      } else if (this.action == 'followed') {
-        this.followedTab.finished = false
+      if (this.action == "follower") {
+        this.fanTab.finished = false;
+      } else if (this.action == "followed") {
+        this.followedTab.finished = false;
       }
-      this.loading = true
+      this.loading = true;
 
-      this.currentPage = 1
-      this.getFollowList()
+      this.currentPage = 1;
+      this.getFollowList();
     },
     onClickTab() {
-      if (this.action == 'follower' && this.follows.fan.length != 0) {
-        return
-      } else if (this.action == 'followed' && this.follows.followed.length != 0) {
-        return
+      if (this.action == "follower" && this.follows.fan.length != 0) {
+        return;
+      } else if (
+        this.action == "followed" &&
+        this.follows.followed.length != 0
+      ) {
+        return;
       }
-      this.currentPage = 1
+      this.currentPage = 1;
     },
     searchFan(x) {
-      this.follows.fan = x
-      this.fanTab.finished = true
+      this.follows.fan = x;
+      this.fanTab.finished = true;
     },
     searchFollowed(x) {
-      this.follows.followed = x
+      this.follows.followed = x;
       // 防止再次切换回来导致无限加载
-      this.followedTab.finished = true
+      this.followedTab.finished = true;
     },
     remove(x) {
       this.follows.followed = arrayUtil.removeObjectByFieldValue(
         this.follows.followed,
-        'username',
+        "username",
         x
-      )
-    }
-  }
-}
+      );
+    },
+  },
+};
 </script>
 
 <template>
@@ -174,7 +177,12 @@ export default {
           @load="getFollowList"
           @searchFan="searchFan"
         >
-          <FollowRow v-for="i in follows.fan" :key="i" :follows="i" :showFollowButton="isCurrentUser" />
+          <FollowRow
+            v-for="i in follows.fan"
+            :key="i"
+            :follows="i"
+            :showFollowButton="isCurrentUser"
+          />
         </FollowsList>
       </van-tab>
       <van-tab title="关注" name="followed">
@@ -184,7 +192,7 @@ export default {
           v-model:error="error"
           v-model:finished="followedTab.finished"
           tabAction="followed"
-           :showSearch="isCurrentUser"
+          :showSearch="isCurrentUser"
           @refresh="onRefresh"
           @load="getFollowList"
           @searchFollowed="searchFollowed"

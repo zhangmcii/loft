@@ -2,11 +2,11 @@
  prop只接受文章的json
 -->
 <script>
-import praise from '@/api/praise/praiseApi.js'
-import { loginReminder } from '@/utils/common.js'
-import PostAction from '@/views/posts/components/PostAction.vue'
-import PostHeader from '@/views/posts/components/PostHeader.vue'
-import PostContent from '@/views/posts/components/PostContent.vue'
+import praise from "@/api/praise/praiseApi.js";
+import { loginReminder } from "@/utils/common.js";
+import PostAction from "@/views/posts/components/PostAction.vue";
+import PostHeader from "@/views/posts/components/PostHeader.vue";
+import PostContent from "@/views/posts/components/PostContent.vue";
 
 export default {
   props: {
@@ -15,76 +15,76 @@ export default {
       default() {
         return {
           id: 1,
-          body: '文章',
+          body: "文章",
           body_html: null,
-          timestamp: '',
-          author: '张三',
-          nick_name: '',
+          timestamp: "",
+          author: "张三",
+          nick_name: "",
           commentCount: 20,
           disabled: false,
-          image: '',
+          image: "",
           comment_count: 0,
           praise_num: 0,
           has_praised: false,
-          post_images: []
-        }
-      }
+          post_images: [],
+        };
+      },
     },
     // 整个容器样式
     containerStyle: {
       type: Object,
       default() {
-        return {}
-      }
-    }
+        return {};
+      },
+    },
   },
   components: {
     PostAction,
     PostHeader,
-    PostContent
+    PostContent,
   },
   data() {
     return {
       iconSize: 15,
       praiseNum: 0,
-      hasPraised: false
-    }
+      hasPraised: false,
+    };
   },
   watch: {
-    'post.praise_num': {
+    "post.praise_num": {
       handler(newValue) {
-        this.praiseNum = newValue
+        this.praiseNum = newValue;
       },
-      immediate: true
+      immediate: true,
     },
-    'post.has_praised': {
+    "post.has_praised": {
       handler(newValue) {
-        this.hasPraised = newValue
+        this.hasPraised = newValue;
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   computed: {},
   methods: {
     comment() {
-      this.$router.push(`/postDetail/${this.post.id}`)
+      this.$router.push(`/postDetail/${this.post.id}`);
     },
     praise() {
       if (!this.currentUser.isLogin) {
-        loginReminder('快去登录再点赞吧')
-        return
+        loginReminder("快去登录再点赞吧");
+        return;
       }
       praise.submitPraise(this.post.id).then((res) => {
         if (res.code == 200) {
-          this.praiseNum = res.data.praise_total
-          this.hasPraised = res.data.has_praised
+          this.praiseNum = res.data.praise_total;
+          this.hasPraised = res.data.has_praised;
         } else {
-          this.$message.error('点赞失败')
+          this.$message.error("点赞失败");
         }
-      })
-    }
-  }
-}
+      });
+    },
+  },
+};
 </script>
 
 <template>
@@ -99,5 +99,5 @@ export default {
   </div>
 </template>
 <style lang="scss" scoped>
-@use './PostCard.scss' as *;
+@use "./PostCard.scss" as *;
 </style>

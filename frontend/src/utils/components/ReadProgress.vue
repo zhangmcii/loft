@@ -1,58 +1,58 @@
 <template>
   <div class="read-progress">
-    <el-progress :percentage="read" :show-text="false" :stroke-width="3"  />
+    <el-progress :percentage="read" :show-text="false" :stroke-width="3" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 const props = defineProps({
   tartget: {
     type: String,
-    default: '.scrollbar-container'
-  }
-})
-const read = ref(0)
-let scrollEl = null
-let throttleTimer = null
+    default: ".scrollbar-container",
+  },
+});
+const read = ref(0);
+let scrollEl = null;
+let throttleTimer = null;
 
 const updateReadProgress = () => {
-  if (!scrollEl) return
-  const total = scrollEl.scrollHeight - scrollEl.clientHeight
+  if (!scrollEl) return;
+  const total = scrollEl.scrollHeight - scrollEl.clientHeight;
   if (total <= 0) {
-    read.value = 0
-    return
+    read.value = 0;
+    return;
   }
-  const percent = ((scrollEl.scrollTop / total) * 100).toFixed(2)
-  read.value = Math.min(Math.max(Number(percent), 0), 100)
-}
+  const percent = ((scrollEl.scrollTop / total) * 100).toFixed(2);
+  read.value = Math.min(Math.max(Number(percent), 0), 100);
+};
 
 // 100ms 节流
 const throttledUpdate = () => {
-  if (throttleTimer) return
+  if (throttleTimer) return;
   throttleTimer = setTimeout(() => {
-    updateReadProgress()
-    throttleTimer = null
-  }, 100)
-}
+    updateReadProgress();
+    throttleTimer = null;
+  }, 100);
+};
 
 onMounted(() => {
-  scrollEl = document.querySelector(props.tartget)
+  scrollEl = document.querySelector(props.tartget);
   if (scrollEl) {
-    scrollEl.addEventListener('scroll', throttledUpdate)
-    updateReadProgress()
+    scrollEl.addEventListener("scroll", throttledUpdate);
+    updateReadProgress();
   }
-})
+});
 
 onUnmounted(() => {
   if (scrollEl) {
-    scrollEl.removeEventListener('scroll', throttledUpdate)
+    scrollEl.removeEventListener("scroll", throttledUpdate);
   }
   if (throttleTimer) {
-    clearTimeout(throttleTimer)
-    throttleTimer = null
+    clearTimeout(throttleTimer);
+    throttleTimer = null;
   }
-})
+});
 </script>
 
 <style scoped>

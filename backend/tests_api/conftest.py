@@ -1,19 +1,15 @@
 import pytest
-import os
 from app import create_app, db
-from app.models import Role, User
-from app.utils.common import get_local_ip
+from app.models import Role
+
 
 @pytest.fixture
 def app():
     """创建并配置一个Flask应用实例用于测试
-    
+
     每个测试函数都会获得一个新的应用实例和数据库
     """
-    # 测试环境自动获取本地地址
-    # os.environ["FLASK_RUN_HOST"] = get_local_ip()
-
-    app = create_app('testing')
+    app = create_app("testing")
 
     # 创建应用上下文
     with app.app_context():
@@ -56,32 +52,41 @@ class AuthAction:
         self._client = client
         self._token = None
 
-    def register(self, username='test', password='test'):
-        return self._client.post('/auth/register', json={
-            'username': username,
-            'password': password,
-        })
+    def register(self, username="test", password="test"):
+        return self._client.post(
+            "/auth/register",
+            json={
+                "username": username,
+                "password": password,
+            },
+        )
 
-    def register_admin(self, username='admin', password='admin'):
-        return self._client.post('/auth/register', json={
-            'email': 'zmc_li@foxmail.com',
-            'username': username,
-            'password': password,
-        })
+    def register_admin(self, username="admin", password="admin"):
+        return self._client.post(
+            "/auth/register",
+            json={
+                "email": "zmc_li@foxmail.com",
+                "username": username,
+                "password": password,
+            },
+        )
 
-    def login(self, username='test', password='test'):
-        r = self._client.post('/auth/login', json={
-            'uiAccountName': username,
-            'uiPassword': password,
-        })
-        self._token = r.json.get('token')
+    def login(self, username="test", password="test"):
+        r = self._client.post(
+            "/auth/login",
+            json={
+                "uiAccountName": username,
+                "uiPassword": password,
+            },
+        )
+        self._token = r.json.get("token")
         return r
 
     def get_headers(self):
         return {
-            'Authorization': self._token,
-            'Accept': 'application/json',
-            'Content-type': 'application/json'
+            "Authorization": self._token,
+            "Accept": "application/json",
+            "Content-type": "application/json",
         }
 
 

@@ -1,6 +1,10 @@
 <template>
   <div class="vapp-fullscreen-background">
-    <el-page-header :style="{ color: backColor }" @back="$router.back()" title="返回" />
+    <el-page-header
+      :style="{ color: backColor }"
+      @back="$router.back()"
+      title="返回"
+    />
 
     <el-switch
       v-model="isUserPage"
@@ -93,7 +97,9 @@
                     </el-row>
                     <el-row>
                       <el-col :xs="8" :xl="4">上线时间</el-col>
-                      <el-col :xs="8" :xl="10" :offset="2">{{ from_now }}</el-col>
+                      <el-col :xs="8" :xl="10" :offset="2">{{
+                        from_now
+                      }}</el-col>
                     </el-row>
                   </template>
                 </el-skeleton>
@@ -101,10 +107,19 @@
             </el-col>
             <el-col :span="12">
               <el-card class="fans" shadow="never">
-                <el-skeleton animated :loading="loading.userData" :throttle="skeletonThrottle">
+                <el-skeleton
+                  animated
+                  :loading="loading.userData"
+                  :throttle="skeletonThrottle"
+                >
                   <template #template>
                     <div
-                      style="display: flex; justify-items: space-between; gap: 15px; height: 47px"
+                      style="
+                        display: flex;
+                        justify-items: space-between;
+                        gap: 15px;
+                        height: 47px;
+                      "
                     >
                       <el-skeleton-item variant="text" class="item" />
                       <el-skeleton-item variant="text" class="item" />
@@ -135,7 +150,10 @@
                   <span>个性签名</span>
                 </div>
                 <!-- 打字机 -->
-                <typewriter class="typewriter" :content="user.about_me"></typewriter>
+                <typewriter
+                  class="typewriter"
+                  :content="user.about_me"
+                ></typewriter>
               </el-card>
             </el-col>
           </el-row>
@@ -163,7 +181,12 @@
       </div>
       <!-- 文章区  -->
       <div v-show="!isUserPage" class="posts-container">
-        <SkeletonUtil :loading="loading.userData" :row="5" :count="1" :showAvatar="false">
+        <SkeletonUtil
+          :loading="loading.userData"
+          :row="5"
+          :count="1"
+          :showAvatar="false"
+        >
           <PostPreview
             v-for="item in posts"
             :key="item.id"
@@ -185,7 +208,11 @@
             :hide-on-single-page="true"
             :pager-count="5"
           />
-          <el-empty :image-size="200" description="生活总归带点荒谬" v-if="posts.length === 0" />
+          <el-empty
+            :image-size="200"
+            description="生活总归带点荒谬"
+            v-if="posts.length === 0"
+          />
         </SkeletonUtil>
       </div>
       <div class="block" v-if="!isCurrentUser && !loading.skeleton"></div>
@@ -247,7 +274,7 @@
 }
 /* 添加一个::before伪元素降低背景图片的亮度，而不会影响background元素的其他内容 */
 .vapp-fullscreen-background::before {
-  content: '';
+  content: "";
   background-image: var(--leleo-background-image-url);
   transition: background-image 0.8s ease;
   background-size: cover;
@@ -371,7 +398,7 @@
 }
 
 .golang:before {
-  content: '';
+  content: "";
   background-color: rgba(255, 255, 255, 0.5);
   height: 100%;
   width: 3em;

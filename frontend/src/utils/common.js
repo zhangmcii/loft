@@ -1,53 +1,53 @@
-import { copyTextToClipboard } from '@pureadmin/utils'
-import { ElMessage } from 'element-plus'
-import { showConfirmDialog } from 'vant'
-import { v4 as uuidv4 } from 'uuid'
-import * as qiniu from 'qiniu-js'
-import router from '@/router'
-import lrz from 'lrz'
+import { copyTextToClipboard } from "@pureadmin/utils";
+import { ElMessage } from "element-plus";
+import { showConfirmDialog } from "vant";
+import { v4 as uuidv4 } from "uuid";
+import * as qiniu from "qiniu-js";
+import router from "@/router";
+import lrz from "lrz";
 
 function copy(value) {
   // 复制卡片内容到剪贴板
   if (!value) {
     ElMessage({
-      message: '内容为空',
-      type: 'error'
-    })
-    return
+      message: "内容为空",
+      type: "error",
+    });
+    return;
   }
-  const success = copyTextToClipboard(value)
+  const success = copyTextToClipboard(value);
   ElMessage({
-    message: success ? '复制成功' : '复制失败',
-    type: success ? 'success' : 'error'
-  })
+    message: success ? "复制成功" : "复制失败",
+    type: success ? "success" : "error",
+  });
 }
 
 function loginReminder(message) {
   showConfirmDialog({
-    title: '您还未登录',
+    title: "您还未登录",
     message: message,
-    confirmButtonText: '去登录',
-    width: 300
+    confirmButtonText: "去登录",
+    width: 300,
   })
     .then(() => {
-      router.push('/login')
+      router.push("/login");
     })
-    .catch(() => {})
+    .catch(() => {});
 }
 
 async function retry(func, maxRetries = 3, delay = 1000, ...args) {
-  let retries = 0
+  let retries = 0;
   while (retries < maxRetries) {
     try {
-      const result = await func(...args)
-      return result
+      const result = await func(...args);
+      return result;
     } catch (error) {
-      retries++
+      retries++;
       if (retries < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, delay))
+        await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
         // 达到最大重试次数，抛出最后一次的错误
-        throw error
+        throw error;
       }
     }
   }
@@ -56,30 +56,30 @@ async function retry(func, maxRetries = 3, delay = 1000, ...args) {
 function randomNum(minNum, maxNum) {
   switch (arguments.length) {
     case 1:
-      return parseInt(`${Math.random() * minNum + 1}`, 10)
+      return parseInt(`${Math.random() * minNum + 1}`, 10);
     case 2:
-      return parseInt(`${Math.random() * (maxNum - minNum + 1) + minNum}`, 10)
+      return parseInt(`${Math.random() * (maxNum - minNum + 1) + minNum}`, 10);
     default:
-      return 0
+      return 0;
   }
 }
 
 function isNode() {
-  return typeof window === 'undefined'
+  return typeof window === "undefined";
 }
 
 /*
  * @description: 防抖函数
  */
 function debounce(func, wait) {
-  let timeout
+  let timeout;
   return function (...args) {
-    const context = this
-    clearTimeout(timeout)
+    const context = this;
+    clearTimeout(timeout);
     timeout = setTimeout(() => {
-      func.apply(context, args)
-    }, wait)
-  }
+      func.apply(context, args);
+    }, wait);
+  };
 }
 
 /*
@@ -92,32 +92,37 @@ function debounce(func, wait) {
 async function compressImages(originalFiles, _compressedImages) {
   // console.log('开始压缩图片:', originalFiles)
   // console.log('已压缩的图片:', _compressedImages)
-  const compressedRatio = 80
-  const compressedImages = [..._compressedImages]
-  const compressionRatio = compressedRatio / 100
+  const compressedRatio = 80;
+  const compressedImages = [..._compressedImages];
+  const compressionRatio = compressedRatio / 100;
 
   // 找出未压缩的文件
   const uncompressedFiles = originalFiles.filter(
     (file) => !compressedImages.some((img) => img.uid === file.uid)
-  )
+  );
   // console.log('未压缩的文件:', uncompressedFiles)
 
   for (const file of uncompressedFiles) {
-    const rawFile = file.raw
-    const compressedFile = await lrz(rawFile, { quality: compressionRatio })
+    const rawFile = file.raw;
+    const compressedFile = await lrz(rawFile, { quality: compressionRatio });
 
-    console.log('压缩后的文件:', compressedFile)
-    console.log(`压缩后大小: ${(compressedFile.file.size / 1024).toFixed(2)} KB`)
+    console.log("压缩后的文件:", compressedFile);
+    console.log(
+      `压缩后大小: ${(compressedFile.file.size / 1024).toFixed(2)} KB`
+    );
 
     // 将 base64 转换为 Blob
-    const byteString = atob(compressedFile.base64.split(',')[1])
-    const mimeString = compressedFile.base64.split(',')[0].split(':')[1].split(';')[0]
-    const arrayBuffer = new ArrayBuffer(byteString.length)
-    const uintArray = new Uint8Array(arrayBuffer)
+    const byteString = atob(compressedFile.base64.split(",")[1]);
+    const mimeString = compressedFile.base64
+      .split(",")[0]
+      .split(":")[1]
+      .split(";")[0];
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const uintArray = new Uint8Array(arrayBuffer);
     for (let i = 0; i < byteString.length; i++) {
-      uintArray[i] = byteString.charCodeAt(i)
+      uintArray[i] = byteString.charCodeAt(i);
     }
-    const blob = new Blob([arrayBuffer], { type: mimeString })
+    const blob = new Blob([arrayBuffer], { type: mimeString });
 
     compressedImages.push({
       src: compressedFile.base64,
@@ -127,35 +132,37 @@ async function compressImages(originalFiles, _compressedImages) {
       uid: rawFile.uid,
       // markdown图片位置
       pos: rawFile.pos,
-      sizeInfo: `压缩后大小: ${(compressedFile.file.size / 1024).toFixed(2)} KB`
-    })
+      sizeInfo: `压缩后大小: ${(compressedFile.file.size / 1024).toFixed(
+        2
+      )} KB`,
+    });
   }
-  return compressedImages
+  return compressedImages;
 }
 
 function beforePicUpload(fileList) {
   for (const file of fileList) {
-    const isImage = file.raw.type.startsWith('image/')
+    const isImage = file.raw.type.startsWith("image/");
     if (!isImage) {
       ElMessage({
-        message: '只能上传图片格式文件！',
-        type: 'error'
-      })
-      return false
+        message: "只能上传图片格式文件！",
+        type: "error",
+      });
+      return false;
     }
     const limitPic =
-      file.raw.type === 'image/png' ||
-      file.raw.type === 'image/jpg' ||
-      file.raw.type === 'image/jpeg'
+      file.raw.type === "image/png" ||
+      file.raw.type === "image/jpg" ||
+      file.raw.type === "image/jpeg";
     if (!limitPic) {
       ElMessage({
-        message: '请上传格式为png/jpg/jpeg的图片',
-        type: 'warning'
-      })
-      return false
+        message: "请上传格式为png/jpg/jpeg的图片",
+        type: "warning",
+      });
+      return false;
     }
   }
-  return true
+  return true;
 }
 
 // 文件上传至七牛云
@@ -164,75 +171,79 @@ function beforePicUpload(fileList) {
 // uploadToken： 上传的凭证
 // 返回：key数组 ['', ''] or [{'url':'', 'pos':''}, {}]， 完整url数组
 async function uploadFiles(compressedImages, targetPath, uploadToken) {
-  const putExtra = {}
+  const putExtra = {};
   const config = {
     // 存储区域
-    region: qiniu.region.z0
-  }
-  const imageKey = []
-  const imageUrls = []
+    region: qiniu.region.z0,
+  };
+  const imageKey = [];
+  const imageUrls = [];
+  let result;
   try {
     for (const file of compressedImages) {
-      const folder = targetPath
-      const uniqueFileName = `${uuidv4()}.${file.name.split('.').pop()}`
-      const key = folder + uniqueFileName
-      const observable = qiniu.upload(file.blob, key, uploadToken, putExtra, config)
+      const folder = targetPath;
+      const uniqueFileName = `${uuidv4()}.${file.name.split(".").pop()}`;
+      const key = folder + uniqueFileName;
+      const observable = qiniu.upload(
+        file.blob,
+        key,
+        uploadToken,
+        putExtra,
+        config
+      );
       await new Promise((resolve, reject) => {
         observable.subscribe({
           next() {},
           error(err) {
-            reject(err)
+            reject(err);
           },
           complete(res) {
-            // markdown场景中，file会携带pos属性
             file.pos === undefined
               ? imageKey.push(res.key)
-              : imageKey.push({ pos: file.pos, url: res.key })
-            const imageUrl = `${import.meta.env.VITE_QINIU_DOMAIN}/${res.key}`
-            imageUrls.push(imageUrl)
-            resolve()
-          }
-        })
-      })
+              : imageKey.push({ pos: file.pos, url: res.key });
+            const imageUrl = `${import.meta.env.VITE_QINIU_DOMAIN}/${res.key}`;
+            imageUrls.push(imageUrl);
+            resolve();
+          },
+        });
+      });
     }
+    result = { imageKey, imageUrls };
   } catch (error) {
-    console.error('Upload failed:', error)
-  } finally {
-    return {
-      imageKey,
-      imageUrls
-    }
+    console.error("Upload failed:", error);
+    result = { imageKey, imageUrls };
   }
+  return result;
 }
 
 function waitImage(imageUrls) {
   // 返回 Promise，让调用者感知加载状态
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const imagePromises = imageUrls.map((url) => {
       return new Promise((resolve, reject) => {
-        const imgs = new Image()
-        imgs.src = url
-        imgs.onload = () => resolve()
-        imgs.onerror = (err) => reject(err)
-      })
-    })
+        const imgs = new Image();
+        imgs.src = url;
+        imgs.onload = () => resolve();
+        imgs.onerror = (err) => reject(err);
+      });
+    });
 
     // 设置超时机制：2.5秒
     const timeoutPromise = new Promise((resolve) => {
       setTimeout(() => {
-        resolve('timeout')
-      }, 2500)
-    })
+        resolve("timeout");
+      }, 2500);
+    });
 
     Promise.race([Promise.all(imagePromises), timeoutPromise])
       .then(() => {
-        resolve() // 加载完成，loading 结束
+        resolve(); // 加载完成，loading 结束
       })
       .catch((err) => {
-        console.error('壁纸加载失败:', err)
-        resolve() // 即使失败也结束 loading
-      })
-  })
+        console.error("壁纸加载失败:", err);
+        resolve(); // 即使失败也结束 loading
+      });
+  });
 }
 
 export {
@@ -245,5 +256,5 @@ export {
   compressImages,
   uploadFiles,
   beforePicUpload,
-  waitImage
-}
+  waitImage,
+};

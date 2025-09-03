@@ -1,95 +1,95 @@
 <script>
-import editApi from '@/api/user/editApi.js'
-import userApi from '@/api/user/userApi.js'
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
+import editApi from "@/api/user/editApi.js";
+import userApi from "@/api/user/userApi.js";
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 export default {
   components: {
     ButtonClick,
-    PageHeadBack
+    PageHeadBack,
   },
   data() {
     return {
       formLabelAlign: {
-        email: '',
-        username: '',
-        confirmed: '',
-        role: '',
-        name: '',
-        location: '',
-        about_me: ''
+        email: "",
+        username: "",
+        confirmed: "",
+        role: "",
+        name: "",
+        location: "",
+        about_me: "",
       },
       user: {},
       userId: -1,
       roles: [
         {
           value: 1,
-          label: '普通用户'
+          label: "普通用户",
         },
         {
           value: 2,
-          label: '内容协调员'
+          label: "内容协调员",
         },
         {
           value: 3,
-          label: '管理员'
-        }
+          label: "管理员",
+        },
       ],
       confirm: [
         {
           value: false,
-          label: '未认证'
+          label: "未认证",
         },
         {
           value: true,
-          label: '已认证'
-        }
+          label: "已认证",
+        },
       ],
       originalForm: {},
       loading: false,
-      isChange: false
-    }
+      isChange: false,
+    };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      vm.userId = to.params.id
-      vm.getUserInfo(vm.userId)
-      vm.$nextTick(() => {})
-    })
+      vm.userId = to.params.id;
+      vm.getUserInfo(vm.userId);
+      vm.$nextTick(() => {});
+    });
   },
   watch: {
     formLabelAlign: {
       deep: true,
       handler(newVal) {
-        this.isChange = JSON.stringify(newVal) !== this.originalForm
-      }
-    }
+        this.isChange = JSON.stringify(newVal) !== this.originalForm;
+      },
+    },
   },
   methods: {
     getUserInfo(userId) {
       userApi.getUser(userId).then((res) => {
         if (res.code == 200) {
-          this.user = res.data
-          this.originalForm = JSON.stringify(res.data)
-          this.formLabelAlign = res.data
+          this.user = res.data;
+          this.originalForm = JSON.stringify(res.data);
+          this.formLabelAlign = res.data;
         }
-      })
+      });
     },
     submit() {
-      this.loading = true
+      this.loading = true;
       editApi.editProfileAdmin(this.formLabelAlign).then((res) => {
-        this.loading = false
-        this.isChange = false
+        this.loading = false;
+        this.isChange = false;
         if (res.code == 200) {
-          this.$message.success('修改成功')
-          this.$router.push(`/user/${this.formLabelAlign.username}`)
+          this.$message.success("修改成功");
+          this.$router.push(`/user/${this.formLabelAlign.username}`);
         } else {
-          this.$message.error('修改失败')
+          this.$message.error("修改失败");
         }
-      })
-    }
-  }
-}
+      });
+    },
+  },
+};
 </script>
 
 <template>
@@ -108,8 +108,8 @@ export default {
           {
             type: 'email',
             message: '请输入正确的邮件地址',
-            trigger: ['blur', 'change']
-          }
+            trigger: ['blur', 'change'],
+          },
         ]"
       >
         <el-input v-model="formLabelAlign.email" />
@@ -118,7 +118,11 @@ export default {
         <el-input v-model="formLabelAlign.username" />
       </el-form-item>
       <el-form-item label="认证状态">
-        <el-select v-model="formLabelAlign.confirmed" placeholder="Select" style="width: 240px">
+        <el-select
+          v-model="formLabelAlign.confirmed"
+          placeholder="Select"
+          style="width: 240px"
+        >
           <el-option
             v-for="item in confirm"
             :key="item.value"
@@ -128,7 +132,11 @@ export default {
         </el-select>
       </el-form-item>
       <el-form-item label="角色">
-        <el-select v-model="formLabelAlign.role" placeholder="Select" style="width: 240px">
+        <el-select
+          v-model="formLabelAlign.role"
+          placeholder="Select"
+          style="width: 240px"
+        >
           <el-option
             v-for="item in roles"
             :key="item.value"
@@ -145,7 +153,11 @@ export default {
         <el-input v-model="formLabelAlign.location" />
       </el-form-item>
       <el-form-item label="关于我">
-        <el-input v-model="formLabelAlign.about_me" show-word-limit maxlength="30" />
+        <el-input
+          v-model="formLabelAlign.about_me"
+          show-word-limit
+          maxlength="30"
+        />
       </el-form-item>
       <el-form-item>
         <ButtonClick

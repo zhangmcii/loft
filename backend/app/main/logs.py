@@ -1,14 +1,14 @@
-from flask_jwt_extended import jwt_required
-from . import main
-from ..models import Log
-from ..decorators import admin_required
-from .. import db
-from flask import request, current_app
-from ..utils.response import success, error
-
-
 # 日志
 import logging
+
+from flask import current_app, request
+from flask_jwt_extended import jwt_required
+
+from .. import db
+from ..decorators import admin_required
+from ..models import Log
+from ..utils.response import error, success
+from . import main
 
 
 # --------------------------- 日志管理 ---------------------------

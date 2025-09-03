@@ -1,94 +1,96 @@
 <script>
-import authApi from '@/api/auth/authApi.js'
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
+import authApi from "@/api/auth/authApi.js";
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 
 export default {
   components: {
     ButtonClick,
-    PageHeadBack
+    PageHeadBack,
   },
   data() {
     return {
       form: {
-        new_email: '',
-        code: '',
-        password: ''
+        new_email: "",
+        code: "",
+        password: "",
       },
       rules: {
         new_email: [
-          { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+          { required: true, message: "请输入邮箱地址", trigger: "blur" },
           {
-            type: 'email',
-            message: '请输入正确的邮箱地址',
-            trigger: ['blur', 'change']
-          }
+            type: "email",
+            message: "请输入正确的邮箱地址",
+            trigger: ["blur", "change"],
+          },
         ],
-        code: [{ required: true, message: '请输入验证码', trigger: 'blur' }],
-        password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+        code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+        password: [{ required: true, message: "请输入密码", trigger: "blur" }],
       },
       isEmailValid: false,
-      value: '',
+      value: "",
       showButton: true,
       loading: false,
-      isChange: false
-    }
+      isChange: false,
+    };
   },
   computed: {
     isSubmit() {
-      return !(this.isEmailValid && this.form.code && this.form.password)
-    }
+      return !(this.isEmailValid && this.form.code && this.form.password);
+    },
   },
   methods: {
     applyCode() {
-      this.value = Date.now() + 1000 * 60
-      this.showButton = !this.showButton
+      this.value = Date.now() + 1000 * 60;
+      this.showButton = !this.showButton;
       const loadingInstance = this.$loading({
         lock: true,
-        text: 'Loading',
-        background: 'rgba(0, 0, 0, 0.7)',
-      })
-      authApi.applyCode({ email: this.form.new_email}).then((res) => {
-        if (res.code == 200) {
-          this.$message.success('验证码已发送')
-        } else {
-          this.$message.error('验证码发送失败')
-        }
-        loadingInstance.close()
-      }).catch(() => {
-        this.$message.error('网络错误，请稍后再试')
-        loadingInstance.close()
-      })
-
+        text: "Loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
+      authApi
+        .applyCode({ email: this.form.new_email })
+        .then((res) => {
+          if (res.code == 200) {
+            this.$message.success("验证码已发送");
+          } else {
+            this.$message.error("验证码发送失败");
+          }
+          loadingInstance.close();
+        })
+        .catch(() => {
+          this.$message.error("网络错误，请稍后再试");
+          loadingInstance.close();
+        });
     },
     changeEmail() {
       authApi.changeEmail(this.form).then((res) => {
         if (res.code == 200) {
-          this.$message.success('邮箱更换成功!')
-          this.$router.push('/posts')
+          this.$message.success("邮箱更换成功!");
+          this.$router.push("/posts");
         } else {
-          this.$message.error('邮箱更换失败')
+          this.$message.error("邮箱更换失败");
         }
-      })
+      });
     },
     submitForm() {
-      this.loading = true
-      this.changeEmail()
-      this.loading = false
-      this.isChange = false
+      this.loading = true;
+      this.changeEmail();
+      this.loading = false;
+      this.isChange = false;
     },
     finish() {
-      this.showButton = !this.showButton
+      this.showButton = !this.showButton;
     },
     validateEmail() {
       if (this.$refs.formRef) {
-        this.$refs.formRef.validateField('new_email', (errorMessage) => {
-          this.isEmailValid = errorMessage
-        })
+        this.$refs.formRef.validateField("new_email", (errorMessage) => {
+          this.isEmailValid = errorMessage;
+        });
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <template>
@@ -101,7 +103,7 @@ export default {
         <h1>更换邮箱地址</h1>
         <p class="subtitle">更新您的联系方式，保持信息畅通</p>
       </div>
-      
+
       <div class="form-card">
         <div class="steps-container">
           <div class="step active">
@@ -119,7 +121,7 @@ export default {
             <div class="step-text">完成更换</div>
           </div>
         </div>
-        
+
         <el-form
           label-position="top"
           label-width="auto"
@@ -129,37 +131,37 @@ export default {
         >
           <el-form-item prop="new_email" label="新的邮箱地址">
             <div class="input-group">
-              <el-input 
-                v-model="form.new_email" 
-                placeholder="请输入新的邮箱地址" 
+              <el-input
+                v-model="form.new_email"
+                placeholder="请输入新的邮箱地址"
                 @blur="validateEmail"
                 prefix-icon="el-icon-message"
               />
               <div class="code-button">
-                <el-button 
-                  @click="applyCode" 
-                  type="primary" 
-                  :disabled="!isEmailValid" 
+                <el-button
+                  @click="applyCode"
+                  type="primary"
+                  :disabled="!isEmailValid"
                   v-if="showButton"
                   class="send-code-btn"
                 >
                   发送验证码
                 </el-button>
-                <el-countdown 
-                  prefix="重新发送" 
-                  format="ss秒" 
-                  :value="value" 
-                  @finish="finish" 
-                  v-else 
+                <el-countdown
+                  prefix="重新发送"
+                  format="ss秒"
+                  :value="value"
+                  @finish="finish"
+                  v-else
                   class="countdown"
                 />
               </div>
             </div>
           </el-form-item>
-          
+
           <el-form-item prop="code" label="验证码">
-            <el-input 
-              v-model="form.code" 
+            <el-input
+              v-model="form.code"
               placeholder="请输入收到的验证码"
               prefix-icon="el-icon-key"
             />
@@ -167,23 +169,23 @@ export default {
               验证码已发送至您的新邮箱，请查收
             </div>
           </el-form-item>
-          
+
           <div class="security-section">
             <div class="security-header">
               <i class="el-icon-lock"></i>
               <span>安全验证</span>
             </div>
             <el-form-item prop="password" label="当前账户密码">
-              <el-input 
-                v-model="form.password" 
-                type="password" 
-                show-password 
+              <el-input
+                v-model="form.password"
+                type="password"
+                show-password
                 prefix-icon="el-icon-lock"
                 placeholder="请输入当前账户密码"
               />
             </el-form-item>
           </div>
-          
+
           <el-form-item>
             <ButtonClick
               content="确认更换邮箱"
@@ -195,7 +197,7 @@ export default {
             />
           </el-form-item>
         </el-form>
-        
+
         <div class="notice">
           <div class="notice-title">
             <i class="el-icon-warning"></i>
@@ -225,7 +227,7 @@ export default {
 }
 
 .email-icon {
-  background: linear-gradient(135deg, #E6A23C, #F56C6C);
+  background: linear-gradient(135deg, #e6a23c, #f56c6c);
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -278,7 +280,7 @@ export default {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #EBEEF5;
+  background-color: #ebeef5;
   color: #909399;
   display: flex;
   align-items: center;
@@ -289,7 +291,7 @@ export default {
 }
 
 .step.active .step-number {
-  background-color: #409EFF;
+  background-color: #409eff;
   color: white;
 }
 
@@ -301,14 +303,14 @@ export default {
 }
 
 .step.active .step-text {
-  color: #409EFF;
+  color: #409eff;
   font-weight: 500;
 }
 
 .step-line {
   flex: 1;
   height: 2px;
-  background-color: #EBEEF5;
+  background-color: #ebeef5;
   margin: 0 10px;
   margin-bottom: 20px;
 }
@@ -356,7 +358,7 @@ export default {
   padding: 20px;
   background: #f9f9f9;
   border-radius: 8px;
-  border: 1px dashed #DCDFE6;
+  border: 1px dashed #dcdfe6;
 }
 
 .security-header {
@@ -369,7 +371,7 @@ export default {
 }
 
 .security-header i {
-  color: #F56C6C;
+  color: #f56c6c;
 }
 
 .submit-btn {
@@ -386,14 +388,14 @@ export default {
   padding: 15px;
   background: #fff9f9;
   border-radius: 8px;
-  border-left: 4px solid #F56C6C;
+  border-left: 4px solid #f56c6c;
 }
 
 .notice-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #F56C6C;
+  color: #f56c6c;
   font-weight: 500;
   margin-bottom: 10px;
 }

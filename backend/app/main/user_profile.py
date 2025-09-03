@@ -1,16 +1,16 @@
-from flask_jwt_extended import jwt_required, current_user
-from . import main
-from ..models import User, Role, Image, ImageType
-from ..decorators import admin_required
-from .. import db
-from flask import jsonify, request
-from ..utils.common import get_avatars_url
-from ..utils.response import success, error, not_found
-
-from sqlalchemy import and_
-
 # 日志
 import logging
+
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+from sqlalchemy import and_
+
+from .. import db
+from ..decorators import admin_required
+from ..models import Image, ImageType, Role, User
+from ..utils.common import get_avatars_url
+from ..utils.response import error, success
+from . import main
 
 
 # --------------------------- 编辑资料 ---------------------------
@@ -90,9 +90,6 @@ def add_user_image():
 #     return success(data=data)
 
 
-
-
-
 @main.route("/can/<int:perm>")
 @jwt_required(optional=True)
 def can(perm):
@@ -112,6 +109,7 @@ def generate_user_posts():
     try:
         from ..fake import Fake
         from ..models import Role
+
         Role.insert_roles()
         Fake.users()
         Fake.posts()
@@ -119,17 +117,17 @@ def generate_user_posts():
     except Exception as e:
         logging.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
         return error(500, f"生成用户和文章失败: {str(e)}")
-    
-    
+
+
 @main.route("/socketData")
 @admin_required
 @jwt_required()
 def online():
     """获取在线用户信息"""
     logging.info("获取在线用户信息")
-    from ..utils.socket_util import ManageSocket
     from ..models import User
-    
+    from ..utils.socket_util import ManageSocket
+
     manage_socket = ManageSocket()
     # 在线人数信息
     user_ids = manage_socket.user_socket.keys()

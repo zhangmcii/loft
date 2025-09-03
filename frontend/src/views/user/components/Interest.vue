@@ -1,5 +1,5 @@
 <script>
-import InterestPage from '@/views/user/components/InterestPage.vue'
+import InterestPage from "@/views/user/components/InterestPage.vue";
 export default {
   props: {
     interest: {
@@ -7,34 +7,34 @@ export default {
       default() {
         return {
           movies: [],
-          books: []
-        }
-      }
+          books: [],
+        };
+      },
     },
     showInterest: {
       type: String,
-      default: ''
+      default: "",
     },
     showButton: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   components: {
-    InterestPage
+    InterestPage,
   },
   data() {
     return {
-      activeName: 'first',
-      name: ['苦尽甘来遇见你', '我的大叔', '黑化律师'],
-      preList: []
-    }
+      activeName: "first",
+      name: ["苦尽甘来遇见你", "我的大叔", "黑化律师"],
+      preList: [],
+    };
   },
   watch: {},
   computed: {},
   mounted() {},
-  methods: {}
-}
+  methods: {},
+};
 </script>
 
 <template>

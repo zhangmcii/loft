@@ -1,22 +1,23 @@
-import os
 import logging
-from flask import request, current_app
-from .decorators import DecoratedMethodView
+import os
+
+from flask import current_app, request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db, limiter, socketio
 from ..decorators import log_operate
-from flask_jwt_extended import jwt_required, current_user
-from .. import db
-from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notification, NotificationType
 from ..main.uploads import del_qiniu_image
-from ..utils.response import success, error
-from .. import socketio
-from .. import limiter
+from ..models import (Follow, Image, ImageType, Notification, NotificationType,
+                      Permission, Post, PostType)
+from ..utils.response import error, success
+from .decorators import DecoratedMethodView
 
 
 class PostItemApi(DecoratedMethodView):
     method_decorators = {
-        'get': [],
-        'delete': [jwt_required()],
-        'patch': [jwt_required()]
+        "get": [],
+        "delete": [jwt_required()],
+        "patch": [jwt_required()],
     }
 
     def get(self, id):
@@ -38,11 +39,19 @@ class PostItemApi(DecoratedMethodView):
             is_contain_image = p.type == PostType.IMAGE
             to_del_urls = []
             if is_contain_image:
-                post_images = Image.query.filter(Image.type == ImageType.POST, Image.related_id == p.id).order_by(
-                    Image.id.asc()).all()
+                post_images = (
+                    Image.query.filter(
+                        Image.type == ImageType.POST, Image.related_id == p.id
+                    )
+                    .order_by(Image.id.asc())
+                    .all()
+                )
                 to_del_urls = [image.url for image in post_images]
                 # 删除图片
-                data = {'bucket_name': os.getenv('QINIU_BUCKET_NAME', ''), 'keys': to_del_urls}
+                data = {
+                    "bucket_name": os.getenv("QINIU_BUCKET_NAME", ""),
+                    "keys": to_del_urls,
+                }
             db.session.delete(p)
             db.session.commit()
         except Exception as e:
@@ -58,21 +67,29 @@ class PostItemApi(DecoratedMethodView):
     def patch(self, id):
         logging.info(f"编辑文章: id={id}")
         post = Post.query.get_or_404(id)
-        if current_user.username != post.author.username and not current_user.can(Permission.ADMIN):
+        if current_user.username != post.author.username and not current_user.can(
+            Permission.ADMIN
+        ):
             logging.warning(f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}")
             return error(403, "没有权限编辑此文章")
 
         # 对表单编辑业务逻辑
         j = request.get_json()
-        post.body = j.get('body', post.body)
-        post.body_html = j.get('bodyHtml') if j.get('bodyHtml') else None
+        post.body = j.get("body", post.body)
+        post.body_html = j.get("bodyHtml") if j.get("bodyHtml") else None
         db.session.add(post)
         # 编辑markdown文章时新增图片
-        images = j.get('images')
+        images = j.get("images")
         if images:
             images = [
-                Image(url=image.get('url', ''), type=ImageType.POST, describe=image.get('pos', ''), related_id=post.id)
-                for image in images]
+                Image(
+                    url=image.get("url", ""),
+                    type=ImageType.POST,
+                    describe=image.get("pos", ""),
+                    related_id=post.id,
+                )
+                for image in images
+            ]
             db.session.add_all(images)
         db.session.commit()
         return success(data=post.to_json())
@@ -80,8 +97,8 @@ class PostItemApi(DecoratedMethodView):
 
 class PostGroupApi(DecoratedMethodView):
     method_decorators = {
-        'get': [log_operate],
-        'post': [jwt_required()],
+        "get": [log_operate],
+        "post": [jwt_required()],
     }
 
     @staticmethod
@@ -131,21 +148,30 @@ class PostGroupApi(DecoratedMethodView):
     @staticmethod
     def submit_to_db(post_type, body, body_html, images=None):
         try:
-            post = Post(body=body, body_html=body_html, type=post_type, author=current_user)
+            post = Post(
+                body=body, body_html=body_html, type=post_type, author=current_user
+            )
             db.session.add(post)
             db.session.flush()
             # images：  [ '', '' ] or [ {'url':'', 'pos':''},{} ]
             # markdown
             if images and isinstance(images[0], dict):
                 images = [
-                    Image(url=image.get("url", ""), type=ImageType.POST, describe=image.get("pos", ""),
-                          related_id=post.id)
-                    for image in images]
+                    Image(
+                        url=image.get("url", ""),
+                        type=ImageType.POST,
+                        describe=image.get("pos", ""),
+                        related_id=post.id,
+                    )
+                    for image in images
+                ]
                 db.session.add_all(images)
             # 图文
             elif images and isinstance(images[0], str):
                 images = [
-                    Image(url=image, type=ImageType.POST, related_id=post.id) for image in images]
+                    Image(url=image, type=ImageType.POST, related_id=post.id)
+                    for image in images
+                ]
                 db.session.add_all(images)
             db.session.commit()
             PostGroupApi.new_post_notification(post.id)
@@ -157,17 +183,17 @@ class PostGroupApi(DecoratedMethodView):
 
     @staticmethod
     def posts_publish(data: dict):
-        body = data.get("body", '')
+        body = data.get("body", "")
         body_html = data.get("bodyHtml", None)
         images = data.get("images", [])
         # 可选text, image, markdown
-        post_type = data.get('type', 'text')
+        post_type = data.get("type", "text")
         match post_type:
-            case 'text':
+            case "text":
                 PostGroupApi.submit_to_db(PostType.TEXT, body, body_html, images)
-            case 'image':
+            case "image":
                 PostGroupApi.submit_to_db(PostType.IMAGE, body, body_html, images)
-            case 'markdown':
+            case "markdown":
                 limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
                 PostGroupApi.submit_to_db(PostType.IMAGE, body, body_html, images)
 
@@ -177,7 +203,9 @@ class PostGroupApi(DecoratedMethodView):
         per_page = request.args.get(
             "per_page", current_app.config["FLASKY_POSTS_PER_PAGE"], type=int
         )
-        posts, total = PostGroupApi.query_post(page, per_page, request.args.get("tabName"))
+        posts, total = PostGroupApi.query_post(
+            page, per_page, request.args.get("tabName")
+        )
         return success(data=posts, total=total)
 
     def post(self):
@@ -187,12 +215,14 @@ class PostGroupApi(DecoratedMethodView):
                 PostGroupApi.posts_publish(request.json)
             except Exception as e:
                 return error(500, f"{str(e)}")
-            posts, total = PostGroupApi.query_post(1, current_app.config["FLASKY_POSTS_PER_PAGE"])
+            posts, total = PostGroupApi.query_post(
+                1, current_app.config["FLASKY_POSTS_PER_PAGE"]
+            )
             return success(data=posts, total=total)
 
 
 def register_post_api(bp, *, post_item_url, post_group_url):
-    item = PostItemApi.as_view('post_item')
-    group = PostGroupApi.as_view('post_group')
+    item = PostItemApi.as_view("post_item")
+    group = PostGroupApi.as_view("post_group")
     bp.add_url_rule(post_item_url, view_func=item)
     bp.add_url_rule(post_group_url, view_func=group)

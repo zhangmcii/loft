@@ -1,24 +1,20 @@
-from .decorators import DecoratedMethodView
-from flask_jwt_extended import current_user, jwt_required
-from ..models import User, Role
-from .. import db
-from flask import request
-from ..utils.common import get_avatars_url
-from ..utils.response import success, error
-
-from ..decorators import admin_required
-
-# 日志
 import logging
+
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..models import User
+from ..utils.common import get_avatars_url
+from ..utils.response import error, success
+from .decorators import DecoratedMethodView
 
 
 # --------------------------- 编辑资料 ---------------------------
-
-
 class UsersApi(DecoratedMethodView):
     method_decorators = {
-        'get': [],
-        'patch': [jwt_required()],
+        "get": [],
+        "patch": [jwt_required()],
     }
 
     # def admin(self, user):
@@ -39,18 +35,18 @@ class UsersApi(DecoratedMethodView):
         """编辑用户资料"""
         logging.info(f"编辑用户资料: user_id={id}")
         if not current_user or current_user.id != id:
-            return error(400, message='操作不合法，非当前用户')
+            return error(400, message="操作不合法，非当前用户")
         for key, value in request.json.items():
             if hasattr(current_user, key):
                 setattr(current_user, key, value)
         db.session.commit()
-        return success(data='', message='用户资料更新成功')
+        return success(data="", message="用户资料更新成功")
 
 
 class UserImageApi(DecoratedMethodView):
     method_decorators = {
-        'get': [],
-        'post': [jwt_required()],
+        "get": [],
+        "post": [jwt_required()],
     }
 
     def get(self, id):
@@ -104,8 +100,8 @@ class UserImageApi(DecoratedMethodView):
 
 
 def register_user_api(bp, *, user_url, user_image_url):
-    users = UsersApi.as_view('users')
-    user_image = UserImageApi.as_view('users_image')
+    users = UsersApi.as_view("users")
+    user_image = UserImageApi.as_view("users_image")
     # admin = UserAdminApi.as_view(f'{name}_admin')
     bp.add_url_rule(user_url, view_func=users)
     bp.add_url_rule(user_image_url, view_func=user_image)

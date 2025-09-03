@@ -7,21 +7,21 @@ export default {
     // 加载文案
     content: {
       type: String,
-      default: 'loading...'
+      default: "loading...",
     },
     // true:闪烁   false:停止闪烁
     stop_loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 文字出现的位置 'center', 'left', 'right'
-    position:{
-      type:String,
-      default:'center'
-    }
+    position: {
+      type: String,
+      default: "center",
+    },
   },
-  emits: ['doSearch']
-}
+  emits: ["doSearch"],
+};
 </script>
 
 <template>
@@ -29,7 +29,7 @@ export default {
     <el-text>
       {{ content }}
     </el-text>
-   </div>
+  </div>
 </template>
 <style scoped>
 div {

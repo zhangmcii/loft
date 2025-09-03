@@ -1,14 +1,14 @@
-from flask_jwt_extended import jwt_required, current_user, verify_jwt_in_request
-from . import main
-from ..models import Post, Comment, Praise, Notification, NotificationType
-from .. import db
-from flask import request
-from .. import socketio
-from ..utils.response import success, error
-
-
 # 日志
 import logging
+
+from flask import request
+from flask_jwt_extended import (current_user, jwt_required,
+                                verify_jwt_in_request)
+
+from .. import db, socketio
+from ..models import Comment, Notification, NotificationType, Post, Praise
+from ..utils.response import error, success
+from . import main
 
 
 # --------------------------- 点赞功能 ---------------------------

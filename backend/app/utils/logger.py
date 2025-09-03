@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import logging
 import logging.handlers
+import os
 from datetime import datetime
 
 
@@ -21,9 +21,15 @@ class FlaskMailHandler(logging.Handler):
     def emit(self, record):
         try:
             from ..mycelery.tasks import send_email
+
             log_text = self.format(record)
-            send_email.delay('1912592745@qq.com', 'Loft App Error', 'error_email.html', username='admin',
-                             error_message=log_text)
+            send_email.delay(
+                "1912592745@qq.com",
+                "Loft App Error",
+                "error_email.html",
+                username="admin",
+                error_message=log_text,
+            )
         except Exception:
             self.handleError(record)
 
@@ -31,7 +37,7 @@ class FlaskMailHandler(logging.Handler):
 def setup_logging(app=None):
     """
     配置全局日志系统，使用根记录器
-    
+
     Args:
         app: Flask应用实例，可选
     """
@@ -42,7 +48,7 @@ def setup_logging(app=None):
     root_logger.setLevel(logging.INFO)
 
     # 创建日志目录
-    log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../logs'))
+    log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../logs"))
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -51,7 +57,7 @@ def setup_logging(app=None):
 
     # 创建文件处理器
     file_handler = logging.handlers.TimedRotatingFileHandler(
-        log_file, when='midnight', interval=1, backupCount=30, encoding='utf-8'
+        log_file, when="midnight", interval=1, backupCount=30, encoding="utf-8"
     )
     file_handler.setLevel(logging.INFO)
 
@@ -61,7 +67,7 @@ def setup_logging(app=None):
 
     # 创建格式化器
     formatter = logging.Formatter(
-        '%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] - %(message)s'
+        "%(asctime)s [%(levelname)s] [%(filename)s:%(lineno)d] - %(message)s"
     )
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)

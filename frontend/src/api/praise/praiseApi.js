@@ -19,8 +19,10 @@ export default {
 
   // 查找某文章下当前用户已点赞的评论id
   has_praised_comment_ids(postId) {
-    let params = {}
-    params['liked'] = "true"
-    return $http.get(`${url_prefix}/posts/${postId}/comments/praised`, { params: params });
-  }
+    let params = {};
+    params["liked"] = "true";
+    return $http.get(`${url_prefix}/posts/${postId}/comments/praised`, {
+      params: params,
+    });
+  },
 };

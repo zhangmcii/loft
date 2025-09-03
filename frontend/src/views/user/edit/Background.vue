@@ -1,77 +1,77 @@
 <script setup>
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
-import { ref, reactive, onMounted, nextTick } from 'vue'
-import imageApi from '@/api/user/imageApi.js'
-import editApi from '@/api/user/editApi.js'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElLoading } from 'element-plus'
-import { useCurrentUserStore } from '@/stores/user'
-import { useChange } from '@/utils/composedFunc/change.js'
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import { ref, reactive, onMounted, nextTick } from "vue";
+import imageApi from "@/api/user/imageApi.js";
+import editApi from "@/api/user/editApi.js";
+import { useRouter } from "vue-router";
+import { ElMessage, ElLoading } from "element-plus";
+import { useCurrentUserStore } from "@/stores/user";
+import { useChange } from "@/utils/composedFunc/change.js";
 
-const currentUser = useCurrentUserStore()
-const router = useRouter()
+const currentUser = useCurrentUserStore();
+const router = useRouter();
 
-let images = ref([])
-const active = ref('图片壁纸')
-const radio = ref(currentUser.userInfo.bg_image)
+let images = ref([]);
+const active = ref("图片壁纸");
+const radio = ref(currentUser.userInfo.bg_image);
 
-const { isChange } = useChange(radio)
+const { isChange } = useChange(radio);
 // 分页
 const query = reactive({
   currentPage: 1, // 当前页数
   size: 6, // 页大小
-  total: 10 // 评论总数
-})
+  total: 10, // 评论总数
+});
 onMounted(() => {
-  getBackgroundImage()
-})
+  getBackgroundImage();
+});
 
 function getBackgroundImage() {
   imageApi.getBackgroundImage(query.currentPage, query.size).then((res) => {
     if (res.code == 200) {
-      images.value = [...res.data]
-      query.total = res.total
+      images.value = [...res.data];
+      query.total = res.total;
     }
-  })
+  });
 }
 
 function handleCurrentChange() {
-  getBackgroundImage()
+  getBackgroundImage();
 }
 
 function redefault() {
   const loading = ElLoading.service({
     lock: true,
-    text: '正在保存',
-    background: 'rgba(0, 0, 0, 0.7)'
-  })
+    text: "正在保存",
+    background: "rgba(0, 0, 0, 0.7)",
+  });
   setTimeout(() => {
-    loading.close()
+    loading.close();
     // 恢复默认
-  }, 800)
+  }, 800);
 }
 async function submitdata() {
   if (!radio.value) {
-    ElMessage.warning('请选择壁纸')
-    return
+    ElMessage.warning("请选择壁纸");
+    return;
   }
   const loading = ElLoading.service({
     lock: true,
-    text: '正在保存',
-    background: 'rgba(0, 0, 0, 0.7)'
-  })
+    text: "正在保存",
+    background: "rgba(0, 0, 0, 0.7)",
+  });
   // 至少加载1s
-  const startTime = Date.now()
+  const startTime = Date.now();
   // 保存url
-  await editApi.editUser(currentUser.userInfo.id, { bg_image: radio.value })
-  currentUser.userInfo = { ...currentUser.userInfo, bg_image: radio.value }
-  const elapsedTime = Date.now() - startTime
-  const delayTime = Math.max(0, 1000 - elapsedTime)
+  await editApi.editUser(currentUser.userInfo.id, { bg_image: radio.value });
+  currentUser.userInfo = { ...currentUser.userInfo, bg_image: radio.value };
+  const elapsedTime = Date.now() - startTime;
+  const delayTime = Math.max(0, 1000 - elapsedTime);
   setTimeout(() => {
-    loading.close()
+    loading.close();
     // 回到用户资料页
-    router.push(`/user/${currentUser.userInfo.username}`)
-  }, delayTime)
+    router.push(`/user/${currentUser.userInfo.username}`);
+  }, delayTime);
 }
 </script>
 
@@ -125,7 +125,12 @@ async function submitdata() {
     <!-- 按钮区 -->
     <div class="btn-bar">
       <el-button type="info" @click="redefault">恢复</el-button>
-      <el-button type="primary" :disabled="!radio || !isChange" @click="submitdata">确认</el-button>
+      <el-button
+        type="primary"
+        :disabled="!radio || !isChange"
+        @click="submitdata"
+        >确认</el-button
+      >
     </div>
   </PageHeadBack>
 </template>

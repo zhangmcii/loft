@@ -11,20 +11,20 @@ export default {
   props: {
     title: {
       type: String,
-      default: '返回'
-    }
+      default: "返回",
+    },
   },
   data() {
-    return {}
+    return {};
   },
   computed: {},
   mounted() {},
   methods: {
     goBack() {
-      this.$router.back()
-    }
-  }
-}
+      this.$router.back();
+    },
+  },
+};
 </script>
 <style scoped>
 .el-page-header {

@@ -1,15 +1,15 @@
 <script>
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
-import PostImage from '@/views/posts/components/PostImage.vue'
-import PostAction from '@/views/posts/components/PostAction.vue'
-import CommentCard from '@/views/comment/ComCard.vue'
-import PostHeader from '@/views/posts/components/PostHeader.vue'
-import PostContent from '@/views/posts/components/PostContent.vue'
-import ReadProgress from '@/utils/components/ReadProgress.vue'
-import FontSizeAdjuster from '@/views/posts/components/FontSizeAdjuster.vue'
-import PostSearch from '@/views/posts/components/PostSearch.vue'
-import postApi from '@/api/posts/postApi.js'
-import message from '@/utils/message'
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import PostImage from "@/views/posts/components/PostImage.vue";
+import PostAction from "@/views/posts/components/PostAction.vue";
+import CommentCard from "@/views/comment/ComCard.vue";
+import PostHeader from "@/views/posts/components/PostHeader.vue";
+import PostContent from "@/views/posts/components/PostContent.vue";
+import ReadProgress from "@/utils/components/ReadProgress.vue";
+import FontSizeAdjuster from "@/views/posts/components/FontSizeAdjuster.vue";
+import PostSearch from "@/views/posts/components/PostSearch.vue";
+import postApi from "@/api/posts/postApi.js";
+import message from "@/utils/message";
 
 export default {
   components: {
@@ -21,68 +21,71 @@ export default {
     PostContent,
     ReadProgress,
     FontSizeAdjuster,
-    PostSearch
+    PostSearch,
   },
   data() {
     return {
       post: {
         id: 1,
-        body: '',
+        body: "",
         body_html: null,
-        timestamp: '',
-        author: '--',
-        nick_name: '',
+        timestamp: "",
+        author: "--",
+        nick_name: "",
         commentCount: 20,
         disabled: false,
-        image: '',
+        image: "",
         praise_num: 0,
         has_praised: false,
-        post_images: []
+        post_images: [],
       },
       postId: -1,
       // 默认字体大小
       fontSize: 14,
       // 是否显示搜索框
-      showSearch: false
-    }
+      showSearch: false,
+    };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      vm.postId = Number(to.params.id)
-      vm.getPostById(vm.postId)
+      vm.postId = Number(to.params.id);
+      vm.getPostById(vm.postId);
 
       // 从本地存储加载字体大小设置
-      const savedFontSize = localStorage.getItem('article-font-size')
+      const savedFontSize = localStorage.getItem("article-font-size");
       if (savedFontSize) {
-        vm.fontSize = parseInt(savedFontSize)
+        vm.fontSize = parseInt(savedFontSize);
       }
-    })
+    });
   },
   // 通知栏上可能会频繁切换跳转的文章
   created() {
     this.$watch(
       () => this.$route.params.id,
       (newVal) => {
-        if (this.$route.name === 'postDetail') {
-          this.postId = Number(newVal)
-          this.getPostById(this.postId)
+        if (this.$route.name === "postDetail") {
+          this.postId = Number(newVal);
+          this.getPostById(this.postId);
         }
       }
-    )
+    );
   },
   computed: {},
   methods: {
     getPostById(postId) {
-      postApi.getPost(postId).then((res) => {
-        // 适配新的统一接口返回格式
-        if (res.code === 200) {
-          this.post = res.data
-        }
-      }).catch(error => {
-        console.error('获取文章详情失败', error)
-        // this.$message.error('获取文章详情失败，请稍后重试')
-        message.error('获取文章详情失败，请稍后重试')
-      })
+      postApi
+        .getPost(postId)
+        .then((res) => {
+          // 适配新的统一接口返回格式
+          if (res.code === 200) {
+            this.post = res.data;
+          }
+        })
+        .catch((error) => {
+          console.error("获取文章详情失败", error);
+          // this.$message.error('获取文章详情失败，请稍后重试')
+          message.error("获取文章详情失败，请稍后重试");
+        });
     },
     updateFontSize(size) {
       // 这里不再实时更新字体大小，只在预览中显示
@@ -90,11 +93,11 @@ export default {
     },
     saveFontSizeSettings(size) {
       // 只有在保存时才更新实际的字体大小
-      this.fontSize = size
-      localStorage.setItem('article-font-size', size.toString())
-    }
-  }
-}
+      this.fontSize = size;
+      localStorage.setItem("article-font-size", size.toString());
+    },
+  },
+};
 </script>
 
 <template>
@@ -106,7 +109,12 @@ export default {
     <div class="post-detail-container">
       <div class="post-main-content">
         <PostHeader :post="post" class="post-header" />
-        <PostContent :postContent="post.body" class="post-content" :fontSize="fontSize" ref="postContent" />
+        <PostContent
+          :postContent="post.body"
+          class="post-content"
+          :fontSize="fontSize"
+          ref="postContent"
+        />
         <PostImage :postImages="post.post_images" class="post-images" />
       </div>
 
@@ -119,23 +127,36 @@ export default {
       </div>
 
       <!-- 字体大小调整悬浮按钮 -->
-      <FontSizeAdjuster :defaultFontSize="fontSize" @update:fontSize="updateFontSize" @save="saveFontSizeSettings" />
+      <FontSizeAdjuster
+        :defaultFontSize="fontSize"
+        @update:fontSize="updateFontSize"
+        @save="saveFontSizeSettings"
+      />
 
       <!-- 搜索按钮 -->
       <div class="search-button" @click="showSearch = !showSearch">
-        <el-button type="primary" circle size="large" :class="{ 'active': showSearch }">
+        <el-button
+          type="primary"
+          circle
+          size="large"
+          :class="{ active: showSearch }"
+        >
           <el-icon><i-ep-Search /></el-icon>
         </el-button>
       </div>
 
       <!-- 搜索组件 -->
-      <PostSearch v-if="showSearch" :contentRef="$refs.postContent" @close="showSearch = false" />
+      <PostSearch
+        v-if="showSearch"
+        :contentRef="$refs.postContent"
+        @close="showSearch = false"
+      />
     </div>
   </PageHeadBack>
 </template>
 
 <style scoped lang="scss">
-@use './components/PostDetail.scss' as *;
+@use "./components/PostDetail.scss" as *;
 
 .search-button {
   position: fixed;

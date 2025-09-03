@@ -1,27 +1,28 @@
 <template>
   <div class="leleo-typewriter" style="text-align: center">
-    <span class="qm">“ </span><span ref="text" class="msg"></span><span class="qm"> ”</span>
+    <span class="qm">“ </span><span ref="text" class="msg"></span
+    ><span class="qm"> ”</span>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import TypeIt from 'typeit'
+import { ref, onMounted, watch } from "vue";
+import TypeIt from "typeit";
 const prop = defineProps({
   content: {
     type: String,
-    default: ''
-  }
-})
-const text = ref('')
-let typeitInstance = null // 新增变量保存实例
+    default: "",
+  },
+});
+const text = ref("");
+let typeitInstance = null; // 新增变量保存实例
 
 function runTypeIt(str) {
   if (typeitInstance) {
-    typeitInstance.destroy() // 销毁旧实例
-    typeitInstance = null
+    typeitInstance.destroy(); // 销毁旧实例
+    typeitInstance = null;
   }
-  text.value.innerHTML = '' // 清空旧内容
+  text.value.innerHTML = ""; // 清空旧内容
   typeitInstance = new TypeIt(text.value, {
     strings: str,
     cursorChar:
@@ -30,18 +31,21 @@ function runTypeIt(str) {
     lifeLike: true,
     cursor: true,
     breakLines: false,
-    loop: false
-  })
-  typeitInstance.go()
+    loop: false,
+  });
+  typeitInstance.go();
 }
 
 onMounted(() => {
-  runTypeIt(prop.content)
-})
+  runTypeIt(prop.content);
+});
 
-watch(() => prop.content, (val) => {
-  runTypeIt(val)
-})
+watch(
+  () => prop.content,
+  (val) => {
+    runTypeIt(val);
+  }
+);
 </script>
 
 <style scoped>

@@ -1,24 +1,23 @@
-from .decorators import DecoratedMethodView
-from flask_jwt_extended import current_user, jwt_required
-from . import api
-from ..models import Post, Comment, Praise, Notification, NotificationType
-from .. import db
-from flask import request
-from .. import socketio
-from ..utils.response import success, error
-
-
 # 日志
 import logging
+
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db, socketio
+from ..models import Comment, Notification, NotificationType, Post, Praise
+from ..utils.response import error, success
+from . import api
+from .decorators import DecoratedMethodView
 
 
 # --------------------------- 点赞功能 ---------------------------
 @api.route("/posts/<post_id>/comments/praised")
 def has_praised_comment_id(post_id):
     """查找某文章下当前用户已点赞的评论id"""
-    is_like = request.args.get('liked', '') == 'true'
+    is_like = request.args.get("liked", "") == "true"
     if not is_like:
-        return error(400, message=f'参数错误, liked:{request.args.get('liked', '')}')
+        return error(400, message=f"参数错误, liked:{request.args.get('liked', '')}")
     logging.info(f"查询用户已点赞评论: post_id={post_id}")
     comment_ids = (
         db.session.query(Praise.comment_id)
@@ -36,7 +35,7 @@ def has_praised_comment_id(post_id):
 
 class PraisePostApi(DecoratedMethodView):
     method_decorators = {
-        'share': [jwt_required()],
+        "share": [jwt_required()],
     }
 
     def get(self, post_id):
@@ -91,9 +90,9 @@ class PraisePostApi(DecoratedMethodView):
 
 class PraiseCommentApi(DecoratedMethodView):
     method_decorators = {
-        'get': [],
-        'post': [jwt_required()],
-        'delete': [jwt_required()]
+        "get": [],
+        "post": [jwt_required()],
+        "delete": [jwt_required()],
     }
 
     def get(self, comment_id):
@@ -107,7 +106,9 @@ class PraiseCommentApi(DecoratedMethodView):
         logging.info(f"{current_user.username}评论点赞: id={comment_id}")
         comment = Comment.query.get_or_404(comment_id)
         # 防止用户重复点赞
-        p = Praise.query.filter_by(author_id=current_user.id, comment_id=comment_id).first()
+        p = Praise.query.filter_by(
+            author_id=current_user.id, comment_id=comment_id
+        ).first()
         if p:
             return error(400, "您已经点赞过了~")
 
@@ -146,7 +147,7 @@ class PraiseCommentApi(DecoratedMethodView):
 
 
 def register_praise_api(bp, *, post_praise_url, comment_praise_url):
-    post_praise = PraisePostApi.as_view('likes_post')
-    comment_praise = PraiseCommentApi.as_view('likes_comment')
+    post_praise = PraisePostApi.as_view("likes_post")
+    comment_praise = PraiseCommentApi.as_view("likes_comment")
     bp.add_url_rule(post_praise_url, view_func=post_praise)
     bp.add_url_rule(comment_praise_url, view_func=comment_praise)

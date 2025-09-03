@@ -1,14 +1,14 @@
 <script setup>
-import Header from './components/Header.vue'
-import { Scrollbar } from 'vue-amazing-ui'
-import { useRoute } from 'vue-router'
-import { computed } from 'vue'
-import 'vue-amazing-ui/es/scrollbar/Scrollbar.css'
+import Header from "./components/Header.vue";
+import { Scrollbar } from "vue-amazing-ui";
+import { useRoute } from "vue-router";
+import { computed } from "vue";
+import "vue-amazing-ui/es/scrollbar/Scrollbar.css";
 // import MobileRemind from '@/utils/components/MobileRemind.vue'
 
-const route = useRoute()
+const route = useRoute();
 // 判断是否为 用户资料页面
-const isUserPage = computed(() => route.name === 'user')
+const isUserPage = computed(() => route.name === "user");
 </script>
 
 <template>
@@ -18,12 +18,24 @@ const isUserPage = computed(() => route.name === 'user')
     </el-header>
     <el-divider />
     <el-main :class="{ 'no-padding': isUserPage }">
-      <Scrollbar ref="scrollbar" class="Scrollbar" style="--scrollbar-color: rgba(0, 0, 0, 0)">
+      <Scrollbar
+        ref="scrollbar"
+        class="Scrollbar"
+        style="--scrollbar-color: rgba(0, 0, 0, 0)"
+      >
         <router-view v-slot="{ Component, route }">
           <keep-alive>
-            <component v-if="route.meta.keepAlive" :is="Component" :key="route.name" />
+            <component
+              v-if="route.meta.keepAlive"
+              :is="Component"
+              :key="route.name"
+            />
           </keep-alive>
-          <component v-if="!route.meta.keepAlive" :is="Component" :key="route.name" />
+          <component
+            v-if="!route.meta.keepAlive"
+            :is="Component"
+            :key="route.name"
+          />
         </router-view>
       </Scrollbar>
     </el-main>

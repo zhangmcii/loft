@@ -1,17 +1,14 @@
-import os
-from flask_jwt_extended import jwt_required, current_user
-from . import main
-from ..models import Post, PostType, Image, ImageType, User
-from .. import db
-from flask import current_app, request
-from ..models import Permission
-from .. import limiter
-from ..utils.response import success, error, not_found, forbidden
-
-from .notifications import new_post_notification
-
 # 日志
 import logging
+
+from flask import current_app, request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db, limiter
+from ..models import Image, ImageType, Permission, Post, PostType, User
+from ..utils.response import error, forbidden, not_found, success
+from . import main
+from .notifications import new_post_notification
 
 
 # --------------------------- 博客文章 ---------------------------
@@ -44,9 +41,7 @@ def index():
                 db.session.add_all(images)
             db.session.commit()
             new_post_notification(post.id)
-            logging.info(
-                f"创建新文章: user_id={current_user.id}, post_id={post.id}"
-            )
+            logging.info(f"创建新文章: user_id={current_user.id}, post_id={post.id}")
         except Exception as e:
             logging.error(f"创建文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
@@ -93,11 +88,9 @@ def edit(id):
     logging.info(f"编辑文章: id={id}")
     post = Post.query.get_or_404(id)
     if current_user.username != post.author.username and not current_user.can(
-            Permission.ADMIN
+        Permission.ADMIN
     ):
-        logging.warning(
-            f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}"
-        )
+        logging.warning(f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}")
         return forbidden("没有权限编辑此文章")
 
     try:

@@ -1,13 +1,13 @@
-from flask_jwt_extended import jwt_required, current_user
-from . import main
-from ..models import Notification, Follow, NotificationType
-from .. import db
-from flask import request
-from .. import socketio
-from ..utils.response import success
-
 # 日志
 import logging
+
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db, socketio
+from ..models import Follow, Notification, NotificationType
+from ..utils.response import success
+from . import main
 
 
 # --------------------------- 通知功能 ---------------------------
@@ -67,5 +67,3 @@ def mark_read_notification():
     ).update({"is_read": True}, synchronize_session=False)
     db.session.commit()
     return success(message="通知已标记为已读")
-
-

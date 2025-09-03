@@ -1,17 +1,19 @@
 import logging
-from .decorators import DecoratedMethodView
-from flask_jwt_extended import current_user, jwt_required
-from ..models import Message
-from .. import db
-from flask import request, current_app
-from ..utils.response import success
 
+from flask import current_app, request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..models import Message
+from ..utils.response import success
+from .decorators import DecoratedMethodView
 
 # --------------------------- 聊天消息 ---------------------------
 
+
 class MessageApi(DecoratedMethodView):
     method_decorators = {
-        'share': [jwt_required()],
+        "share": [jwt_required()],
     }
 
     def get(self, user_id):
@@ -22,16 +24,18 @@ class MessageApi(DecoratedMethodView):
         page = request.args.get("page", 1, type=int)
         query = Message.query.filter(
             (
-                    (Message.sender_id == current_user_id)
-                    & (Message.receiver_id == other_user_id)
+                (Message.sender_id == current_user_id)
+                & (Message.receiver_id == other_user_id)
             )
             | (
-                    (Message.sender_id == other_user_id)
-                    & (Message.receiver_id == current_user_id)
+                (Message.sender_id == other_user_id)
+                & (Message.receiver_id == current_user_id)
             )
         ).order_by(Message.timestamp.desc())
         pagination = query.paginate(
-            page=page, per_page=current_app.config["FLASKY_CHAT_PER_PAGE"], error_out=False
+            page=page,
+            per_page=current_app.config["FLASKY_CHAT_PER_PAGE"],
+            error_out=False,
         )
         messages = pagination.items
         r = []
@@ -48,12 +52,14 @@ class MessageApi(DecoratedMethodView):
         logging.info(f"标记消息已读: user_id={current_user.id}")
         message_ids = request.json.get("ids", [])
         Message.query.filter(
-            Message.id.in_(message_ids), Message.receiver_id == current_user.id, Message.sender_id == user_id
+            Message.id.in_(message_ids),
+            Message.receiver_id == current_user.id,
+            Message.sender_id == user_id,
         ).update({"is_read": True}, synchronize_session=False)
         db.session.commit()
         return success(message="消息已标记为已读")
 
 
 def register_message_api(bp, *, message_url):
-    message = MessageApi.as_view('message')
+    message = MessageApi.as_view("message")
     bp.add_url_rule(message_url, view_func=message)

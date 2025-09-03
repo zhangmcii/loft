@@ -9,7 +9,10 @@ export default {
 
   // 管理员编辑用户资料
   editProfileAdmin(formUserData) {
-    return $http.post(`${url_prefix}/edit-profile/${formUserData.id}`, formUserData);
+    return $http.post(
+      `${url_prefix}/edit-profile/${formUserData.id}`,
+      formUserData
+    );
   },
 
   // 更新当前用户标签

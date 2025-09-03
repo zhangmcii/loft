@@ -1,94 +1,104 @@
 <script>
-import authApi from '@/api/auth/authApi.js'
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
-import { useCurrentUserStore } from '@/stores/user'
+import authApi from "@/api/auth/authApi.js";
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import { useCurrentUserStore } from "@/stores/user";
 
 export default {
   components: {
     ButtonClick,
-    PageHeadBack
+    PageHeadBack,
   },
   data() {
     var validateOldPassword = (rule, value, callback) => {
       if (!value) {
-        callback(new Error('请输入原密码'))
+        callback(new Error("请输入原密码"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
 
     var validateNewPassword = (rule, value, callback) => {
       if (!value) {
-        callback(new Error('请输入新密码'))
+        callback(new Error("请输入新密码"));
       } else if (value.length < 3) {
-        callback(new Error('新密码长度不能少3个字符'))
+        callback(new Error("新密码长度不能少3个字符"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
 
     var validateConfirmPassword = (rule, value, callback) => {
       if (value !== this.form.new_password) {
-        callback(new Error('两次密码不一致'))
+        callback(new Error("两次密码不一致"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
 
     return {
       form: {
-        old_password: '',
-        new_password: '',
-        confirmNewPassword: ''
+        old_password: "",
+        new_password: "",
+        confirmNewPassword: "",
       },
       rules: {
-        old_password: [{required: true, validator: validateOldPassword, trigger: 'blur' }],
-        new_password: [{required: true, validator: validateNewPassword, trigger: 'blur' }],
-        confirmNewPassword: [{required: true, validator: validateConfirmPassword, trigger: 'blur' }]
+        old_password: [
+          { required: true, validator: validateOldPassword, trigger: "blur" },
+        ],
+        new_password: [
+          { required: true, validator: validateNewPassword, trigger: "blur" },
+        ],
+        confirmNewPassword: [
+          {
+            required: true,
+            validator: validateConfirmPassword,
+            trigger: "blur",
+          },
+        ],
       },
       loading: false,
-      isChange: false
-    }
+      isChange: false,
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const currentUser = useCurrentUserStore();
+    return { currentUser };
   },
   watch: {
     form: {
       deep: true,
       handler() {
-        this.isChange = true
-      }
-    }
+        this.isChange = true;
+      },
+    },
   },
   methods: {
     submitForm() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          this.loading = true
+          this.loading = true;
           authApi.changePassword(this.form).then((res) => {
-            this.loading = false
-            this.isChange = false
+            this.loading = false;
+            this.isChange = false;
             if (res.code == 200) {
-              this.$message.success('修改密码成功')
-              this.log_out()
+              this.$message.success("修改密码成功");
+              this.log_out();
             } else {
-              this.$message.error('修改密码失败')
+              this.$message.error("修改密码失败");
             }
-          })
+          });
         } else {
-          this.$message.error('请修正表单中的错误')
+          this.$message.error("请修正表单中的错误");
         }
-      })
+      });
     },
     log_out() {
-      this.currentUser.logOut()
-      this.$router.push('/login')
-    }
-  }
-}
+      this.currentUser.logOut();
+      this.$router.push("/login");
+    },
+  },
+};
 </script>
 
 <template>
@@ -101,7 +111,7 @@ export default {
         <h1>修改密码</h1>
         <p class="subtitle">定期更换密码可以提高您的账户安全性</p>
       </div>
-      
+
       <div class="form-card">
         <el-form
           :model="form"
@@ -111,66 +121,75 @@ export default {
           label-width="auto"
         >
           <el-form-item prop="old_password" label="当前密码">
-            <el-input 
-              v-model="form.old_password" 
-              type="password" 
-              show-password 
+            <el-input
+              v-model="form.old_password"
+              type="password"
+              show-password
               prefix-icon="el-icon-key"
               placeholder="请输入当前密码"
             />
           </el-form-item>
-          
+
           <div class="divider">
             <span><i class="el-icon-refresh"></i> 设置新密码</span>
           </div>
-          
+
           <el-form-item prop="new_password" label="新密码">
-            <el-input 
-              v-model="form.new_password" 
-              type="password" 
-              show-password 
+            <el-input
+              v-model="form.new_password"
+              type="password"
+              show-password
               prefix-icon="el-icon-lock"
               placeholder="请输入新密码"
             />
             <div class="password-strength" v-if="form.new_password">
               <div class="strength-label">密码强度:</div>
               <div class="strength-meter">
-                <div 
-                  class="strength-bar" 
+                <div
+                  class="strength-bar"
                   :class="[
-                    form.new_password.length < 6 ? 'weak' : 
-                    form.new_password.length < 10 ? 'medium' : 'strong'
+                    form.new_password.length < 6
+                      ? 'weak'
+                      : form.new_password.length < 10
+                      ? 'medium'
+                      : 'strong',
                   ]"
                   :style="{
-                    width: `${Math.min(100, form.new_password.length * 10)}%`
+                    width: `${Math.min(100, form.new_password.length * 10)}%`,
                   }"
                 ></div>
               </div>
-              <div 
+              <div
                 class="strength-text"
                 :class="[
-                  form.new_password.length < 6 ? 'weak-text' : 
-                  form.new_password.length < 10 ? 'medium-text' : 'strong-text'
+                  form.new_password.length < 6
+                    ? 'weak-text'
+                    : form.new_password.length < 10
+                    ? 'medium-text'
+                    : 'strong-text',
                 ]"
               >
-                {{ 
-                  form.new_password.length < 6 ? '弱' : 
-                  form.new_password.length < 10 ? '中' : '强' 
+                {{
+                  form.new_password.length < 6
+                    ? "弱"
+                    : form.new_password.length < 10
+                    ? "中"
+                    : "强"
                 }}
               </div>
             </div>
           </el-form-item>
-          
+
           <el-form-item prop="confirmNewPassword" label="确认新密码">
-            <el-input 
-              v-model="form.confirmNewPassword" 
-              type="password" 
-              show-password 
+            <el-input
+              v-model="form.confirmNewPassword"
+              type="password"
+              show-password
               prefix-icon="el-icon-check"
               placeholder="请再次输入新密码"
             />
           </el-form-item>
-          
+
           <el-form-item>
             <ButtonClick
               content="更新密码"
@@ -182,7 +201,7 @@ export default {
             />
           </el-form-item>
         </el-form>
-        
+
         <div class="password-tips">
           <h4><i class="el-icon-info-filled"></i> 密码安全提示</h4>
           <ul>
@@ -210,7 +229,7 @@ export default {
 }
 
 .password-icon {
-  background: linear-gradient(135deg, #67C23A, #409EFF);
+  background: linear-gradient(135deg, #67c23a, #409eff);
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -250,7 +269,7 @@ export default {
   height: 20px;
   text-align: center;
   margin: 20px 0;
-  border-bottom: 1px solid #EBEEF5;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .divider span {
@@ -281,7 +300,7 @@ export default {
 .strength-meter {
   flex: 1;
   height: 6px;
-  background: #EBEEF5;
+  background: #ebeef5;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -292,15 +311,15 @@ export default {
 }
 
 .strength-bar.weak {
-  background-color: #F56C6C;
+  background-color: #f56c6c;
 }
 
 .strength-bar.medium {
-  background-color: #E6A23C;
+  background-color: #e6a23c;
 }
 
 .strength-bar.strong {
-  background-color: #67C23A;
+  background-color: #67c23a;
 }
 
 .strength-text {
@@ -310,15 +329,15 @@ export default {
 }
 
 .weak-text {
-  color: #F56C6C;
+  color: #f56c6c;
 }
 
 .medium-text {
-  color: #E6A23C;
+  color: #e6a23c;
 }
 
 .strong-text {
-  color: #67C23A;
+  color: #67c23a;
 }
 
 .submit-btn {
@@ -335,7 +354,7 @@ export default {
   padding: 15px;
   background: #f0f9eb;
   border-radius: 8px;
-  border-left: 4px solid #67C23A;
+  border-left: 4px solid #67c23a;
 }
 
 .password-tips h4 {

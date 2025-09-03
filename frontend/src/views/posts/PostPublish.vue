@@ -1,76 +1,78 @@
 <script>
-import postApi from '@/api/posts/postApi.js'
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import Emoji from '@/utils/components/Emoji.vue'
-import MarkdownEditor from '@/utils/components/MarkdownEditor.vue'
+import postApi from "@/api/posts/postApi.js";
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import Emoji from "@/utils/components/Emoji.vue";
+import MarkdownEditor from "@/utils/components/MarkdownEditor.vue";
 export default {
-  emits: ['postsResult', 'loadingBegin'],
+  emits: ["postsResult", "loadingBegin"],
   components: {
     ButtonClick,
     Emoji,
-    MarkdownEditor
+    MarkdownEditor,
   },
   data() {
     return {
-      content: '',
+      content: "",
       posts: [],
       loading: false,
       richContent: {
-        body: '',
-        bodyHtml: '',
-        images:[]
+        body: "",
+        bodyHtml: "",
+        images: [],
       },
       activeRichEditor: false,
       showPopover: false,
-      showEmoji: false
-    }
+      showEmoji: false,
+    };
   },
   mounted() {},
   methods: {
     normalPublish() {
-      this.$emit('loadingBegin', true)
-      this.loading = true
+      this.$emit("loadingBegin", true);
+      this.loading = true;
       // 替换换行符为 <br>
-      const formattedContent = this.content.replace(/\n/g, '<br>')
-      postApi.publish_post({ body: formattedContent, bodyHtml: null }).then((res) => {
-        this.loading = false
-        this.$emit('postsResult', res)
-        if (res.code == 200) {
-          this.content = ''
-          this.$message.success('发布成功!')
-        } else {
-          this.$message.error('发布失败!')
-        }
-      })
+      const formattedContent = this.content.replace(/\n/g, "<br>");
+      postApi
+        .publish_post({ body: formattedContent, bodyHtml: null })
+        .then((res) => {
+          this.loading = false;
+          this.$emit("postsResult", res);
+          if (res.code == 200) {
+            this.content = "";
+            this.$message.success("发布成功!");
+          } else {
+            this.$message.error("发布失败!");
+          }
+        });
     },
     async richEditorPublish() {
-      this.$emit('loadingBegin', true)
-      this.loading = true
-      const images = await this.$refs.md.uploadPhotos()
-      this.richContent.images = images
+      this.$emit("loadingBegin", true);
+      this.loading = true;
+      const images = await this.$refs.md.uploadPhotos();
+      this.richContent.images = images;
       postApi.publish_post(this.richContent).then((res) => {
-        this.loading = false
-        this.$emit('postsResult', res)
+        this.loading = false;
+        this.$emit("postsResult", res);
         if (res.code == 200) {
-          this.$refs.md.clean()
-          this.$message.success('发布成功!')
+          this.$refs.md.clean();
+          this.$message.success("发布成功!");
         } else {
-          this.$message.error('发布失败!')
+          this.$message.error("发布失败!");
         }
-      })
+      });
     },
     publish() {
       if (this.activeRichEditor) {
-        this.richEditorPublish()
+        this.richEditorPublish();
       } else {
-        this.normalPublish()
+        this.normalPublish();
       }
     },
     insertEmoji(name) {
-      this.content += name
-    }
-  }
-}
+      this.content += name;
+    },
+  },
+};
 </script>
 
 <template>
@@ -78,7 +80,11 @@ export default {
     <el-text>你在想什么？</el-text>
   </div>
   <Transition mode="out-in">
-    <MarkdownEditor ref="md" v-if="activeRichEditor" @contentChange="(n) => (richContent = n)"/>
+    <MarkdownEditor
+      ref="md"
+      v-if="activeRichEditor"
+      @contentChange="(n) => (richContent = n)"
+    />
     <div v-else>
       <el-input
         v-model="content"

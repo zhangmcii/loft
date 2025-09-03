@@ -9,7 +9,12 @@
         <p>发布文章、点赞评论、关注作者</p>
       </div>
       <div class="prompt-actions">
-        <el-button type="primary" size="small" @click="$router.push('/register')">立即注册</el-button>
+        <el-button
+          type="primary"
+          size="small"
+          @click="$router.push('/register')"
+          >立即注册</el-button
+        >
         <el-button size="small" @click="$router.push('/login')">登录</el-button>
       </div>
     </div>
@@ -18,8 +23,8 @@
 
 <script>
 export default {
-  name: 'RegisterPrompt'
-}
+  name: "RegisterPrompt",
+};
 </script>
 
 <style lang="scss" scoped>
@@ -30,7 +35,7 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
@@ -41,7 +46,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     text-align: center;
@@ -51,7 +56,7 @@ export default {
 
 .prompt-icon {
   margin-right: 16px;
-  
+
   .el-icon {
     font-size: 32px;
     color: #409eff;
@@ -59,7 +64,7 @@ export default {
     padding: 10px;
     border-radius: 50%;
   }
-  
+
   @media (max-width: 768px) {
     margin-right: 0;
     margin-bottom: 12px;
@@ -68,20 +73,20 @@ export default {
 
 .prompt-text {
   flex: 1;
-  
+
   h3 {
     font-size: 16px;
     font-weight: 600;
     margin: 0 0 4px 0;
     color: #303133;
   }
-  
+
   p {
     font-size: 14px;
     color: #606266;
     margin: 0;
   }
-  
+
   @media (max-width: 768px) {
     margin-bottom: 16px;
   }
@@ -90,7 +95,7 @@ export default {
 .prompt-actions {
   display: flex;
   gap: 8px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
     justify-content: center;

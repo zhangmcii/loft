@@ -1,19 +1,17 @@
 import os
 
-from pygments.lexers.srcinfo import keywords
 
-
-class DFAFilter():
-    '''Filter Messages from keywords
+class DFAFilter:
+    """Filter Messages from keywords
 
     Use DFA to keep algorithm perform constantly
 
     hello **** baby
-    '''
+    """
 
     def __init__(self):
         self.keyword_chains = {}
-        self.delimit = '\x00'
+        self.delimit = "\x00"
         current_dir = os.path.dirname(os.path.abspath(__file__))
         full_path = os.path.join(current_dir, "keywords")
         self.parse(full_path)
@@ -42,8 +40,8 @@ class DFAFilter():
             level[self.delimit] = 0
 
     def parse(self, path):
-        print('path', path)
-        with open(path, encoding='utf-8') as f:
+        print("path", path)
+        with open(path, encoding="utf-8") as f:
             for keyword in f:
                 self.add(keyword.strip())
 
@@ -72,7 +70,7 @@ class DFAFilter():
                 ret.append(message[start])
             start += 1
 
-        return ''.join(ret)
+        return "".join(ret)
 
 
 gfw = DFAFilter()

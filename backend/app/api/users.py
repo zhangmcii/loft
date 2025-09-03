@@ -1,14 +1,14 @@
-from . import api
-from ..models import User, Role, Post
-from flask_jwt_extended import current_user, jwt_required
-from ..utils.response import success, not_found, error
-
-from ..decorators import admin_required
-from flask import request, current_app
-from .. import db
-
 # 日志
 import logging
+
+from flask import current_app, request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..decorators import admin_required
+from ..models import Post, Role, User
+from ..utils.response import error, not_found, success
+from . import api
 
 
 def get_user_data(username):
@@ -64,6 +64,7 @@ def generate_user_posts():
     logging.info("批量生成用户和文章")
     try:
         from ..fake import Fake
+
         Role.insert_roles()
         Fake.users()
         Fake.posts()

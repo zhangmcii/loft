@@ -1,39 +1,39 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from "vue";
 
-let beginYear = '2024'
-let currentYear = new Date().getFullYear()
+let beginYear = "2024";
+let currentYear = new Date().getFullYear();
 let author = {
-  name: '随想阁楼',
-  link: 'https://github.com/nizhensh-i',
-  title: '随想阁楼' // 鼠标悬停时的 hint，不是必须的。
-}
+  name: "随想阁楼",
+  link: "https://github.com/nizhensh-i",
+  title: "随想阁楼", // 鼠标悬停时的 hint，不是必须的。
+};
 // ICP 备案
 let icp = {
   code: import.meta.env.VITE_ICP,
-  link: 'http://beian.miit.gov.cn/'
-}
+  link: "http://beian.miit.gov.cn/",
+};
 
-const isFixed = ref(false)
+const isFixed = ref(false);
 
 function checkFooterPosition() {
-  const bodyHeight = document.body.scrollHeight
-  const windowHeight = window.innerHeight
+  const bodyHeight = document.body.scrollHeight;
+  const windowHeight = window.innerHeight;
   // 如果内容高度小于视口高度，ICP需要固定在底部
-  isFixed.value = bodyHeight <= windowHeight
+  isFixed.value = bodyHeight <= windowHeight;
 }
 
 onMounted(() => {
-  window.addEventListener('resize', checkFooterPosition)
-  window.addEventListener('load', checkFooterPosition)
+  window.addEventListener("resize", checkFooterPosition);
+  window.addEventListener("load", checkFooterPosition);
   // 初始检查一次
-  checkFooterPosition()
-})
+  checkFooterPosition();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkFooterPosition)
-  window.removeEventListener('load', checkFooterPosition)
-})
+  window.removeEventListener("resize", checkFooterPosition);
+  window.removeEventListener("load", checkFooterPosition);
+});
 </script>
 
 <template>
@@ -64,9 +64,12 @@ onUnmounted(() => {
           target="_blank"
           >{{ author.name }}</a
         >
-        <a v-else-if="author.link && !author.title" :href="author.link" target="_blank">{{
-          author.name
-        }}</a>
+        <a
+          v-else-if="author.link && !author.title"
+          :href="author.link"
+          target="_blank"
+          >{{ author.name }}</a
+        >
       </li>
     </ul>
   </div>
@@ -93,7 +96,12 @@ onUnmounted(() => {
 
 .footer-divider {
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(0, 0, 0, 0.1),
+    transparent
+  );
   margin-bottom: 12px;
 }
 
@@ -130,7 +138,7 @@ ul {
 }
 
 #copyright-icp-ul > li > a[href]::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 0;
   height: 1px;
@@ -156,7 +164,7 @@ li {
   .footer {
     padding: 10px 0 8px;
   }
-  
+
   ul {
     font-size: 12px;
   }

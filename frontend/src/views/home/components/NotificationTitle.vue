@@ -4,38 +4,42 @@ export default {
     nItem: {
       type: Object,
       default() {
-        return {}
-      }
-    }
+        return {};
+      },
+    },
   },
   data() {
-    return {}
+    return {};
   },
   computed: {
     suffix() {
-      if (this.nItem.type === '评论') {
-        return '的文章'
-      } else if (this.nItem.type === '回复') {
-        return '评论'
-      } else if (this.nItem.type === '点赞' && !this.nItem.commentId) {
-        return '的文章'
-      } else if (this.nItem.type === '点赞' && this.nItem.commentId && this.nItem.postId) {
-        return '的评论'
+      if (this.nItem.type === "评论") {
+        return "的文章";
+      } else if (this.nItem.type === "回复") {
+        return "评论";
+      } else if (this.nItem.type === "点赞" && !this.nItem.commentId) {
+        return "的文章";
+      } else if (
+        this.nItem.type === "点赞" &&
+        this.nItem.commentId &&
+        this.nItem.postId
+      ) {
+        return "的评论";
       }
-      return ''
-    }
+      return "";
+    },
   },
   mounted() {},
-  methods: {}
-}
+  methods: {},
+};
 </script>
 
 <template>
   <p class="notification-title">
     {{
-      `${nItem.triggerNickName ? nItem.triggerNickName : nItem.triggerUsername} ${
-        nItem.type
-      } 了你${suffix}`
+      `${
+        nItem.triggerNickName ? nItem.triggerNickName : nItem.triggerUsername
+      } ${nItem.type} 了你${suffix}`
     }}
   </p>
 </template>

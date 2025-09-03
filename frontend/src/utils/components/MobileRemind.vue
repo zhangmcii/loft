@@ -1,14 +1,16 @@
 <script setup>
-import BaseMask from '@/utils/components/BaseMask.vue'
+import BaseMask from "@/utils/components/BaseMask.vue";
 
-const isMobile = ref(/Mobi|Android|iPhone/i.test(navigator.userAgent))
+const isMobile = ref(/Mobi|Android|iPhone/i.test(navigator.userAgent));
 </script>
 
 <template>
   <BaseMask v-if="!isMobile" @click="isMobile = true" />
   <div v-if="!isMobile" class="guide">
     <el-icon class="danger"> <i-ep-WarnTriangleFilled /></el-icon>
-    <el-icon class="close"> <i-ep-CircleClose @click="isMobile = true" /></el-icon>
+    <el-icon class="close">
+      <i-ep-CircleClose @click="isMobile = true"
+    /></el-icon>
 
     <div class="txt">
       <h2>切换至手机模式获取最佳体验</h2>

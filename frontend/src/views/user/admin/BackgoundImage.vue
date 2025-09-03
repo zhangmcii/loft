@@ -29,7 +29,12 @@
       </div> -->
     </div>
     <template #action>
-      <ButtonClick content="发布" size="small" :disabled="ban_pub" @do-search="submitBlog">
+      <ButtonClick
+        content="发布"
+        size="small"
+        :disabled="ban_pub"
+        @do-search="submitBlog"
+      >
         <el-icon><i-ep-Pointer /></el-icon>
       </ButtonClick>
     </template>
@@ -37,123 +42,136 @@
 </template>
 
 <script>
-import PageHeadBack from '@/utils/components/PageHeadBack.vue'
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import { useCurrentUserStore } from '@/stores/user'
-import uploadApi from '@/api/upload/uploadApi.js'
-import * as qiniu from 'qiniu-js'
-import lrz from 'lrz'
+import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import { useCurrentUserStore } from "@/stores/user";
+import uploadApi from "@/api/upload/uploadApi.js";
+import * as qiniu from "qiniu-js";
+import lrz from "lrz";
 
 export default {
-  name: 'BlogPost',
+  name: "BlogPost",
   props: {},
   components: {
     PageHeadBack,
-    ButtonClick
+    ButtonClick,
   },
   data() {
     return {
-      uploadToken: '',
+      uploadToken: "",
       imageUrls: [],
       uploading: false,
       imageKey: [],
 
       inputStyle: {
-        width: '100%',
-        marginBottom: '10px',
-        borderColor: '#ffffff',
-        boxShadow: '0 0 0 0 #ffffff'
+        width: "100%",
+        marginBottom: "10px",
+        borderColor: "#ffffff",
+        boxShadow: "0 0 0 0 #ffffff",
       },
       dialogVisible: false,
-      dialogImageUrl: '',
+      dialogImageUrl: "",
       // 原始文件
       originalFiles: [],
       // 压缩后的文件
       compressedImages: [],
       // 默认压缩比率为80%
-      compressedRatio: 80
-    }
+      compressedRatio: 80,
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const currentUser = useCurrentUserStore();
+    return { currentUser };
   },
   computed: {
     ban_pub() {
-      return this.originalFiles.length === 0
-    }
+      return this.originalFiles.length === 0;
+    },
   },
   created() {
-    this.debounceCompress = this.debounce(this.compressImages, 100)
+    this.debounceCompress = this.debounce(this.compressImages, 100);
   },
   mounted() {
-    this.getUploadToken()
+    this.getUploadToken();
   },
   methods: {
     async getUploadToken() {
-      const response = await uploadApi.get_upload_token()
-      this.uploadToken = response.data.upload_token
+      const response = await uploadApi.get_upload_token();
+      this.uploadToken = response.data.upload_token;
     },
     debounce(func, wait) {
-      let timeout
+      let timeout;
       return function (...args) {
-        const context = this
-        clearTimeout(timeout)
+        const context = this;
+        clearTimeout(timeout);
         timeout = setTimeout(() => {
-          func.apply(context, args)
-        }, wait)
-      }
+          func.apply(context, args);
+        }, wait);
+      };
     },
     handleFileChange(file, fileList) {
       if (!this.beforePicUpload([file])) {
-        return
+        return;
       }
       // 确保只添加新的文件
-      const newFiles = fileList.filter((f) => !this.originalFiles.some((of) => of.uid === f.uid))
-      this.originalFiles = [...this.originalFiles, ...newFiles]
+      const newFiles = fileList.filter(
+        (f) => !this.originalFiles.some((of) => of.uid === f.uid)
+      );
+      this.originalFiles = [...this.originalFiles, ...newFiles];
       // console.log('文件列表:', this.originalFiles)
-      this.debounceCompress()
+      this.debounceCompress();
     },
 
     async compressImages() {
-      const compressionRatio = this.compressedRatio / 100
+      const compressionRatio = this.compressedRatio / 100;
 
       // 找出未压缩的文件
       const uncompressedFiles = this.originalFiles.filter(
         (file) => !this.compressedImages.some((img) => img.uid === file.uid)
-      )
+      );
 
       for (const file of uncompressedFiles) {
-        const rawFile = file.raw
-        const compressedFile = await lrz(rawFile, { quality: compressionRatio })
+        const rawFile = file.raw;
+        const compressedFile = await lrz(rawFile, {
+          quality: compressionRatio,
+        });
 
-        console.log('压缩后的文件:', compressedFile)
-        console.log(`压缩后大小: ${(compressedFile.file.size / 1024).toFixed(2)} KB`)
+        console.log("压缩后的文件:", compressedFile);
+        console.log(
+          `压缩后大小: ${(compressedFile.file.size / 1024).toFixed(2)} KB`
+        );
 
         // 将 base64 转换为 Blob
-        const byteString = atob(compressedFile.base64.split(',')[1])
-        const mimeString = compressedFile.base64.split(',')[0].split(':')[1].split(';')[0]
-        const arrayBuffer = new ArrayBuffer(byteString.length)
-        const uintArray = new Uint8Array(arrayBuffer)
+        const byteString = atob(compressedFile.base64.split(",")[1]);
+        const mimeString = compressedFile.base64
+          .split(",")[0]
+          .split(":")[1]
+          .split(";")[0];
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uintArray = new Uint8Array(arrayBuffer);
         for (let i = 0; i < byteString.length; i++) {
-          uintArray[i] = byteString.charCodeAt(i)
+          uintArray[i] = byteString.charCodeAt(i);
         }
-        const blob = new Blob([arrayBuffer], { type: mimeString })
+        const blob = new Blob([arrayBuffer], { type: mimeString });
 
         this.compressedImages.push({
           src: compressedFile.base64,
           blob, // 保存 Blob 对象
           name: rawFile.name,
           uid: rawFile.uid,
-          sizeInfo: `压缩后大小: ${(compressedFile.file.size / 1024).toFixed(2)} KB`
-        })
+          sizeInfo: `压缩后大小: ${(compressedFile.file.size / 1024).toFixed(
+            2
+          )} KB`,
+        });
       }
     },
     handleFileRemove(file, fileList) {
       // 删除原始文件
-      this.originalFiles = this.originalFiles.filter((f) => f.uid !== file.uid)
+      this.originalFiles = this.originalFiles.filter((f) => f.uid !== file.uid);
       // 删除压缩文件
-      this.compressedImages = this.compressedImages.filter((img) => img.uid !== file.uid)
+      this.compressedImages = this.compressedImages.filter(
+        (img) => img.uid !== file.uid
+      );
 
       // console.log('文件已删除:', file.name)
       // console.log('当前原始文件列表:', this.originalFiles)
@@ -161,37 +179,37 @@ export default {
     },
     beforePicUpload(fileList) {
       for (const file of fileList) {
-        const isImage = file.raw.type.startsWith('image/')
+        const isImage = file.raw.type.startsWith("image/");
         if (!isImage) {
-          this.$message.error('只能上传图片格式文件！')
-          return false
+          this.$message.error("只能上传图片格式文件！");
+          return false;
         }
         const limitPic =
-          file.raw.type === 'image/png' ||
-          file.raw.type === 'image/jpg' ||
-          file.raw.type === 'image/jpeg' ||
-          file.raw.type === 'image/webp'
+          file.raw.type === "image/png" ||
+          file.raw.type === "image/jpg" ||
+          file.raw.type === "image/jpeg" ||
+          file.raw.type === "image/webp";
         if (!limitPic) {
-          this.$message.warning('请上传格式为png/jpg/jpeg/webp的图片')
-          return false
+          this.$message.warning("请上传格式为png/jpg/jpeg/webp的图片");
+          return false;
         }
       }
-      return true
+      return true;
     },
     async uploadFiles() {
-      const domin = import.meta.env.VITE_QINIU_DOMAIN
-      this.uploading = true
+      const domin = import.meta.env.VITE_QINIU_DOMAIN;
+      this.uploading = true;
       try {
-        const putExtra = {}
+        const putExtra = {};
         const config = {
           // 存储区域
-          region: qiniu.region.z0
-        }
+          region: qiniu.region.z0,
+        };
         for (const file of this.compressedImages) {
-          const folder = this.currentUser.uploadBackgroundStatic
-          console.log('uniqueFileName', file.name)
-          const key = folder + file.name
-          console.log('key', key)
+          const folder = this.currentUser.uploadBackgroundStatic;
+          console.log("uniqueFileName", file.name);
+          const key = folder + file.name;
+          console.log("key", key);
           //   const observable = qiniu.upload(file.blob, key, this.uploadToken, putExtra, config)
           //   await new Promise((resolve, reject) => {
           //     // 保存 this 上下文
@@ -211,39 +229,39 @@ export default {
           //   })
         }
       } catch (error) {
-        console.error('Upload failed:', error)
+        console.error("Upload failed:", error);
       } finally {
-        this.uploading = false
+        this.uploading = false;
       }
     },
     async submitBlog() {
       if (this.originalFiles.length === 0) {
-        this.$message.error('图片不能为空')
-        return
+        this.$message.error("图片不能为空");
+        return;
       }
       if (!this.beforePicUpload(this.originalFiles)) {
-        return
+        return;
       }
       const loadingInstance = this.$loading({
         lock: true,
-        text: 'Loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      })
+        text: "Loading",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
       try {
-        await this.uploadFiles()
+        await this.uploadFiles();
       } catch (error) {
-        loadingInstance.close()
+        loadingInstance.close();
       }
     },
     handlePictureCardPreview(uploadFile) {
-      this.dialogImageUrl = uploadFile.url
-      this.dialogVisible = true
+      this.dialogImageUrl = uploadFile.url;
+      this.dialogVisible = true;
     },
     handleExceed() {
-      this.$message.info('最多只能上传9张图片')
-    }
-  }
-}
+      this.$message.info("最多只能上传9张图片");
+    },
+  },
+};
 </script>
 
 <style scoped>

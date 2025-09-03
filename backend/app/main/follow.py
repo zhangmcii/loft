@@ -1,17 +1,18 @@
-from flask_jwt_extended import jwt_required, current_user
-from . import main
-from ..models import User, Follow, Permission
-from ..decorators import permission_required
-from .. import db
-from flask import request, current_app
-from ..utils.time_util import DateUtils
-from ..utils.common import get_avatars_url
-from ..utils.response import success, error, not_found
-
-from ..api.users import get_user_data
-
 # 日志
 import logging
+
+from flask import current_app, request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..api.users import get_user_data
+from ..decorators import permission_required
+from ..models import Follow, Permission, User
+from ..utils.common import get_avatars_url
+from ..utils.response import error, not_found, success
+from ..utils.time_util import DateUtils
+from . import main
+
 
 # --------------------------- 关注 ---------------------------
 @main.route("/follow/<username>")

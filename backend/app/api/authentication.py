@@ -1,14 +1,16 @@
 from . import api
-from flask_jwt_extended import verify_jwt_in_request
-from flask import request
-import re
-from ..utils.response import unauthorized
+
+# from flask_jwt_extended import verify_jwt_in_request
+# from ..utils.response import unauthorized
+# from flask import request
+# import re
 
 # skip_post_pattern = r'^(/api/v1/posts/.*$ | /users/\d+$)'
 # skip_pattern = r'^/api/v1/(posts/.*$ | users/\d+$)'
-skip_pattern = r'^(/api/v1/posts|/api/v1/users/\d+$|/api/v1/dir_name)'
+skip_pattern = r"^(/api/v1/posts|/api/v1/users/\d+$|/api/v1/dir_name)"
 
 # 日志
+
 
 @api.before_request
 def auth():

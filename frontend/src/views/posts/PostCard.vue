@@ -1,11 +1,11 @@
 <script>
-import { useCurrentUserStore } from '@/stores/user'
-import { useOtherUserStore } from '@/stores/otherUser'
-import date from '@/utils/date.js'
-import imageCfg from '@/config/image.js'
-import praise from '@/api/praise/praiseApi.js'
-import emojiCfg from '@/config/emojiCfg.js'
-import { loginReminder } from '@/utils/common.js'
+import { useCurrentUserStore } from "@/stores/user";
+import { useOtherUserStore } from "@/stores/otherUser";
+import date from "@/utils/date.js";
+import imageCfg from "@/config/image.js";
+import praise from "@/api/praise/praiseApi.js";
+import emojiCfg from "@/config/emojiCfg.js";
+import { loginReminder } from "@/utils/common.js";
 
 export default {
   props: {
@@ -14,168 +14,168 @@ export default {
       default() {
         return {
           id: 1,
-          body: '文章',
+          body: "文章",
           body_html: null,
-          timestamp: '2024-9-20 12:14:00',
-          author: '张三',
-          nick_name: '',
+          timestamp: "2024-9-20 12:14:00",
+          author: "张三",
+          nick_name: "",
           commentCount: 20,
           disabled: false,
-          image: '',
+          image: "",
           praise_num: 0,
-          has_praised: false
-        }
-      }
+          has_praised: false,
+        };
+      },
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 卡片的背景颜色
     cardBgColor: {
       type: String,
-      default: 'white'
+      default: "white",
     },
     cardStyle: {
       type: Object,
       default() {
-        return {}
-      }
+        return {};
+      },
     },
     showImage: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showEdit: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showShare: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showComment: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showPraise: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
-  emits: ['share'],
+  emits: ["share"],
   data() {
     return {
       praiseNum: 0,
       hasPraised: false,
       iconSize: 15,
-      eStyle: `style="width: 26px;height: 26px;vertical-align: middle; position: relative;top: -3px;margin: 0px 2px 0px 3px;"`
-    }
+      eStyle: `style="width: 26px;height: 26px;vertical-align: middle; position: relative;top: -3px;margin: 0px 2px 0px 3px;"`,
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    const otherUser = useOtherUserStore()
-    return { currentUser, otherUser }
+    const currentUser = useCurrentUserStore();
+    const otherUser = useOtherUserStore();
+    return { currentUser, otherUser };
   },
   watch: {
-    'post.praise_num': {
+    "post.praise_num": {
       handler(newValue) {
-        this.praiseNum = newValue
+        this.praiseNum = newValue;
       },
-      immediate: true
+      immediate: true,
     },
-    'post.has_praised': {
+    "post.has_praised": {
       handler(newValue) {
-        this.hasPraised = newValue
+        this.hasPraised = newValue;
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   computed: {
     from_now() {
       if (date.isYesterday(this.post.timestamp)) {
-        let time = this.$dayjs(this.post.timestamp).format('HH:mm')
-        return `昨天 ${time}`
+        let time = this.$dayjs(this.post.timestamp).format("HH:mm");
+        return `昨天 ${time}`;
       }
-      return this.$dayjs(this.post.timestamp).fromNow()
+      return this.$dayjs(this.post.timestamp).fromNow();
     },
     isCommentManage() {
-      return this.currentUser.userInfo.roleId >= 2
+      return this.currentUser.userInfo.roleId >= 2;
     },
     show_body() {
-      return this.isCommentManage || !this.post.disabled
+      return this.isCommentManage || !this.post.disabled;
     },
     image() {
       if (!this.post.image) {
-        return imageCfg.random()
+        return imageCfg.random();
       }
-      return this.post.image
+      return this.post.image;
     },
     isUserRoute() {
-      return this.$route.path.startsWith('/user')
+      return this.$route.path.startsWith("/user");
     },
     skeletonItemWidth() {
-      return this.avatar ? '80%' : ' 100%'
-    }
+      return this.avatar ? "80%" : " 100%";
+    },
   },
   mounted() {},
   methods: {
     share() {
-      this.$router.push(`/postDetail/${this.post.id}`)
+      this.$router.push(`/postDetail/${this.post.id}`);
     },
     edit() {
-      this.$router.push(`/editPost/${this.post.id}`)
+      this.$router.push(`/editPost/${this.post.id}`);
     },
     comment() {
-      this.$router.push(`/postDetail/${this.post.id}`)
+      this.$router.push(`/postDetail/${this.post.id}`);
     },
     praise() {
       if (!this.currentUser.isLogin) {
-        loginReminder('快去登录再点赞吧')
-        return
+        loginReminder("快去登录再点赞吧");
+        return;
       }
       praise.submitPraise(this.post.id).then((res) => {
         if (res.code == 200) {
-          this.praiseNum = res.total
-          this.hasPraised = res.data.has_praised
+          this.praiseNum = res.total;
+          this.hasPraised = res.data.has_praised;
         } else {
-          this.$message.error(res.data.detail)
+          this.$message.error(res.data.detail);
         }
-      })
+      });
     },
     parseContent(content) {
-      let r1 = this.replaceHeo(content)
-      let r2 = this.replaceDingtalk(r1)
-      return r2
+      let r1 = this.replaceHeo(content);
+      let r2 = this.replaceDingtalk(r1);
+      return r2;
     },
 
     replaceHeo(content) {
       if (!/\[Heo:(.+?)\]/.test(content)) {
-        return content
+        return content;
       }
       const withHeo = content.replace(
         /\[Heo:(.+?)\]/g,
         `<img src="${emojiCfg.Heo_100.baseUrl}$1${emojiCfg.Heo_100.suffix}" ${this.eStyle}/>`
-      )
-      return withHeo
+      );
+      return withHeo;
     },
     replaceDingtalk(content) {
       if (!/\[ding:(.+?)\]/.test(content)) {
-        return content
+        return content;
       }
       const withDing = content.replace(
         /\[ding:(.+?)\]/g,
         `<img src="${emojiCfg.dingtalk.baseUrl}$1${emojiCfg.dingtalk.suffix}" ${this.eStyle}/>`
-      )
-      return withDing
+      );
+      return withDing;
     },
     toUser() {
       // 接口都已改为根据用户id获取用户数据
-      this.otherUser.userInfo.id = this.post.user_id
-      this.$router.push(`/user/${this.post.author}`)
-    }
-  }
-}
+      this.otherUser.userInfo.id = this.post.user_id;
+      this.$router.push(`/user/${this.post.author}`);
+    },
+  },
+};
 </script>
 
 <template>
@@ -187,11 +187,7 @@ export default {
       <el-col :span="showImage ? 20 : 24">
         <el-row justify="space-between" class="content">
           <el-col :xs="18" :sm="18" :md="10" :lg="10" :xl="10">
-            <el-link
-              target="_blank"
-              type="primary"
-              @click.stop="toUser"
-            >
+            <el-link target="_blank" type="primary" @click.stop="toUser">
               {{ post.nick_name ? post.nick_name : post.author }}
             </el-link>
           </el-col>
@@ -202,7 +198,9 @@ export default {
         <el-row v-if="post.disabled">
           <p><i>此评论已被版主禁用</i></p>
         </el-row>
-        <el-row><div v-if="post.body_html && show_body" v-html="post.body_html"></div></el-row>
+        <el-row
+          ><div v-if="post.body_html && show_body" v-html="post.body_html"></div
+        ></el-row>
         <el-row v-if="!post.body_html && show_body"
           ><div v-html="parseContent(post.body)"></div
         ></el-row>
@@ -226,11 +224,27 @@ export default {
             :xl="2"
             v-else-if="showEdit && currentUser.userInfo.isAdmin == 'true'"
           >
-            <van-icon name="edit" @click.stop="edit" :size="iconSize" color="red" />
+            <van-icon
+              name="edit"
+              @click.stop="edit"
+              :size="iconSize"
+              color="red"
+            />
           </el-col>
 
-          <el-col :xs="4" :sm="4" :md="2" :lg="2" :xl="2" v-if="showShare && !isUserRoute">
-            <van-icon name="share-o" @click.stop="this.$emit('share', true)" :size="iconSize" />
+          <el-col
+            :xs="4"
+            :sm="4"
+            :md="2"
+            :lg="2"
+            :xl="2"
+            v-if="showShare && !isUserRoute"
+          >
+            <van-icon
+              name="share-o"
+              @click.stop="this.$emit('share', true)"
+              :size="iconSize"
+            />
           </el-col>
 
           <el-col :xs="4" :sm="6" :md="4" :lg="2" :xl="2" v-if="showComment">

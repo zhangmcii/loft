@@ -1,16 +1,18 @@
 import logging
-from .decorators import DecoratedMethodView
-from flask_jwt_extended import current_user, jwt_required
-from ..models import Notification
-from .. import db
+
 from flask import request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..models import Notification
 from ..utils.response import success
+from .decorators import DecoratedMethodView
 
 
 # --------------------------- 通知功能 ---------------------------
 class NotificationApi(DecoratedMethodView):
     method_decorators = {
-        'share': [jwt_required()],
+        "share": [jwt_required()],
     }
 
     def get(self):
@@ -35,4 +37,6 @@ class NotificationApi(DecoratedMethodView):
 
 
 def register_notification_api(bp, *, notification_url):
-    bp.add_url_rule(f'/{notification_url}', view_func=NotificationApi.as_view('notification'))
+    bp.add_url_rule(
+        f"/{notification_url}", view_func=NotificationApi.as_view("notification")
+    )

@@ -1,183 +1,198 @@
 <script>
-import notificationApi from '@/api/notification/notificationApi.js'
-import { useCurrentUserStore } from '@/stores/user'
-import { useOtherUserStore } from '@/stores/otherUser'
-import NotificationDetail from './NotificationDetail.vue'
-import emitter from '@/utils/emitter.js'
+import notificationApi from "@/api/notification/notificationApi.js";
+import { useCurrentUserStore } from "@/stores/user";
+import { useOtherUserStore } from "@/stores/otherUser";
+import NotificationDetail from "./NotificationDetail.vue";
+import emitter from "@/utils/emitter.js";
 
 export default {
   components: {
-    NotificationDetail
+    NotificationDetail,
   },
   data() {
     return {
-      activeName: 'first',
+      activeName: "first",
       notifications: [],
       classification: {
         comment: [],
         praise: [],
         at: [],
         chat: [],
-        newPost: []
-      }
-    }
+        newPost: [],
+      },
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    const otherUser = useOtherUserStore()
-    return { currentUser, otherUser }
+    const currentUser = useCurrentUserStore();
+    const otherUser = useOtherUserStore();
+    return { currentUser, otherUser };
   },
   watch: {
     notifications: {
       handler(newVal) {
-        this.classify(newVal)
+        this.classify(newVal);
       },
       immediate: true,
-      deep: true
-    }
+      deep: true,
+    },
   },
   computed: {
     showDot() {
-      return this.notifications.some((item) => item.type !=='新文章' && !item.isRead)
+      return this.notifications.some(
+        (item) => item.type !== "新文章" && !item.isRead
+      );
     },
     atUnreadNum() {
-      return this.calculateUnreadCount('at')
+      return this.calculateUnreadCount("at");
     },
     commentUnreadNum() {
-      return this.calculateUnreadCount('comment')
+      return this.calculateUnreadCount("comment");
     },
     praiseUnreadNum() {
-      return this.calculateUnreadCount('praise')
+      return this.calculateUnreadCount("praise");
     },
     chatUnreadNum() {
-      return this.calculateUnreadCount('chat')
-    }
+      return this.calculateUnreadCount("chat");
+    },
   },
   mounted() {
-    this.initSocket()
+    this.initSocket();
   },
   beforeUnmount() {
-    this.currentUser.socket?.off('new_notification')
+    this.currentUser.socket?.off("new_notification");
     if (this.currentUser.socket) {
-      this.currentUser.disconnectSocket()
+      this.currentUser.disconnectSocket();
     }
   },
   methods: {
-    
     async initLoad() {
       // 加载本地数据
-      const localData = this.currentUser.notice.Notification_data
+      const localData = this.currentUser.notice.Notification_data;
       // 请求服务器数据
-      const notifications = await notificationApi.getCurrentUserNotification().then((res) => res.data)
+      const notifications = await notificationApi
+        .getCurrentUserNotification()
+        .then((res) => res.data);
       // 合并去重
       const allData = [...notifications, ...localData].filter(
         (item, index, self) => index === self.findIndex((t) => t.id === item.id)
-      )
-      this.notifications = allData
-      this.currentUser.saveNotifications(allData)
+      );
+      this.notifications = allData;
+      this.currentUser.saveNotifications(allData);
     },
 
     handleNoticeClear() {
-      this.notifications = []
-      this.currentUser.clearNotifications()
+      this.notifications = [];
+      this.currentUser.clearNotifications();
     },
 
     handleMakeAll() {
-      let ids = []
+      let ids = [];
       this.notifications.forEach((item) => {
-        item.isRead = true
-        ids.push(item.id)
-      })
-      notificationApi.markRead({ ids: ids })
+        item.isRead = true;
+        ids.push(item.id);
+      });
+      notificationApi.markRead({ ids: ids });
     },
     handleNoticeRead(item) {
       if (!item.isRead) {
-        item.isRead = true
-        notificationApi.markRead({ ids: [item.id] })
+        item.isRead = true;
+        notificationApi.markRead({ ids: [item.id] });
       }
     },
     toPost(item) {
-      this.handleNoticeRead(item)
-      this.$router.push(`/postDetail/${item.postId}`)
+      this.handleNoticeRead(item);
+      this.$router.push(`/postDetail/${item.postId}`);
     },
     toChat(item) {
-      this.handleNoticeRead(item)
-      this.otherUser.userInfo.id = item.triggerId
-      this.otherUser.userInfo.nickname = item.triggerNickName
-      this.otherUser.userInfo.username = item.triggerUsername
-      this.$router.push('/chat')
+      this.handleNoticeRead(item);
+      this.otherUser.userInfo.id = item.triggerId;
+      this.otherUser.userInfo.nickname = item.triggerNickName;
+      this.otherUser.userInfo.username = item.triggerUsername;
+      this.$router.push("/chat");
     },
     initSocket() {
       if (!this.currentUser.isLogin) {
-        return
+        return;
       }
-      this.currentUser.connectSocket()
-      this.initLoad()
-      this.currentUser.socket.on('new_notification', this.receiveMessage)
+      this.currentUser.connectSocket();
+      this.initLoad();
+      this.currentUser.socket.on("new_notification", this.receiveMessage);
     },
     receiveMessage(data) {
-      const d = data
+      const d = data;
       // 更新前端实时状态
-      this.notifications = [d, ...this.notifications]
-      const existData = this.currentUser.loadNotifications()
+      this.notifications = [d, ...this.notifications];
+      const existData = this.currentUser.loadNotifications();
       // 新数据与本地数据合并后去重
       const mergedData = [d, ...existData].filter(
         (item, index, self) => index === self.findIndex((t) => t.id === item.id)
-      )
-      this.currentUser.saveNotifications(mergedData)
+      );
+      this.currentUser.saveNotifications(mergedData);
       if (mergedData.length > this.currentUser.notice.MAX_ITEM) {
-        this.currentUser.saveNotifications(mergedData.slice(0, 50))
+        this.currentUser.saveNotifications(mergedData.slice(0, 50));
       }
       if (import.meta.env.DEV) {
-        console.log('收到实时通知:', data)
+        console.log("收到实时通知:", data);
       }
-      console.log('11收到实时通知:', data)
+      console.log("11收到实时通知:", data);
     },
     mergeNotifications(localData, serverUnRead) {
       // 创建映射防止重复
-      const map = new Map()
+      const map = new Map();
       // 本地数据优先（保证实时性）
-      localData.forEach((n) => map.set(n.id, n))
+      localData.forEach((n) => map.set(n.id, n));
       // 合并远程数据
       serverUnRead.forEach((n) => {
         if (!map.has(n.id) || !map.get(n.id).isRead) {
           // 强制未读状态
-          map.set(n.id, { ...n, isRead: false })
+          map.set(n.id, { ...n, isRead: false });
         }
-      })
+      });
       // 转换为数组并排序
-      return Array.from(map.values()).sort((a, b) => new Date(b.time) - new Date(a.time))
+      return Array.from(map.values()).sort(
+        (a, b) => new Date(b.time) - new Date(a.time)
+      );
     },
     classify() {
       this.classification.comment = this.notifications.filter(
-        (item) => item.type === '评论' || item.type === '回复'
-      )
-      this.classification.praise = this.notifications.filter((item) => item.type === '点赞')
-      this.classification.at = this.notifications.filter((item) => item.type === '@')
-      this.classification.chat = this.notifications.filter((item) => item.type === '私信')
-      this.classification.newPost = this.notifications.filter((item) => item.type === '新文章')
-      let post_notice = this.classification.newPost.length > 0 && this.classification.newPost.some((item) => !item.isRead)
-      if ( post_notice) {
-        emitter.emit('followPost', this.classification.newPost)
+        (item) => item.type === "评论" || item.type === "回复"
+      );
+      this.classification.praise = this.notifications.filter(
+        (item) => item.type === "点赞"
+      );
+      this.classification.at = this.notifications.filter(
+        (item) => item.type === "@"
+      );
+      this.classification.chat = this.notifications.filter(
+        (item) => item.type === "私信"
+      );
+      this.classification.newPost = this.notifications.filter(
+        (item) => item.type === "新文章"
+      );
+      let post_notice =
+        this.classification.newPost.length > 0 &&
+        this.classification.newPost.some((item) => !item.isRead);
+      if (post_notice) {
+        emitter.emit("followPost", this.classification.newPost);
       }
     },
     handleClick(tab) {
-      this.activeName = tab.name
+      this.activeName = tab.name;
     },
     calculateUnreadCount(type) {
       return this.classification[type].reduce((count, item) => {
-        return count + (item.isRead ? 0 : 1)
-      }, 0)
-    }
-  }
-}
+        return count + (item.isRead ? 0 : 1);
+      }, 0);
+    },
+  },
+};
 </script>
 
 <template>
   <div class="notification-wrapper">
-    <van-popover 
-      :show-arrow="false" 
-      close-on-click-action 
+    <van-popover
+      :show-arrow="false"
+      close-on-click-action
       :offset="[-120, 15]"
       class="notification-popover"
     >
@@ -194,10 +209,19 @@ export default {
       </template>
       <template #default>
         <div class="notification-container">
-          <el-tabs v-model="activeName" class="notification-tabs" :stretch="true" @tab-click="handleClick">
+          <el-tabs
+            v-model="activeName"
+            class="notification-tabs"
+            :stretch="true"
+            @tab-click="handleClick"
+          >
             <el-tab-pane name="first">
               <template #label>
-                <van-badge :content="atUnreadNum" :show-zero="false" :offset="[12, -5]">
+                <van-badge
+                  :content="atUnreadNum"
+                  :show-zero="false"
+                  :offset="[12, -5]"
+                >
                   @我的
                 </van-badge>
               </template>
@@ -209,7 +233,10 @@ export default {
             </el-tab-pane>
             <el-tab-pane name="second">
               <template #label>
-                <van-badge :content="commentUnreadNum" :show-zero="false" :offset="[12, -5]"
+                <van-badge
+                  :content="commentUnreadNum"
+                  :show-zero="false"
+                  :offset="[12, -5]"
                   >评论
                 </van-badge>
               </template>
@@ -221,7 +248,10 @@ export default {
             </el-tab-pane>
             <el-tab-pane name="third">
               <template #label>
-                <van-badge :content="praiseUnreadNum" :show-zero="false" :offset="[12, -5]"
+                <van-badge
+                  :content="praiseUnreadNum"
+                  :show-zero="false"
+                  :offset="[12, -5]"
                   >赞</van-badge
                 >
               </template>
@@ -233,7 +263,11 @@ export default {
             </el-tab-pane>
             <el-tab-pane name="fourth">
               <template #label>
-                <van-badge :content="chatUnreadNum" :show-zero="false" :offset="[12, -5]">
+                <van-badge
+                  :content="chatUnreadNum"
+                  :show-zero="false"
+                  :offset="[12, -5]"
+                >
                   私信
                 </van-badge>
               </template>
@@ -247,9 +281,9 @@ export default {
           </el-tabs>
         </div>
         <div class="notification-footer">
-          <el-button 
-            class="view-all-btn" 
-            :disabled="!showDot" 
+          <el-button
+            class="view-all-btn"
+            :disabled="!showDot"
             @click="handleMakeAll"
             type="primary"
             size="small"
@@ -375,7 +409,6 @@ export default {
   line-height: 16px;
 }
 
-
 .notification-footer {
   display: flex;
   align-items: center;
@@ -385,14 +418,16 @@ export default {
   background-color: #f9fafc;
 }
 
-.view-all-btn, .clear-btn {
+.view-all-btn,
+.clear-btn {
   font-size: 12px;
   border-radius: 20px;
   padding: 6px 12px;
   transition: all 0.3s ease;
 }
 
-.view-all-btn:not(:disabled):hover, .clear-btn:not(:disabled):hover {
+.view-all-btn:not(:disabled):hover,
+.clear-btn:not(:disabled):hover {
   transform: translateY(-1px);
 }
 /* 禁用状态样式 */

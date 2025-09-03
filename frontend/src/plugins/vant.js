@@ -10,15 +10,15 @@ import {
   Cell,
   CellGroup,
   Divider,
-  ActionSheet ,
+  ActionSheet,
   // Empty ,
-  Area ,
-  Search ,
-  Popover ,
+  Area,
+  Search,
+  Popover,
   Badge,
   Field,
   RadioGroup,
-} from 'vant'
+} from "vant";
 
 const components = [
   // Button,
@@ -32,16 +32,15 @@ const components = [
   Cell,
   CellGroup,
   Divider,
-  ActionSheet ,
+  ActionSheet,
   // Empty ,
-  Area ,
-  Search ,
+  Area,
+  Search,
   Popover,
   Badge,
   Field,
-  RadioGroup
-]
-
+  RadioGroup,
+];
 
 /** 按需引入`vant` */
 export function useVant(app) {

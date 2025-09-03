@@ -1,18 +1,18 @@
 import logging
-from .decorators import DecoratedMethodView
-from flask_jwt_extended import jwt_required, current_user
-from . import api
-from ..models import Post, Comment, Notification, NotificationType, Permission
-from ..decorators import permission_required
-from .. import db
+
 from flask import current_app, request
-from ..utils.time_util import DateUtils
-from .. import socketio
-from .. import limiter
+from flask_jwt_extended import current_user, jwt_required
 from werkzeug.exceptions import TooManyRequests
-from ..utils.text_filter import DFAFilter
+
+from .. import db, limiter, socketio
+from ..decorators import permission_required
+from ..models import Comment, Notification, NotificationType, Permission, Post
 from ..utils.common import get_avatars_url
-from ..utils.response import success, error
+from ..utils.response import error, success
+from ..utils.text_filter import DFAFilter
+from ..utils.time_util import DateUtils
+from . import api
+from .decorators import DecoratedMethodView
 
 
 # --------------------------- 评论 ---------------------------
@@ -27,29 +27,27 @@ def moderate():
     return success(data=comments, total=total)
 
 
-@api.route('/comments/<int:comment_id>/replies')
+@api.route("/comments/<int:comment_id>/replies")
 def get_comment_replies(comment_id):
     logging.info("获取评论回复")
     root_comment_id = comment_id
-    page = request.args.get('page', 1, type=int)
+    page = request.args.get("page", 1, type=int)
     # 分页时不自动嵌套，前端按需请求
-    replies, total = CommentApi.get_replies_by_parent(root_comment_id=root_comment_id, page=page)
-    return success(
-        data=replies,
-        extra={
-            'total': total,
-            'current_page': page
-        }
+    replies, total = CommentApi.get_replies_by_parent(
+        root_comment_id=root_comment_id, page=page
     )
+    return success(data=replies, extra={"total": total, "current_page": page})
 
 
 class CommentApi(DecoratedMethodView):
     method_decorators = {
-        'get': [],
-        'post': [jwt_required(), limiter.limit(
-            "1/second;3/minute",
-            exempt_when=lambda: current_user.role_id == 3
-        )]
+        "get": [],
+        "post": [
+            jwt_required(),
+            limiter.limit(
+                "1/second;3/minute", exempt_when=lambda: current_user.role_id == 3
+            ),
+        ],
     }
 
     @staticmethod
@@ -59,10 +57,15 @@ class CommentApi(DecoratedMethodView):
         :param root_comment_id: 根父评论ID
         """
         # 基础查询：直接回复
-        query = Comment.query.filter_by(root_comment_id=root_comment_id).order_by(Comment.timestamp.desc())
+        query = Comment.query.filter_by(root_comment_id=root_comment_id).order_by(
+            Comment.timestamp.desc()
+        )
         # 分页查询
-        pagination = query.paginate(page=page, per_page=current_app.config['FLASKY_COMMENTS_REPLY_PER_PAGE'],
-                                    error_out=False)
+        pagination = query.paginate(
+            page=page,
+            per_page=current_app.config["FLASKY_COMMENTS_REPLY_PER_PAGE"],
+            error_out=False,
+        )
         replies = []
         for reply in pagination.items:
             reply_data = reply.to_json()
@@ -118,31 +121,37 @@ class CommentApi(DecoratedMethodView):
     def get(self, post_id):
         logging.info(f"获取文章评论: post_id={post_id}")
         post = Post.query.get_or_404(post_id)
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('size', current_app.config['FLASKY_COMMENTS_PER_PAGE'], type=int)
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get(
+            "size", current_app.config["FLASKY_COMMENTS_PER_PAGE"], type=int
+        )
         # 获取根评论分页（parent_comment_id为None）
-        root_comments_pagination = post.comments.filter(Comment.root_comment_id.is_(None)).order_by(
-            Comment.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
+        root_comments_pagination = (
+            post.comments.filter(Comment.root_comment_id.is_(None))
+            .order_by(Comment.timestamp.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
 
         comments = []
         for root_comment in root_comments_pagination.items:
             comment_data = root_comment.to_json()
             # 获取该根评论下的第一层直接回复（direct_parent_id=根评论ID）
-            first_level_replies, reply_total = CommentApi.get_replies_by_parent(root_comment.id, page=1)
-            comment_data.update({
-                'reply': {
-                    'list': first_level_replies,
-                    'total': reply_total,
+            first_level_replies, reply_total = CommentApi.get_replies_by_parent(
+                root_comment.id, page=1
+            )
+            comment_data.update(
+                {
+                    "reply": {
+                        "list": first_level_replies,
+                        "total": reply_total,
+                    }
                 }
-            })
+            )
             comments.append(comment_data)
 
         return success(
             data=comments,
-            extra={
-                'total': root_comments_pagination.total,
-                'current_page': page
-            }
+            extra={"total": root_comments_pagination.total, "current_page": page},
         )
 
     def post(self, post_id):
@@ -219,8 +228,9 @@ class CommentApi(DecoratedMethodView):
 
 class CommentManageApi(DecoratedMethodView):
     """评论管理"""
+
     method_decorators = {
-        'share': [jwt_required(), permission_required(Permission.MODERATE)]
+        "share": [jwt_required(), permission_required(Permission.MODERATE)]
     }
 
     @staticmethod
@@ -236,7 +246,7 @@ class CommentManageApi(DecoratedMethodView):
                 "body": item.body,
                 "timestamp": DateUtils.datetime_to_str(item.timestamp),
                 "author": item.author.username,
-                'user_id': item.author.id,
+                "user_id": item.author.id,
                 "image": get_avatars_url(item.author.image),
                 "id": item.id,
                 "disabled": item.disabled,
@@ -249,12 +259,12 @@ class CommentManageApi(DecoratedMethodView):
     def patch(self, comment_id):
         """禁用/恢复评论"""
         logging.info(f"{current_user.username}恢复评论: id={comment_id}")
-        status = request.json.get('action')
+        status = request.json.get("action")
         try:
             comment = Comment.query.get_or_404(comment_id)
-            if status == 'enable':
+            if status == "enable":
                 comment.disabled = False
-            elif status == 'disable':
+            elif status == "disable":
                 comment.disabled = True
             else:
                 return error(400, f"传递参数错误, status{status}")
@@ -277,7 +287,7 @@ class CommentManageApi(DecoratedMethodView):
 
 
 def register_comment_api(bp, *, comment_url, comment_manage_url):
-    comment = CommentApi.as_view('comments')
-    comment_manage = CommentManageApi.as_view('comments_manage')
+    comment = CommentApi.as_view("comments")
+    comment_manage = CommentManageApi.as_view("comments_manage")
     bp.add_url_rule(comment_url, view_func=comment)
     bp.add_url_rule(comment_manage_url, view_func=comment_manage)

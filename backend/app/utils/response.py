@@ -7,29 +7,25 @@ from flask import jsonify
 def api_response(code=200, message="success", data=None, **kwargs):
     """
     统一API响应格式
-    
+
     Args:
         code (int): 状态码，默认200表示成功
         message (str): 响应消息
         data (dict/list): 响应数据
         **kwargs: 其他额外参数，如total等
-        
+
     Returns:
         Response: Flask响应对象，JSON格式
     """
     if data is None:
         data = {}
-        
-    response = {
-        "code": code,
-        "message": message,
-        "data": data
-    }
-    
+
+    response = {"code": code, "message": message, "data": data}
+
     # 添加额外参数
     for key, value in kwargs.items():
         response[key] = value
-    
+
     return jsonify(response)
 
 

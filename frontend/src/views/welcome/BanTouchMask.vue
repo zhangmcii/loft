@@ -1,11 +1,11 @@
 <script setup>
 defineOptions({
-  name: 'BanTouchMask'
-})
+  name: "BanTouchMask",
+});
 
 defineProps({
-  touchable: Boolean
-})
+  touchable: Boolean,
+});
 </script>
 
 <template>

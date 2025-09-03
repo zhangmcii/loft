@@ -10,49 +10,49 @@ export default {
     // 按钮文字
     content: {
       type: String,
-      default: '点击'
+      default: "点击",
     },
     // 按钮样式
     type: {
       type: String,
-      default: ''
+      default: "",
     },
     // 自定义颜色
     color: {
       type: String,
-      default: ''
+      default: "",
     },
     // 加载效果
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 按钮大小
     size: {
       type: String,
-      default: 'default'
+      default: "default",
     },
     // 是否需要图标
     havaIcon: {
       type: Boolean,
-      default: true
+      default: true,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     round: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    width:{
+    width: {
       type: String,
-      default: 'auto'
-    }
+      default: "auto",
+    },
     // 是否圆角按钮
   },
-  emits: ['doSearch']
-}
+  emits: ["doSearch"],
+};
 </script>
 
 <template>

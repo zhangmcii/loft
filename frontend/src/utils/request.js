@@ -1,12 +1,12 @@
-import errorManager from '@/utils/message' 
-import router from '../router/index.js'
-import axios from 'axios'
+import errorManager from "@/utils/message";
+import router from "../router/index.js";
+import axios from "axios";
 
 const $http = axios.create({
   // 后端api的base_url
-  baseURL: import.meta.env.VITE_APP_BASE_API ?? '/', 
-  timeout: 10000
-})
+  baseURL: import.meta.env.VITE_APP_BASE_API ?? "/",
+  timeout: 10000,
+});
 
 /**
  * 设置网路请求监听
@@ -16,37 +16,37 @@ function setInterceptors(...instance) {
     i.interceptors.request.use(
       function (config) {
         // 从localStorage中获取token。注意，不可以从pinia中读取，因为刷新页面，此时组件可能还未初始化完
-        const token = JSON.parse(localStorage.getItem('blog'))?.token
+        const token = JSON.parse(localStorage.getItem("blog"))?.token;
         if (token) {
-          config.headers['Authorization'] = token
+          config.headers["Authorization"] = token;
         }
         if (import.meta.env.DEV) {
-          console.log('==>请求开始')
-          console.log(`${config.baseURL}${config.url}`)
+          console.log("==>请求开始");
+          console.log(`${config.baseURL}${config.url}`);
           if (config.data) {
-            console.log('==>请求数据', config.data)
+            console.log("==>请求数据", config.data);
           }
         }
-        return config
+        return config;
       },
       function (error) {
         // 对请求错误做些什么
         if (import.meta.env.DEV) {
-          console.log('==>请求开始')
-          console.log(error)
+          console.log("==>请求开始");
+          console.log(error);
         }
 
-        errorManager.error(error)
-        return Promise.reject(error)
+        errorManager.error(error);
+        return Promise.reject(error);
       }
-    )
-    
+    );
+
     i.interceptors.response.use(
       function (response) {
         // 2xx 范围内的状态码都会触发该函数。
         if (import.meta.env.DEV) {
-          console.log(response)
-          console.log('==>请求结束')
+          console.log(response);
+          console.log("==>请求结束");
         }
 
         if (response.status == 200) {
@@ -54,75 +54,75 @@ function setInterceptors(...instance) {
           if (response.data.code !== undefined) {
             if (response.data.code === 200) {
               // 成功响应，返回完整响应数据（包括code、message、data和其他字段如total）
-              return response.data
+              return response.data;
             } else {
               // 业务错误，显示错误消息
-              errorManager.error(response.data.message || '请求失败')
-              return Promise.reject(response.data.message)
+              errorManager.error(response.data.message || "请求失败");
+              return Promise.reject(response.data.message);
             }
           } else {
             // 其他情况，直接返回响应
-            return response
+            return response;
           }
         } else {
-          return Promise.reject(response)
+          return Promise.reject(response);
         }
       },
       function (error) {
         // 超出 2xx 范围的状态码都会触发该函数。
         if (import.meta.env.DEV) {
-          console.log(error)
-          console.log('==>请求结束')
+          console.log(error);
+          console.log("==>请求结束");
         }
 
         if (error.response === undefined) {
-          errorManager.error('服务器响应超时')
-          return Promise.reject(error)
+          errorManager.error("服务器响应超时");
+          return Promise.reject(error);
         }
         if (error.response.status >= 500) {
-          router.push('/500')
-          return Promise.reject(error)
+          router.push("/500");
+          return Promise.reject(error);
         }
         if (error.response.status === 404) {
-          router.push('/404')
-          return Promise.reject(error)
+          router.push("/404");
+          return Promise.reject(error);
         }
         if (error.response.status === 400) {
-          errorManager.error('接口报错')
-          return Promise.reject(error)
+          errorManager.error("接口报错");
+          return Promise.reject(error);
         }
         if (error.response.status === 401) {
-          errorManager.error('您的身份未认证, 请重新登录')
-          router.push('/login')
-          return Promise.reject(error)
+          errorManager.error("您的身份未认证, 请重新登录");
+          router.push("/login");
+          return Promise.reject(error);
         }
         if (error.response.status === 429) {
-          return Promise.reject(error)
+          return Promise.reject(error);
         }
 
         if (error.response.status === 403) {
-          router.push('/403')
-          return Promise.reject(error)
+          router.push("/403");
+          return Promise.reject(error);
         } else {
-          const data = error.response.data
+          const data = error.response.data;
           if (data === null || data === undefined) {
-            errorManager.error('请求失败，请稍后重试！')
-            return Promise.reject(error)
+            errorManager.error("请求失败，请稍后重试！");
+            return Promise.reject(error);
           } else {
             // 处理新的统一接口返回格式的错误
-            const resCode = data.code
-            if (resCode && typeof resCode == 'number' && resCode !== 200) {
-              errorManager.error(data.message || '请求失败，请稍后重试！')
+            const resCode = data.code;
+            if (resCode && typeof resCode == "number" && resCode !== 200) {
+              errorManager.error(data.message || "请求失败，请稍后重试！");
             }
-            return Promise.reject(error)
+            return Promise.reject(error);
           }
         }
       }
-    )
-  })
+    );
+  });
 }
 
 //添加拦截器
-setInterceptors($http)
+setInterceptors($http);
 
-export { $http }
+export { $http };

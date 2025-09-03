@@ -4,25 +4,29 @@ export default {
     // 按钮文字
     content: {
       type: String,
-      default: '点击'
+      default: "点击",
     },
     isActive: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    fontColor:{
+    fontColor: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
-    return {}
+    return {};
   },
-  methods: {}
-}
+  methods: {},
+};
 </script>
 <template>
-  <div class="btn java" :class="{ active: isActive, fontColor: fontColor }" @click="$emit('click')">
+  <div
+    class="btn java"
+    :class="{ active: isActive, fontColor: fontColor }"
+    @click="$emit('click')"
+  >
     {{ content }}
   </div>
 </template>

@@ -17,7 +17,12 @@
         @select="onSelect"
       >
         <template #reference>
-          <el-avatar alt="用户图像" :size="32" :src="currentUser.avatarsUrl" @error="errorImage" />
+          <el-avatar
+            alt="用户图像"
+            :size="32"
+            :src="currentUser.avatarsUrl"
+            @error="errorImage"
+          />
         </template>
         <template #default v-if="currentUser.isLogin">
           <van-cell
@@ -26,7 +31,11 @@
             title-style="margin-left:10px"
           >
             <template #icon>
-              <el-avatar alt="用户图像" :src="currentUser.avatarsUrl" :size="47" />
+              <el-avatar
+                alt="用户图像"
+                :src="currentUser.avatarsUrl"
+                :size="47"
+              />
             </template>
           </van-cell>
           <van-cell
@@ -104,118 +113,119 @@
 </template>
 
 <script>
-import { useCurrentUserStore } from '@/stores/user'
-import MarQuee from '@/utils/components/MarQuee.vue'
-import daysApi from '@/api/days/daysApi.js'
-import emitter from '@/utils/emitter.js'
-import imageCfg from '@/config/image.js'
-import homeIcon from '@/asset/svg/homeIcon.svg?component'
-import BellCom from './BellCom.vue'
+import { useCurrentUserStore } from "@/stores/user";
+import MarQuee from "@/utils/components/MarQuee.vue";
+import daysApi from "@/api/days/daysApi.js";
+import emitter from "@/utils/emitter.js";
+import imageCfg from "@/config/image.js";
+import homeIcon from "@/asset/svg/homeIcon.svg?component";
+import BellCom from "./BellCom.vue";
 export default {
-  name: 'BurgerMenu',
+  name: "BurgerMenu",
   components: {
     MarQuee,
     homeIcon,
-    BellCom
+    BellCom,
   },
   data() {
     return {
       windowWidth: window.innerWidth,
       menuItems: [
-        { label: 'About', href: '#' },
-        { label: 'Services', href: '#' },
-        { label: 'Contact', href: '#' }
+        { label: "About", href: "#" },
+        { label: "Services", href: "#" },
+        { label: "Contact", href: "#" },
       ],
       isContactDropdownActive: false,
-      accountLabel: '账户',
-      daySentence: '',
+      accountLabel: "账户",
+      daySentence: "",
       photo: {
-        Avatar: '',
-        default: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+        Avatar: "",
+        default:
+          "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
       },
       showPopover: false,
       actions: [
-        { text: '登录', icon: 'user-o' },
-        { text: '注册', icon: 'add-o' }
-      ]
-    }
+        { text: "登录", icon: "user-o" },
+        { text: "注册", icon: "add-o" },
+      ],
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const currentUser = useCurrentUserStore();
+    return { currentUser };
   },
   computed: {
     isHomePage() {
-      return this.$route.path === '/posts'
-    }
+      return this.$route.path === "/posts";
+    },
   },
   mounted() {
-    this.initImage()
-    this.daySentence = daysApi.fetchQuote()
-    emitter.on('image', (url) => {
-      this.photo.Avatar = url
-    })
+    this.initImage();
+    this.daySentence = daysApi.fetchQuote();
+    emitter.on("image", (url) => {
+      this.photo.Avatar = url;
+    });
   },
   created() {
-    window.addEventListener('resize', this.updateWindowWidth)
+    window.addEventListener("resize", this.updateWindowWidth);
   },
   beforeUnmount() {
-    window.removeEventListener('resize', this.updateWindowWidth)
+    window.removeEventListener("resize", this.updateWindowWidth);
   },
   methods: {
     handleCellClick(route) {
-      this.closeToggleMenu() // 关闭弹出框
-      this.$router.push(route) // 路由跳转
+      this.closeToggleMenu(); // 关闭弹出框
+      this.$router.push(route); // 路由跳转
     },
     closeToggleMenu() {
       if (this.showPopover) {
-        this.showPopover = false
+        this.showPopover = false;
       }
     },
     updateWindowWidth() {
-      this.windowWidth = window.innerWidth
+      this.windowWidth = window.innerWidth;
     },
     toggleContactDropdown() {
-      this.isContactDropdownActive = !this.isContactDropdownActive
-      this.accountLabel = this.isContactDropdownActive ? '关闭' : '账户'
+      this.isContactDropdownActive = !this.isContactDropdownActive;
+      this.accountLabel = this.isContactDropdownActive ? "关闭" : "账户";
     },
     log_out() {
-      this.closeToggleMenu()
-      this.currentUser.disconnectSocket()
-      this.currentUser.logOut()
+      this.closeToggleMenu();
+      this.currentUser.disconnectSocket();
+      this.currentUser.logOut();
       this.$message({
-        message: '已退出',
-        type: 'success',
-        duration: 1700
-      })
-      this.$router.push('/posts')
-      this.initImage()
+        message: "已退出",
+        type: "success",
+        duration: 1700,
+      });
+      this.$router.push("/posts");
+      this.initImage();
     },
     goHomePage() {
       if (this.isHomePage) {
-        return
+        return;
       }
-      this.$router.push('/posts')
+      this.$router.push("/posts");
     },
     errorImage() {
-      this.photo.Avatar = imageCfg.logOut
+      this.photo.Avatar = imageCfg.logOut;
     },
     initImage() {
       if (!this.currentUser.userInfo.image) {
-        this.photo.Avatar = imageCfg.logOut
-        return
+        this.photo.Avatar = imageCfg.logOut;
+        return;
       }
-      this.photo.Avatar = this.currentUser.userInfo.image
+      this.photo.Avatar = this.currentUser.userInfo.image;
     },
     onSelect(action) {
-      if (action.text == '登录') {
-        this.$router.push('/login')
-      } else if (action.text == '注册') {
-        this.$router.push('/register')
+      if (action.text == "登录") {
+        this.$router.push("/login");
+      } else if (action.text == "注册") {
+        this.$router.push("/register");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>

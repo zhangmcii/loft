@@ -1,10 +1,14 @@
 <script>
-import ButtonClick from '@/utils/components/ButtonClick.vue'
-import imageApi from '@/api/user/imageApi.js'
-import uploadApi from '@/api/upload/uploadApi.js'
-import { useCurrentUserStore } from '@/stores/user'
-import { useOtherUserStore } from '@/stores/otherUser'
-import { compressImages, uploadFiles, beforePicUpload } from '@/utils/common.js'
+import ButtonClick from "@/utils/components/ButtonClick.vue";
+import imageApi from "@/api/user/imageApi.js";
+import uploadApi from "@/api/upload/uploadApi.js";
+import { useCurrentUserStore } from "@/stores/user";
+import { useOtherUserStore } from "@/stores/otherUser";
+import {
+  compressImages,
+  uploadFiles,
+  beforePicUpload,
+} from "@/utils/common.js";
 
 export default {
   props: {
@@ -12,8 +16,8 @@ export default {
     interest: {
       type: Array,
       default() {
-        return []
-      }
+        return [];
+      },
     },
     // 表单数据
     formData: {
@@ -21,21 +25,21 @@ export default {
       default() {
         return {
           coverImage: [],
-          name1: '',
-          name2: '',
-          name3: ''
-        }
-      }
+          name1: "",
+          name2: "",
+          name3: "",
+        };
+      },
     },
     type: {
       type: String,
-      default: 'movie'
-    }
+      default: "movie",
+    },
   },
   components: {
-    ButtonClick
+    ButtonClick,
   },
-  emits: ['update:formData'],
+  emits: ["update:formData"],
 
   data() {
     return {
@@ -51,166 +55,186 @@ export default {
       // 上传成功后完整的url
       imageUrls: [],
       button: {
-        type: 'primary',
-        text: '提交',
+        type: "primary",
+        text: "提交",
         disabled: false,
         loading: false,
-        icon: 'Pointer'
-      }
-    }
+        icon: "Pointer",
+      },
+    };
   },
   setup() {
-    const currentUser = useCurrentUserStore()
-    const otherUser = useOtherUserStore()
-    return { currentUser, otherUser }
+    const currentUser = useCurrentUserStore();
+    const otherUser = useOtherUserStore();
+    return { currentUser, otherUser };
   },
   computed: {
     selectShow() {
-      return this.originalFiles.length >= 3 - this.interest.length ? 'none' : 'inline-flex'
+      return this.originalFiles.length >= 3 - this.interest.length
+        ? "none"
+        : "inline-flex";
     },
     internalFormData: {
       get() {
-        return this.formData
+        return this.formData;
       },
       set(value) {
-        this.$emit('update:formData', value)
-      }
+        this.$emit("update:formData", value);
+      },
     },
     areaName() {
-      if (this.type === 'movie') {
-        return '电影封面'
-      } else if (this.type === 'book') {
-        return '书籍封面'
+      if (this.type === "movie") {
+        return "电影封面";
+      } else if (this.type === "book") {
+        return "书籍封面";
       } else {
-        return '封面'
+        return "封面";
       }
-    }
+    },
   },
   methods: {
     async getUploadToken() {
-      const response = await uploadApi.get_upload_token()
-      return response.data.upload_token
+      const response = await uploadApi.get_upload_token();
+      return response.data.upload_token;
     },
     async handleChange(file, fileList) {
       if (!beforePicUpload([file])) {
-        return
+        return;
       }
-      this.internalFormData.coverImage = fileList
-      this.originalFiles = fileList
+      this.internalFormData.coverImage = fileList;
+      this.originalFiles = fileList;
 
       // 确保只添加新的文件
-      const newFiles = fileList.filter((f) => !this.originalFiles.some((of) => of.uid === f.uid))
-      this.originalFiles = [...this.originalFiles, ...newFiles]
+      const newFiles = fileList.filter(
+        (f) => !this.originalFiles.some((of) => of.uid === f.uid)
+      );
+      this.originalFiles = [...this.originalFiles, ...newFiles];
       // console.log('文件列表:', this.originalFiles)
       // 压缩图像
-      this.compressedImages = await compressImages(this.originalFiles, this.compressedImages)
+      this.compressedImages = await compressImages(
+        this.originalFiles,
+        this.compressedImages
+      );
     },
     handleRemove(file) {
       // 删除原始文件
-      this.originalFiles = this.originalFiles.filter((f) => f.uid !== file.uid)
+      this.originalFiles = this.originalFiles.filter((f) => f.uid !== file.uid);
       // 删除压缩文件
-      this.compressedImages = this.compressedImages.filter((img) => img.uid !== file.uid)
+      this.compressedImages = this.compressedImages.filter(
+        (img) => img.uid !== file.uid
+      );
 
       // 删除表单数据
-      this.internalFormData.coverImage = this.internalFormData.coverImage.filter(
-        (f) => f.uid !== file.uid
-      )
+      this.internalFormData.coverImage =
+        this.internalFormData.coverImage.filter((f) => f.uid !== file.uid);
     },
     handleExceed(files) {
-      this.$message.error('最多只能上传3张封面图片')
+      this.$message.error("最多只能上传3张封面图片");
     },
     validateForm() {
       return new Promise((resolve) => {
         this.$refs.formRef.validate((valid) => {
-          resolve(valid)
-        })
-      })
+          resolve(valid);
+        });
+      });
     },
     async submitForm() {
       // 模拟上传图片到云存储成功后，将电影信息添加到 movies 数组中
-      const valid = await this.validateForm()
+      const valid = await this.validateForm();
       if (valid) {
         this.movies = this.internalFormData.coverImage.map((item, index) => {
-          this.imageNames.push(this.internalFormData[`name${index + 1}`])
+          this.imageNames.push(this.internalFormData[`name${index + 1}`]);
           return {
             coverImage: URL.createObjectURL(item.raw),
-            name: this.internalFormData[`name${index + 1}`]
-          }
-        })
+            name: this.internalFormData[`name${index + 1}`],
+          };
+        });
         // console.log('预览信息:', this.movies)
         // console.log('names:', this.imageNames)
-        await this.submitBlog()
+        await this.submitBlog();
 
         // 清空表单数据
         // this.internalFormData.coverImage = []
         // this.internalFormData.name = ''
         // this.originalFiles = []
 
-        this.compressedImages = []
+        this.compressedImages = [];
       }
     },
 
     async submitBlog() {
       if (!beforePicUpload(this.originalFiles)) {
-        return
+        return;
       }
-      this.button.loading = true
+      this.button.loading = true;
       try {
         // 获取上传凭证
-        const uploadToken = await this.getUploadToken()
+        const uploadToken = await this.getUploadToken();
         // 上传图片
         const { imageKey, imageUrls } = await uploadFiles(
           this.compressedImages,
           this.currentUser.uploadInterestBaseUrl,
           uploadToken
-        )
-        this.imageKey = imageKey
-        this.imageUrls = imageUrls
+        );
+        this.imageKey = imageKey;
+        this.imageUrls = imageUrls;
         // 更新本地缓存
-        this.updateLocalUser(this.imageUrls, this.imageNames, this.type)
+        this.updateLocalUser(this.imageUrls, this.imageNames, this.type);
         imageApi
           .saveInterestImage(this.currentUser.userInfo.id, {
             urls: this.imageKey,
             names: this.imageNames,
-            type: this.type
+            type: this.type,
           })
           .then((response) => {
             if (response.code == 200) {
-              this.button.loading = false
-              this.button.type = 'success'
-              this.button.text = '提交成功'
-              this.button.disabled = true
-              this.button.icon = 'Check'
+              this.button.loading = false;
+              this.button.type = "success";
+              this.button.text = "提交成功";
+              this.button.disabled = true;
+              this.button.icon = "Check";
             }
           })
           .catch((error) => {
-            this.button.loading = false
+            this.button.loading = false;
             if (error.response && error.response.status === 429) {
-              uploadApi.del_image(this.imageKey)
-              this.$message.info('今天的发布次数已达上限～')
+              uploadApi.del_image(this.imageKey);
+              this.$message.info("今天的发布次数已达上限～");
             }
-          })
+          });
       } catch (error) {
-        this.button.loading = false
+        this.button.loading = false;
       }
     },
     updateLocalUser(urls, describe, _type) {
       const arr = urls.map((item, index) => {
         return {
           url: item,
-          describe: describe[index]
-        }
-      })
-      if (_type === 'movie') {
-        this.currentUser.userInfo.interest = { ...this.currentUser.userInfo.interest, movies: arr }
-        this.otherUser.userInfo.interest = { ...this.otherUser.userInfo.interest, movies: arr }
-      } else if (_type === 'book') {
-        this.currentUser.userInfo.interest = { ...this.currentUser.userInfo.interest, books: arr }
-        this.otherUser.userInfo.interest = { ...this.otherUser.userInfo.interest, books: arr }
+          describe: describe[index],
+        };
+      });
+      if (_type === "movie") {
+        this.currentUser.userInfo.interest = {
+          ...this.currentUser.userInfo.interest,
+          movies: arr,
+        };
+        this.otherUser.userInfo.interest = {
+          ...this.otherUser.userInfo.interest,
+          movies: arr,
+        };
+      } else if (_type === "book") {
+        this.currentUser.userInfo.interest = {
+          ...this.currentUser.userInfo.interest,
+          books: arr,
+        };
+        this.otherUser.userInfo.interest = {
+          ...this.otherUser.userInfo.interest,
+          books: arr,
+        };
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 <template>
   <div>
@@ -235,7 +259,11 @@ export default {
           <el-icon><i-ep-Plus /></el-icon>
           <template #file="{ file }">
             <div>
-              <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
+              <img
+                class="el-upload-list__item-thumbnail"
+                :src="file.url"
+                alt=""
+              />
               <span class="el-upload-list__item-actions">
                 <span @click="handleRemove(file)">
                   <el-icon><i-ep-Delete /></el-icon>

@@ -1,22 +1,20 @@
-from .decorators import DecoratedMethodView
-from flask_jwt_extended import current_user, jwt_required
-
-from ..decorators import admin_required
-from ..models import Tag
-from .. import db
-from flask import request
-from ..utils.response import success, error
-
-
 # 日志
 import logging
 
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..decorators import admin_required
+from ..models import Tag
+from ..utils.response import error, success
+from .decorators import DecoratedMethodView
+
 
 # --------------------------- 标签管理 ---------------------------
-
 class TagUserApi(DecoratedMethodView):
     method_decorators = {
-        'post': [jwt_required()],
+        "post": [jwt_required()],
     }
 
     def post(self, user_id):
@@ -46,9 +44,9 @@ class TagUserApi(DecoratedMethodView):
 
 class TagApi(DecoratedMethodView):
     method_decorators = {
-        'share': [jwt_required()],
-        'get': [],
-        'post': [admin_required],
+        "share": [jwt_required()],
+        "get": [],
+        "post": [admin_required],
     }
 
     def get(self):
@@ -58,9 +56,9 @@ class TagApi(DecoratedMethodView):
         return success(data=[tag.name for tag in tags])
 
     def post(self):
-        """ 应该加上 管理员权限
-            更新公共标签库
-       """
+        """应该加上 管理员权限
+        更新公共标签库
+        """
         logging.info("更新公共标签库")
         d = request.json
         tag_add = set(d.get("tagAdd", []))
@@ -83,7 +81,7 @@ class TagApi(DecoratedMethodView):
 
 
 def register_tag_api(bp, *, tag_user_url, tag_url):
-    tag_user = TagUserApi.as_view('tags_user')
-    tag = TagApi.as_view('tags')
+    tag_user = TagUserApi.as_view("tags_user")
+    tag = TagApi.as_view("tags")
     bp.add_url_rule(tag_user_url, view_func=tag_user)
     bp.add_url_rule(tag_url, view_func=tag)

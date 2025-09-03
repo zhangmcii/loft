@@ -1,15 +1,14 @@
-from flask_jwt_extended import jwt_required, current_user
-from . import main
-from ..models import Tag
-from .. import db
-from flask import request
-from ..utils.response import success
-
-from ..decorators import admin_required
-
-
 # 日志
 import logging
+
+from flask import request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..decorators import admin_required
+from ..models import Tag
+from ..utils.response import success
+from . import main
 
 
 # --------------------------- 标签管理 ---------------------------

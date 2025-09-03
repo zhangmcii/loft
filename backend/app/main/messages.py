@@ -1,13 +1,13 @@
-from flask_jwt_extended import jwt_required, current_user
-from . import main
-from ..models import Message
-from .. import db
-from flask import request, current_app
-from ..utils.response import success
-
-
 # 日志
 import logging
+
+from flask import current_app, request
+from flask_jwt_extended import current_user, jwt_required
+
+from .. import db
+from ..models import Message
+from ..utils.response import success
+from . import main
 
 
 # --------------------------- 聊天消息 ---------------------------
