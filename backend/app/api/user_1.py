@@ -5,11 +5,11 @@ from .. import db
 from flask import request
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error
-from .. import logger
+
 from ..decorators import admin_required
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 编辑资料 ---------------------------
@@ -31,13 +31,13 @@ class UsersApi(DecoratedMethodView):
     #     return
 
     def get(self, id):
-        log.info(f"获取用户信息: id={id}")
+        logging.info(f"获取用户信息: id={id}")
         user = User.query.get_or_404(id)
         return success(data=user.to_json())
 
     def patch(self, id):
         """编辑用户资料"""
-        log.info(f"编辑用户资料: user_id={id}")
+        logging.info(f"编辑用户资料: user_id={id}")
         if not current_user or current_user.id != id:
             return error(400, message='操作不合法，非当前用户')
         for key, value in request.json.items():
@@ -59,7 +59,7 @@ class UserImageApi(DecoratedMethodView):
 
     def post(self, id):
         """存储用户图像地址"""
-        log.info(f"存储用户图像地址: user_id={id}")
+        logging.info(f"存储用户图像地址: user_id={id}")
         if current_user and current_user.id == id:
             try:
                 image = request.get_json().get("image")
@@ -69,7 +69,7 @@ class UserImageApi(DecoratedMethodView):
                 db.session.commit()
                 return success(data={"image": get_avatars_url(image)})
             except Exception as e:
-                log.error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
+                logging.error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
                 db.session.rollback()
                 return error(500, f"存储用户图像地址失败: {str(e)}")
         else:
@@ -81,7 +81,7 @@ class UserImageApi(DecoratedMethodView):
 #
 #     def patch(self, user_id):
 #         """管理员编辑用户资料"""
-#         log.info(f"管理员编辑用户资料: user_id={user_id}")
+#         logging.info(f"管理员编辑用户资料: user_id={user_id}")
 #         try:
 #             user = User.query.get_or_404(user_id)
 #             user_info = request.get_json()
@@ -98,7 +98,7 @@ class UserImageApi(DecoratedMethodView):
 #             db.session.commit()
 #             return success(message="用户资料更新成功")
 #         except Exception as e:
-#             log.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
+#             logging.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
 #             db.session.rollback()
 #             return error(500, f"编辑用户资料失败: {str(e)}")
 

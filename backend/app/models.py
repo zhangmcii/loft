@@ -1,6 +1,6 @@
 import re
 from datetime import timedelta
-from flask import current_app, url_for
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from . import jwt
@@ -13,6 +13,7 @@ from .exceptions import ValidationError
 from enum import Enum
 from sqlalchemy import and_, event
 from sqlalchemy.orm.attributes import flag_modified
+
 
 class Permission:
     FOLLOW = 1
@@ -484,7 +485,6 @@ class Post(db.Model):
     def replace_body(content, pos, image_urls):
         pos2url = {str(_pos): _url for _pos, _url in zip(pos, image_urls)}
 
-
         def replacer(match):
             alt = match.group(1)
             pos = match.group(2)
@@ -527,30 +527,6 @@ class Comment(db.Model):
     praise = db.relationship('Praise', backref='comment', lazy='dynamic')
 
     def to_json(self):
-        json_comment = {
-            'id': self.id,
-            'author': self.author.username,
-            'nick_name': self.author.nickname,
-            'image': get_avatars_url(self.author.image),
-            'body': self.body,
-            'disabled': self.disabled,
-            'timestamp': self.timestamp if isinstance(self.timestamp, str) else DateUtils.datetime_to_str(
-                self.timestamp),
-            'parent_comment_id': self.root_comment_id
-            # 'url': url_for('api.get_comment', id=self.id),
-            # 'post_url': url_for('api.get_post', id=self.post_id),
-            # 'author_url': url_for('api.get_user', id=self.author_id),
-        }
-        return json_comment
-
-    @staticmethod
-    def from_json(json_comment):
-        body = json_comment.get('body')
-        if body is None or body == '':
-            raise ValidationError('comment does not have a body')
-        return Comment(body=body)
-
-    def to_json_new(self):
         j = {
             'id': self.id,
             'parentId': self.root_comment_id,
@@ -567,6 +543,13 @@ class Comment(db.Model):
             }
         }
         return j
+
+    @staticmethod
+    def from_json(json_comment):
+        body = json_comment.get('body')
+        if body is None or body == '':
+            raise ValidationError('comment does not have a body')
+        return Comment(body=body)
 
 
 class Praise(db.Model):

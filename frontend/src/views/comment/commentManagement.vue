@@ -83,4 +83,8 @@ export default {
       :total="comments_count" @current-change="handleCurrentChange" :hide-on-single-page="true" :pager-count="5" />
   </PageHeadBack>
 </template>
-<style scoped></style>
+<style scoped>
+.el-pagination {
+  margin-bottom : 15px;
+}
+</style>

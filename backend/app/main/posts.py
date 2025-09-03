@@ -7,11 +7,11 @@ from flask import current_app, request
 from ..models import Permission
 from .. import limiter
 from ..utils.response import success, error, not_found, forbidden
-from .. import logger
+
 from .notifications import new_post_notification
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 博客文章 ---------------------------
@@ -44,11 +44,11 @@ def index():
                 db.session.add_all(images)
             db.session.commit()
             new_post_notification(post.id)
-            log.info(
+            logging.info(
                 f"创建新文章: user_id={current_user.id}, post_id={post.id}"
             )
         except Exception as e:
-            log.error(f"创建文章失败: {str(e)}", exc_info=True)
+            logging.error(f"创建文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"创建文章失败: {str(e)}")
 
@@ -71,7 +71,7 @@ def index():
 @jwt_required(optional=True)
 def user(username):
     """根据用户名获取文章的资料页面路由"""
-    log.info(f"获取用户文章: username={username}")
+    logging.info(f"获取用户文章: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
         return not_found("用户不存在")
@@ -90,12 +90,12 @@ def user(username):
 @jwt_required()
 def edit(id):
     """编辑博客文章"""
-    log.info(f"编辑文章: id={id}")
+    logging.info(f"编辑文章: id={id}")
     post = Post.query.get_or_404(id)
     if current_user.username != post.author.username and not current_user.can(
             Permission.ADMIN
     ):
-        log.warning(
+        logging.warning(
             f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}"
         )
         return forbidden("没有权限编辑此文章")
@@ -109,7 +109,7 @@ def edit(id):
         db.session.commit()
         return success(message="文章编辑成功")
     except Exception as e:
-        log.error(f"编辑文章失败: {str(e)}", exc_info=True)
+        logging.error(f"编辑文章失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑文章失败: {str(e)}")
 

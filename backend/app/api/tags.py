@@ -6,10 +6,10 @@ from ..models import Tag
 from .. import db
 from flask import request
 from ..utils.response import success, error
-from .. import logger
+
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 标签管理 ---------------------------
@@ -21,7 +21,7 @@ class TagUserApi(DecoratedMethodView):
 
     def post(self, user_id):
         """更新当前用户标签"""
-        log.info(f"更新用户标签: user_id={user_id}")
+        logging.info(f"更新用户标签: user_id={user_id}")
         if not current_user or current_user.id != user_id:
             return error(400, "非当前用户，修改标签失败")
         d = request.get_json()
@@ -53,7 +53,7 @@ class TagApi(DecoratedMethodView):
 
     def get(self):
         """获取所有标签"""
-        log.info("获取所有标签")
+        logging.info("获取所有标签")
         tags = Tag.query.all()
         return success(data=[tag.name for tag in tags])
 
@@ -61,7 +61,7 @@ class TagApi(DecoratedMethodView):
         """ 应该加上 管理员权限
             更新公共标签库
        """
-        log.info("更新公共标签库")
+        logging.info("更新公共标签库")
         d = request.json
         tag_add = set(d.get("tagAdd", []))
         tag_remove = set(d.get("tagRemove", []))

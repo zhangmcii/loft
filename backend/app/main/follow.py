@@ -7,11 +7,11 @@ from flask import request, current_app
 from ..utils.time_util import DateUtils
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
-from .. import logger
+
 from ..api.users import get_user_data
 
 # 日志
-log = logger.get_logger()
+import logging
 
 # --------------------------- 关注 ---------------------------
 @main.route("/follow/<username>")
@@ -19,7 +19,7 @@ log = logger.get_logger()
 @permission_required(Permission.FOLLOW)
 def follow(username):
     """关注用户"""
-    log.info(f"关注用户: {current_user.username} -> {username}")
+    logging.info(f"关注用户: {current_user.username} -> {username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -32,7 +32,7 @@ def follow(username):
         data = get_user_data(username)
         return success(data=data)
     except Exception as e:
-        log.error(f"关注用户失败: {str(e)}", exc_info=True)
+        logging.error(f"关注用户失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"关注用户失败: {str(e)}")
 
@@ -42,7 +42,7 @@ def follow(username):
 @permission_required(Permission.FOLLOW)
 def unfollow(username):
     """取消关注用户"""
-    log.info(f"取消关注用户: {current_user.username} -> {username}")
+    logging.info(f"取消关注用户: {current_user.username} -> {username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -55,7 +55,7 @@ def unfollow(username):
         data = get_user_data(username)
         return success(data=data)
     except Exception as e:
-        log.error(f"取消关注用户失败: {str(e)}", exc_info=True)
+        logging.error(f"取消关注用户失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"取消关注用户失败: {str(e)}")
 
@@ -63,7 +63,7 @@ def unfollow(username):
 @main.route("/followers/<username>")
 def followers(username):
     """获取用户的粉丝列表"""
-    log.info(f"获取用户粉丝列表: username={username}")
+    logging.info(f"获取用户粉丝列表: username={username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -97,7 +97,7 @@ def followers(username):
 @main.route("/followed_by/<username>")
 def followed_by(username):
     """获取用户关注的人列表"""
-    log.info(f"获取用户关注列表: username={username}")
+    logging.info(f"获取用户关注列表: username={username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")

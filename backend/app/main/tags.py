@@ -4,12 +4,12 @@ from ..models import Tag
 from .. import db
 from flask import request
 from ..utils.response import success
-from .. import logger
+
 from ..decorators import admin_required
 
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 标签管理 ---------------------------
@@ -17,7 +17,7 @@ log = logger.get_logger()
 @jwt_required()
 def get_all_tags():
     """获取所有标签"""
-    log.info("获取所有标签")
+    logging.info("获取所有标签")
     tags = Tag.query.all()
     return success(data=[tag.name for tag in tags])
 
@@ -26,7 +26,7 @@ def get_all_tags():
 @jwt_required()
 def edit_user_tag():
     """更新当前用户标签"""
-    log.info(f"更新用户标签: user_id={current_user.id}")
+    logging.info(f"更新用户标签: user_id={current_user.id}")
     d = request.get_json()
     tag_add = set(d.get("tagAdd", []))
     tag_remove = set(d.get("tagRemove", []))
@@ -52,7 +52,7 @@ def edit_user_tag():
 @jwt_required()
 def update_tag():
     """更新公共标签库"""
-    log.info("更新公共标签库")
+    logging.info("更新公共标签库")
     d = request.json
     tag_add = set(d.get("tagAdd", []))
     tag_remove = set(d.get("tagRemove", []))

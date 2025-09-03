@@ -5,10 +5,10 @@ from .. import db
 from flask import request
 from .. import socketio
 from ..utils.response import success, error
-from .. import logger
+
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 点赞功能 ---------------------------
@@ -16,7 +16,7 @@ log = logger.get_logger()
 @jwt_required()
 def praise(id):
     """文章点赞"""
-    log.info(f"文章点赞: id={id}")
+    logging.info(f"文章点赞: id={id}")
     post = Post.query.get_or_404(id)
     if request.method == "POST":
         # POST 请求需要 JWT 验证
@@ -52,7 +52,7 @@ def praise(id):
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
         except Exception as e:
-            log.error(f"文章点赞失败: {str(e)}", exc_info=True)
+            logging.error(f"文章点赞失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"操作失败，已回滚: {str(e)}")
 
@@ -63,7 +63,7 @@ def praise(id):
 @jwt_required()
 def praise_comment(id):
     """评论点赞"""
-    log.info(f"评论点赞: id={id}")
+    logging.info(f"评论点赞: id={id}")
     comment = Comment.query.get_or_404(id)
     if request.method == "POST":
         # POST 请求需要 JWT 验证
@@ -95,7 +95,7 @@ def praise_comment(id):
 
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
-            log.error(f"评论点赞失败: {str(e)}", exc_info=True)
+            logging.error(f"评论点赞失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"点赞操作失败，已回滚: {str(e)}")
 
@@ -105,7 +105,7 @@ def praise_comment(id):
 @main.route("/has_praised/<int:post_id>")
 def has_praised_comment_id(post_id):
     """查找某文章下当前用户已点赞的评论id"""
-    log.info(f"查询用户已点赞评论: post_id={post_id}")
+    logging.info(f"查询用户已点赞评论: post_id={post_id}")
     comment_ids = (
         db.session.query(Praise.comment_id)
         .join(Comment)

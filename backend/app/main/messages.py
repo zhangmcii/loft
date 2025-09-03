@@ -4,10 +4,10 @@ from ..models import Message
 from .. import db
 from flask import request, current_app
 from ..utils.response import success
-from .. import logger
+
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 聊天消息 ---------------------------
@@ -15,7 +15,7 @@ log = logger.get_logger()
 @jwt_required()
 def get_message_history():
     """获取聊天历史记录"""
-    log.info(f"获取聊天历史: user_id={current_user.id}")
+    logging.info(f"获取聊天历史: user_id={current_user.id}")
     current_user_id = current_user.id
     other_user_id = request.args.get("userId")
     page = request.args.get("page", 1, type=int)
@@ -47,7 +47,7 @@ def get_message_history():
 @jwt_required()
 def mark_messages_read():
     """标记消息为已读"""
-    log.info(f"标记消息已读: user_id={current_user.id}")
+    logging.info(f"标记消息已读: user_id={current_user.id}")
     message_ids = request.json.get("ids", [])
     Message.query.filter(
         Message.id.in_(message_ids), Message.receiver_id == current_user.id

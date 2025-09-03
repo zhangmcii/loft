@@ -1,5 +1,5 @@
+import logging
 from .decorators import DecoratedMethodView
-
 from flask_jwt_extended import current_user, jwt_required
 from .users import get_user_data
 from . import api
@@ -9,17 +9,13 @@ from flask import request, current_app
 from ..utils.time_util import DateUtils
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
-from .. import logger
 from ..decorators import permission_required
-
-# 日志
-log = logger.get_logger()
 
 
 # --------------------------- 关注 ---------------------------
 # 在关注列表中，根据用户昵称或者账号搜索
 def search_followed(user, search_query):
-    log.info(f"搜索关注用户: query={search_query}")
+    logging.info(f"搜索关注用户: query={search_query}")
     followed_user_ids = user.followed.with_entities(Follow.followed_id).all()
     followed_user_ids = [item[0] for item in followed_user_ids]
     # 搜索用户名或账号
@@ -36,7 +32,7 @@ def search_followed(user, search_query):
 
 
 def search_fan(user, search_query):
-    log.info(f"搜索粉丝: query={search_query}")
+    logging.info(f"搜索粉丝: query={search_query}")
     followed_user_ids = user.followers.with_entities(Follow.follower_id).all()
     followed_user_ids = [item[0] for item in followed_user_ids]
     # 搜索用户名或账号
@@ -55,7 +51,7 @@ def search_fan(user, search_query):
 @api.route("/users/<username>/followers")
 def followers(username):
     """获取用户的粉丝列表"""
-    log.info(f"获取用户粉丝列表: username={username}")
+    logging.info(f"获取用户粉丝列表: username={username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -94,7 +90,7 @@ def followers(username):
 @api.route("/users/<username>/following")
 def followed_by(username):
     """获取用户关注的人列表"""
-    log.info(f"获取用户关注列表: username={username}")
+    logging.info(f"获取用户关注列表: username={username}")
     user = User.query.filter_by(username=username).first()
     if user is None:
         return not_found("用户名不存在")
@@ -141,7 +137,7 @@ class UserFollowApi(DecoratedMethodView):
     }
 
     def follow_or_unfollow(self, username, action='follow'):
-        log.info(f"关注用户: {current_user.username} -> {username}")
+        logging.info(f"关注用户: {current_user.username} -> {username}")
         user = User.query.filter_by(username=username).first()
         if user is None:
             return not_found("用户名不存在")
@@ -154,13 +150,13 @@ class UserFollowApi(DecoratedMethodView):
             data = get_user_data(username)
             return success(data=data)
         except Exception as e:
-            log.error(f"关注用户失败: {str(e)}", exc_info=True)
+            logging.error(f"关注用户失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"关注用户失败: {str(e)}")
 
     def post(self, username):
         """关注用户"""
-        log.info(f"关注用户: {current_user.username} -> {username}")
+        logging.info(f"关注用户: {current_user.username} -> {username}")
         user = User.query.filter_by(username=username).first()
         if user is None:
             return not_found("用户名不存在")
@@ -173,13 +169,13 @@ class UserFollowApi(DecoratedMethodView):
             data = get_user_data(username)
             return success(data=data)
         except Exception as e:
-            log.error(f"关注用户失败: {str(e)}", exc_info=True)
+            logging.error(f"关注用户失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"关注用户失败: {str(e)}")
 
     def delete(self, username):
         """取消关注用户"""
-        log.info(f"取消关注用户: {current_user.username} -> {username}")
+        logging.info(f"取消关注用户: {current_user.username} -> {username}")
         user = User.query.filter_by(username=username).first()
         if user is None:
             return not_found("用户名不存在")
@@ -192,7 +188,7 @@ class UserFollowApi(DecoratedMethodView):
             data = get_user_data(username)
             return success(data=data)
         except Exception as e:
-            log.error(f"取消关注用户失败: {str(e)}", exc_info=True)
+            logging.error(f"取消关注用户失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"取消关注用户失败: {str(e)}")
 

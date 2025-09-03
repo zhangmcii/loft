@@ -2,13 +2,13 @@ from . import api
 from ..models import User, Role, Post
 from flask_jwt_extended import current_user, jwt_required
 from ..utils.response import success, not_found, error
-from .. import logger
+
 from ..decorators import admin_required
 from flask import request, current_app
 from .. import db
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 def get_user_data(username):
@@ -29,7 +29,7 @@ def get_user_data(username):
 @jwt_required(optional=True)
 def get_user_by_username(username):
     """根据用户名获取用户数据"""
-    log.info(f"获取用户信息: username={username}")
+    logging.info(f"获取用户信息: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
         return not_found("用户不存在")
@@ -41,7 +41,7 @@ def get_user_by_username(username):
 @api.route("/users/<string:username>/posts")
 def get_post_by_user(username):
     """根据用户名获取文章的资料页面路由"""
-    log.info(f"获取用户文章: username={username}")
+    logging.info(f"获取用户文章: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
         return not_found("用户不存在")
@@ -61,7 +61,7 @@ def get_post_by_user(username):
 @jwt_required()
 def generate_user_posts():
     """批量生成用户和文章"""
-    log.info("批量生成用户和文章")
+    logging.info("批量生成用户和文章")
     try:
         from ..fake import Fake
         Role.insert_roles()
@@ -69,7 +69,7 @@ def generate_user_posts():
         Fake.posts()
         return success(message="用户和文章生成成功")
     except Exception as e:
-        log.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
+        logging.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
         return error(500, f"生成用户和文章失败: {str(e)}")
 
 
@@ -77,7 +77,7 @@ def generate_user_posts():
 @jwt_required(optional=True)
 def can(perm):
     """检查用户权限"""
-    log.info(f"检查用户权限: perm={perm}")
+    logging.info(f"检查用户权限: perm={perm}")
     if current_user:
         return success(data=current_user.can(perm))
     return success(data=False)
@@ -88,7 +88,7 @@ def can(perm):
 @admin_required
 def edit_profile_admin(id):
     """管理员编辑用户资料"""
-    log.info(f"管理员编辑用户资料: user_id={id}")
+    logging.info(f"管理员编辑用户资料: user_id={id}")
     try:
         user = User.query.get_or_404(id)
         user_info = request.get_json()
@@ -105,6 +105,6 @@ def edit_profile_admin(id):
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
-        log.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
+        logging.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑用户资料失败: {str(e)}")

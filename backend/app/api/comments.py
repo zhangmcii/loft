@@ -1,6 +1,6 @@
+import logging
 from .decorators import DecoratedMethodView
 from flask_jwt_extended import jwt_required, current_user
-
 from . import api
 from ..models import Post, Comment, Notification, NotificationType, Permission
 from ..decorators import permission_required
@@ -13,21 +13,15 @@ from werkzeug.exceptions import TooManyRequests
 from ..utils.text_filter import DFAFilter
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error
-from .. import logger
-
-# 日志
-log = logger.get_logger()
 
 
 # --------------------------- 评论 ---------------------------
-
-
 @api.route("/comments")
 @jwt_required()
 @permission_required(Permission.MODERATE)
 def moderate():
     """管理评论"""
-    log.info("管理评论")
+    logging.info("管理评论")
     page = request.args.get("page", 1, type=int)
     comments, total = CommentManageApi.all_comments(page)
     return success(data=comments, total=total)
@@ -35,7 +29,7 @@ def moderate():
 
 @api.route('/comments/<int:comment_id>/replies')
 def get_comment_replies(comment_id):
-    log.info("获取评论回复")
+    logging.info("获取评论回复")
     root_comment_id = comment_id
     page = request.args.get('page', 1, type=int)
     # 分页时不自动嵌套，前端按需请求
@@ -71,7 +65,7 @@ class CommentApi(DecoratedMethodView):
                                     error_out=False)
         replies = []
         for reply in pagination.items:
-            reply_data = reply.to_json_new()
+            reply_data = reply.to_json()
             replies.append(reply_data)
 
         return replies, query.count()
@@ -122,7 +116,7 @@ class CommentApi(DecoratedMethodView):
         return notifications
 
     def get(self, post_id):
-        log.info(f"获取文章评论: post_id={post_id}")
+        logging.info(f"获取文章评论: post_id={post_id}")
         post = Post.query.get_or_404(post_id)
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('size', current_app.config['FLASKY_COMMENTS_PER_PAGE'], type=int)
@@ -132,7 +126,7 @@ class CommentApi(DecoratedMethodView):
 
         comments = []
         for root_comment in root_comments_pagination.items:
-            comment_data = root_comment.to_json_new()
+            comment_data = root_comment.to_json()
             # 获取该根评论下的第一层直接回复（direct_parent_id=根评论ID）
             first_level_replies, reply_total = CommentApi.get_replies_by_parent(root_comment.id, page=1)
             comment_data.update({
@@ -153,7 +147,7 @@ class CommentApi(DecoratedMethodView):
 
     def post(self, post_id):
         """发布评论（适配direct_parent关系）"""
-        log.info(f"{current_user.username}发布评论: post_id={post_id}")
+        logging.info(f"{current_user.username}发布评论: post_id={post_id}")
         post = Post.query.get_or_404(post_id)
         data = request.get_json()
         at = data.get("at")
@@ -218,7 +212,7 @@ class CommentApi(DecoratedMethodView):
         except TooManyRequests:
             raise
         except Exception as e:
-            log.error(f"发布评论失败: {str(e)}", exc_info=True)
+            logging.error(f"发布评论失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"发布评论失败: {str(e)}")
 
@@ -242,6 +236,7 @@ class CommentManageApi(DecoratedMethodView):
                 "body": item.body,
                 "timestamp": DateUtils.datetime_to_str(item.timestamp),
                 "author": item.author.username,
+                'user_id': item.author.id,
                 "image": get_avatars_url(item.author.image),
                 "id": item.id,
                 "disabled": item.disabled,
@@ -253,8 +248,8 @@ class CommentManageApi(DecoratedMethodView):
 
     def patch(self, comment_id):
         """禁用/恢复评论"""
-        log.info(f"{current_user.username}恢复评论: id={comment_id}")
-        status = request.json.get('status')
+        logging.info(f"{current_user.username}恢复评论: id={comment_id}")
+        status = request.json.get('action')
         try:
             comment = Comment.query.get_or_404(comment_id)
             if status == 'enable':
@@ -268,7 +263,7 @@ class CommentManageApi(DecoratedMethodView):
             comments, total = CommentManageApi.all_comments(1)
             return success(message="操作成功", data=comments, total=total)
         except Exception as e:
-            log.error(f"{status}操作失败: {str(e)}", exc_info=True)
+            logging.error(f"{status}操作失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"{status}操作失败: {str(e)}")
 

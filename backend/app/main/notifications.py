@@ -5,9 +5,9 @@ from .. import db
 from flask import request
 from .. import socketio
 from ..utils.response import success
-from .. import logger
+
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 通知功能 ---------------------------
@@ -47,7 +47,7 @@ def new_post_notification(post_id):
 @jwt_required()
 def get_currentUsernotification():
     """获取当前用户的所有通知"""
-    log.info(f"获取用户通知: user_id={current_user.id}")
+    logging.info(f"获取用户通知: user_id={current_user.id}")
     d = (
         Notification.query.filter_by(receiver_id=current_user.id)
         .order_by(Notification.created_at.desc())
@@ -60,7 +60,7 @@ def get_currentUsernotification():
 @jwt_required()
 def mark_read_notification():
     """标记通知为已读"""
-    log.info(f"标记通知已读: user_id={current_user.id}")
+    logging.info(f"标记通知已读: user_id={current_user.id}")
     ids = request.get_json().get("ids", [])
     Notification.query.filter(
         Notification.id.in_(ids), Notification.receiver_id == current_user.id

@@ -1,5 +1,6 @@
 <script>
 import { useCurrentUserStore } from '@/stores/user'
+import { useOtherUserStore } from '@/stores/otherUser'
 import date from '@/utils/date.js'
 import imageCfg from '@/config/image.js'
 import praise from '@/api/praise/praiseApi.js'
@@ -73,7 +74,8 @@ export default {
   },
   setup() {
     const currentUser = useCurrentUserStore()
-    return { currentUser }
+    const otherUser = useOtherUserStore()
+    return { currentUser, otherUser }
   },
   watch: {
     'post.praise_num': {
@@ -166,6 +168,11 @@ export default {
         `<img src="${emojiCfg.dingtalk.baseUrl}$1${emojiCfg.dingtalk.suffix}" ${this.eStyle}/>`
       )
       return withDing
+    },
+    toUser() {
+      // 接口都已改为根据用户id获取用户数据
+      this.otherUser.userInfo.id = this.post.user_id
+      this.$router.push(`/user/${this.post.author}`)
     }
   }
 }
@@ -175,7 +182,7 @@ export default {
   <el-card shadow="hover" :style="cardStyle">
     <el-row>
       <el-col :span="4" v-if="showImage">
-        <el-avatar alt="用户图像" :src="image" @click.stop="$router.push(`/user/${post.author}`)" />
+        <el-avatar alt="用户图像" :src="image" @click.stop="toUser" />
       </el-col>
       <el-col :span="showImage ? 20 : 24">
         <el-row justify="space-between" class="content">
@@ -183,7 +190,7 @@ export default {
             <el-link
               target="_blank"
               type="primary"
-              @click.stop="$router.push(`/user/${post.author}`)"
+              @click.stop="toUser"
             >
               {{ post.nick_name ? post.nick_name : post.author }}
             </el-link>

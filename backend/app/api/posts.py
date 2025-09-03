@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import request, current_app
 from .decorators import DecoratedMethodView
 from ..decorators import log_operate
@@ -8,11 +9,7 @@ from ..models import Post, Permission, Follow, Image, ImageType, PostType, Notif
 from ..main.uploads import del_qiniu_image
 from ..utils.response import success, error
 from .. import socketio
-from .. import logger
 from .. import limiter
-
-# 日志
-log = logger.get_logger()
 
 
 class PostItemApi(DecoratedMethodView):
@@ -24,18 +21,18 @@ class PostItemApi(DecoratedMethodView):
 
     def get(self, id):
         """获取单篇文章"""
-        log.info(f"获取文章: id={id}")
+        logging.info(f"获取文章: id={id}")
         post = Post.query.get_or_404(id)
         return success(data=post.to_json())
 
     def delete(self, id):
-        log.info(f"删除文章: id={id}")
+        logging.info(f"删除文章: id={id}")
         # 删除文章，同时也要删除文章中的图片url
         is_contain_image, data = None, None
         try:
             p = Post.query.filter_by(id=id, author_id=current_user.id).first()
             if not p:
-                log.warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
+                logging.warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
                 return error(404, "文章不存在")
 
             is_contain_image = p.type == PostType.IMAGE
@@ -49,7 +46,7 @@ class PostItemApi(DecoratedMethodView):
             db.session.delete(p)
             db.session.commit()
         except Exception as e:
-            log.error(f"删除文章失败: {str(e)}", exc_info=True)
+            logging.error(f"删除文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"删除文章失败: {str(e)}")
 
@@ -59,10 +56,10 @@ class PostItemApi(DecoratedMethodView):
         return success(message="文章删除成功")
 
     def patch(self, id):
-        log.info(f"编辑文章: id={id}")
+        logging.info(f"编辑文章: id={id}")
         post = Post.query.get_or_404(id)
         if current_user.username != post.author.username and not current_user.can(Permission.ADMIN):
-            log.warning(f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}")
+            logging.warning(f"用户 {current_user.username} 尝试编辑不属于自己的文章 {id}")
             return error(403, "没有权限编辑此文章")
 
         # 对表单编辑业务逻辑
@@ -152,9 +149,9 @@ class PostGroupApi(DecoratedMethodView):
                 db.session.add_all(images)
             db.session.commit()
             PostGroupApi.new_post_notification(post.id)
-            log.info(f"创建新文章: user_id={current_user.id}, post_id={post.id}")
+            logging.info(f"创建新文章: user_id={current_user.id}, post_id={post.id}")
         except Exception as e:
-            log.error(f"创建文章失败: {str(e)}", exc_info=True)
+            logging.error(f"创建文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
             raise f"创建文章失败: {str(e)}"
 

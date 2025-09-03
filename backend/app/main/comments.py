@@ -12,10 +12,10 @@ from werkzeug.exceptions import TooManyRequests
 from ..utils.text_filter import DFAFilter
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
-from .. import logger
+
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 评论 ---------------------------
@@ -24,7 +24,7 @@ log = logger.get_logger()
 @jwt_required()
 def post(id):
     """发布评论（适配direct_parent关系）"""
-    log.info(f"发布评论: post_id={id}")
+    logging.info(f"发布评论: post_id={id}")
     post = Post.query.get_or_404(id)
     verify_jwt_in_request()
     data = request.get_json()
@@ -90,7 +90,7 @@ def post(id):
     except TooManyRequests:
         raise
     except Exception as e:
-        log.error(f"发布评论失败: {str(e)}", exc_info=True)
+        logging.error(f"发布评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"发布评论失败: {str(e)}")
 
@@ -167,7 +167,7 @@ def all_comments(page):
 @permission_required(Permission.MODERATE)
 def moderate():
     """管理评论"""
-    log.info("管理评论")
+    logging.info("管理评论")
     page = request.args.get("page", 1, type=int)
     comments, total = all_comments(page)
     return success(data=comments, total=total)
@@ -178,7 +178,7 @@ def moderate():
 @permission_required(Permission.MODERATE)
 def moderate_enable(id):
     """恢复评论"""
-    log.info(f"恢复评论: id={id}")
+    logging.info(f"恢复评论: id={id}")
     try:
         comment = Comment.query.get_or_404(id)
         comment.disabled = False
@@ -187,7 +187,7 @@ def moderate_enable(id):
         comments, total = all_comments(1)
         return success(message="评论已恢复", data=comments, total=total)
     except Exception as e:
-        log.error(f"恢复评论失败: {str(e)}", exc_info=True)
+        logging.error(f"恢复评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"恢复评论失败: {str(e)}")
 
@@ -197,7 +197,7 @@ def moderate_enable(id):
 @permission_required(Permission.MODERATE)
 def moderate_disable(id):
     """禁用评论"""
-    log.info(f"禁用评论: id={id}")
+    logging.info(f"禁用评论: id={id}")
     try:
         comment = Comment.query.get_or_404(id)
         comment.disabled = True
@@ -206,6 +206,6 @@ def moderate_disable(id):
         comments, total = all_comments(1)
         return success(message="评论已禁用", data=comments, total=total)
     except Exception as e:
-        log.error(f"禁用评论失败: {str(e)}", exc_info=True)
+        logging.error(f"禁用评论失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"禁用评论失败: {str(e)}")

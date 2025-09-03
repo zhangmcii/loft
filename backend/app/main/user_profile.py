@@ -6,11 +6,11 @@ from .. import db
 from flask import jsonify, request
 from ..utils.common import get_avatars_url
 from ..utils.response import success, error, not_found
-from .. import logger
+
 from sqlalchemy import and_
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 编辑资料 ---------------------------
@@ -19,7 +19,7 @@ log = logger.get_logger()
 def edit_profile():
     """编辑用户资料"""
 
-    log.info(f"编辑用户资料: user_id={current_user.id}")
+    logging.info(f"编辑用户资料: user_id={current_user.id}")
     try:
         user_info = request.get_json()
         current_user.nickname = user_info.get("nickname")
@@ -29,7 +29,7 @@ def edit_profile():
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
-        log.error(f"编辑用户资料失败: {str(e)}", exc_info=True)
+        logging.error(f"编辑用户资料失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑用户资料失败: {str(e)}")
 
@@ -39,7 +39,7 @@ def edit_profile():
 @admin_required
 def edit_profile_admin(id):
     """管理员编辑用户资料"""
-    log.info(f"管理员编辑用户资料: user_id={id}")
+    logging.info(f"管理员编辑用户资料: user_id={id}")
     try:
         user = User.query.get_or_404(id)
         user_info = request.get_json()
@@ -56,7 +56,7 @@ def edit_profile_admin(id):
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
-        log.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
+        logging.error(f"管理员编辑用户资料失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"编辑用户资料失败: {str(e)}")
 
@@ -65,7 +65,7 @@ def edit_profile_admin(id):
 @jwt_required()
 def add_user_image():
     """存储用户图像地址"""
-    log.info(f"存储用户图像地址: user_id={current_user.id}")
+    logging.info(f"存储用户图像地址: user_id={current_user.id}")
     try:
         image = request.get_json().get("image")
         current_user.image = image
@@ -73,7 +73,7 @@ def add_user_image():
         db.session.commit()
         return success(data={"image": get_avatars_url(image)})
     except Exception as e:
-        log.error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
+        logging.error(f"存储用户图像地址失败: {str(e)}", exc_info=True)
         db.session.rollback()
         return error(500, f"存储用户图像地址失败: {str(e)}")
 
@@ -84,7 +84,7 @@ def add_user_image():
 #     """ 根据用户名获取用户数据
 #         前端已不再使用
 #     """
-#     log.info(f"获取用户信息: username={username}")
+#     logging.info(f"获取用户信息: username={username}")
 #     user = User.query.filter_by(username=username).first()
 #     data = get_user_data(username)
 #     return success(data=data)
@@ -97,7 +97,7 @@ def add_user_image():
 @jwt_required(optional=True)
 def can(perm):
     """检查用户权限"""
-    log.info(f"检查用户权限: perm={perm}")
+    logging.info(f"检查用户权限: perm={perm}")
     if current_user:
         return success(data=current_user.can(perm))
     return success(data=False)
@@ -108,7 +108,7 @@ def can(perm):
 @jwt_required()
 def generate_user_posts():
     """批量生成用户和文章"""
-    log.info("批量生成用户和文章")
+    logging.info("批量生成用户和文章")
     try:
         from ..fake import Fake
         from ..models import Role
@@ -117,7 +117,7 @@ def generate_user_posts():
         Fake.posts()
         return success(message="用户和文章生成成功")
     except Exception as e:
-        log.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
+        logging.error(f"生成用户和文章失败: {str(e)}", exc_info=True)
         return error(500, f"生成用户和文章失败: {str(e)}")
     
     
@@ -126,7 +126,7 @@ def generate_user_posts():
 @jwt_required()
 def online():
     """获取在线用户信息"""
-    log.info("获取在线用户信息")
+    logging.info("获取在线用户信息")
     from ..utils.socket_util import ManageSocket
     from ..models import User
     
@@ -144,7 +144,7 @@ def online():
 @main.route("/user/<int:user_id>/interest_images")
 def get_favorite_book_image(user_id):
     """获取用户兴趣图片"""
-    log.info(f"获取用户兴趣图片: user_id={user_id}")
+    logging.info(f"获取用户兴趣图片: user_id={user_id}")
     book_images = Image.query.filter(
         and_(Image.type == ImageType.BOOK, Image.related_id == user_id)
     ).all()

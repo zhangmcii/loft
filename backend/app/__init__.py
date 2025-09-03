@@ -12,7 +12,6 @@ from flask_limiter.util import get_remote_address
 from config import config
 from .mycelery import celery_init_app
 from .utils.swagger import setup_swagger
-from .utils.logger_compat import logger
 from dotenv import load_dotenv
 from .utils.logger import setup_logging
 from werkzeug.middleware.proxy_fix import ProxyFix

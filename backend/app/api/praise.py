@@ -6,10 +6,10 @@ from .. import db
 from flask import request
 from .. import socketio
 from ..utils.response import success, error
-from .. import logger
+
 
 # 日志
-log = logger.get_logger()
+import logging
 
 
 # --------------------------- 点赞功能 ---------------------------
@@ -19,7 +19,7 @@ def has_praised_comment_id(post_id):
     is_like = request.args.get('liked', '') == 'true'
     if not is_like:
         return error(400, message=f'参数错误, liked:{request.args.get('liked', '')}')
-    log.info(f"查询用户已点赞评论: post_id={post_id}")
+    logging.info(f"查询用户已点赞评论: post_id={post_id}")
     comment_ids = (
         db.session.query(Praise.comment_id)
         .join(Comment)
@@ -41,13 +41,13 @@ class PraisePostApi(DecoratedMethodView):
 
     def get(self, post_id):
         # 获取文章点赞总数
-        log.info(f"获取文章点赞总数: id={post_id}")
+        logging.info(f"获取文章点赞总数: id={post_id}")
         post = Post.query.get_or_404(post_id)
         return success(data={"praise_total": post.praise.count()})
 
     def post(self, post_id):
         """文章点赞"""
-        log.info(f"{current_user.username}文章点赞: id={post_id}")
+        logging.info(f"{current_user.username}文章点赞: id={post_id}")
         post = Post.query.get_or_404(post_id)
 
         # 防止用户重复点赞
@@ -80,7 +80,7 @@ class PraisePostApi(DecoratedMethodView):
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
         except Exception as e:
-            log.error(f"文章点赞失败: {str(e)}", exc_info=True)
+            logging.error(f"文章点赞失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"操作失败，已回滚: {str(e)}")
 
@@ -98,13 +98,13 @@ class PraiseCommentApi(DecoratedMethodView):
 
     def get(self, comment_id):
         """获取评论点赞总数"""
-        log.info(f"获取评论点赞总数: id={comment_id}")
+        logging.info(f"获取评论点赞总数: id={comment_id}")
         comment = Comment.query.get_or_404(comment_id)
         return success(data={"praise_total": comment.praise.count()})
 
     def post(self, comment_id):
         """评论点赞"""
-        log.info(f"{current_user.username}评论点赞: id={comment_id}")
+        logging.info(f"{current_user.username}评论点赞: id={comment_id}")
         comment = Comment.query.get_or_404(comment_id)
         # 防止用户重复点赞
         p = Praise.query.filter_by(author_id=current_user.id, comment_id=comment_id).first()
@@ -136,7 +136,7 @@ class PraiseCommentApi(DecoratedMethodView):
                 )  # 发送到作者的房间
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
-            log.error(f"评论点赞失败: {str(e)}", exc_info=True)
+            logging.error(f"评论点赞失败: {str(e)}", exc_info=True)
             db.session.rollback()
             return error(500, f"点赞操作失败，已回滚: {str(e)}")
 

@@ -8,12 +8,12 @@ from .. import db
 from flask import request
 from sqlalchemy import and_
 from ..utils.response import success, bad_request
-from .. import logger
+
 from ..api.upload import dir_file_name
 from qiniu import Auth, BucketManager, build_batch_delete
 
 # 日志
-log = logger.get_logger()
+import logging
 
 # 初始化Auth状态
 q = Auth(os.getenv("QINIU_ACCESS_KEY",'fdfddgfg'), os.getenv("QINIU_SECRET_KEY", 'dfdffgfgfg'))
@@ -26,7 +26,7 @@ bucket = BucketManager(q)
 @jwt_required()
 def get_upload_token():
     """获取七牛云上传凭证"""
-    log.info("获取上传凭证")
+    logging.info("获取上传凭证")
     # 定义上传策略
     policy = {
         # 限制上传文件的最大尺寸，单位为字节，这里设置为 10MB
@@ -46,7 +46,7 @@ def get_upload_token():
 @jwt_required()
 def get_signed_image_urls():
     """获取私有存储图片url(暂时没用上)"""
-    log.info("获取签名图片URL")
+    logging.info("获取签名图片URL")
     data = request.get_json()
     keys = data.get("keys", [])
     if not keys:
@@ -68,7 +68,7 @@ def get_signed_image_urls():
 @jwt_required()
 def delete_image():
     """删除七牛云图片"""
-    log.info(f"删除图片: user_id={current_user.id}")
+    logging.info(f"删除图片: user_id={current_user.id}")
     j = request.get_json()
     bucket_name = j.get("bucket")
     keys = j.get("key", [])
@@ -85,7 +85,7 @@ def del_qiniu_image(keys, bucket_name=os.getenv("QINIU_BUCKET_NAME")):
 @main.route("/dir_name")
 def query_qiniu_key():
     """查询七牛云某个bucket指定目录的所有文件名"""
-    log.info("查询七牛云目录文件")
+    logging.info("查询七牛云目录文件")
     # 前缀
     prefix = request.args.get("prefix", "userBackground/static")
     current_page = int(request.args.get("currentPage", 1))
@@ -101,7 +101,7 @@ def query_qiniu_key():
 @jwt_required()
 def upload_favorite_book_image(user_id):
     """上传兴趣封面"""
-    log.info(f"上传兴趣封面: user_id={user_id}")
+    logging.info(f"上传兴趣封面: user_id={user_id}")
     j = request.get_json()
     interest_urls = j.get("urls", [])
     interest_names = j.get("names", [])
