@@ -7,6 +7,7 @@ from ..decorators import admin_required
 from .. import db
 from flask import request, current_app
 from ..utils.response import success, error
+from ..utils.socket_util import ManageSocket
 
 
 # --------------------------- 日志管理 ---------------------------
@@ -16,20 +17,16 @@ from ..utils.response import success, error
 def online():
     """获取在线用户信息"""
     logging.info("获取在线用户信息")
-    from ..utils.socket_util import ManageSocket
 
     manage_socket = ManageSocket()
     # 在线人数信息
     user_ids = manage_socket.user_socket.keys()
+    logging.info(f"在线用户:{user_ids}")
+    online_users = User.query.filter(User.id.in_(user_ids))
     users = []
-    for user_id in user_ids:
-        u = User.query.get(user_id)
-        if u:
-            users.append({"username": u.username, "nickName": u.nickname})
-        else:
-            logging.warning(f"在线用户ID {user_id} 在数据库中不存在")
-    online_total = len(users)
-    return success(data=users, extra={"total": online_total})
+    for u in online_users:
+        users.append({"username": u.username, "nickName": u.nickname})
+    return success(data=users, total=manage_socket.get_online_users_count())
 
 
 class LogApi(DecoratedMethodView):
@@ -50,7 +47,7 @@ class LogApi(DecoratedMethodView):
         )
         logs = paginate.items
         logging.info(f"获取到 {len(logs)} 条日志记录")
-        return success(data=[log.to_json() for log in logs], extra={"total": query.count()})
+        return success(data=[log.to_json() for log in logs], total=query.count())
 
     def post(self):
         """删除系统日志"""

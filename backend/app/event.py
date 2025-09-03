@@ -14,41 +14,41 @@ socket_manager = ManageSocket()
 @socketio.on('connect')
 @jwt_required(optional=True)
 def handle_connect():
-    user_id = verify_token_in_websocket()
+    username, user_id = verify_token_in_websocket()
     status_manager.init_user_status(user_id)
     record_user_connect(user_id)
     join_room(str(user_id))
-    logging.info(f"用户 {user_id} 已连接，新连接ID：{request.sid}")
+    logging.info(f"用户 {username} 已连接，新连接ID：{request.sid}")
 
 
 @socketio.on('disconnect')
 @jwt_required(optional=True)
 def handle_disconnect():
-    user_id = verify_token_in_websocket()
+    username, user_id = verify_token_in_websocket()
     socket_manager.remove_user_socket(request.sid)
     status_manager.del_user_status(user_id)
-    logging.info(f"用户 {user_id} 已断开连接，状态：{status_manager.get_user_status(user_id)}")
+    logging.info(f"用户 {username} 已断开连接，状态：{status_manager.get_user_status(user_id)}")
 
 
 @socketio.on('heartbeat')
 @jwt_required(optional=True)
 def handle_heartbeat():
-    user_id = verify_token_in_websocket()
+    username, user_id = verify_token_in_websocket()
     status_manager.update_last_active(user_id)
-    logging.info(f"用户 {user_id} 发送心跳包")
+    logging.info(f"用户 {username} 发送心跳包")
 
 
 @socketio.on('enter_chat')
 @jwt_required(optional=True)
 def handle_enter_chat(data):
-    user_id = verify_token_in_websocket()
+    username, user_id = verify_token_in_websocket()
     target_id = data['targetId']
 
     status_manager.active_chat(user_id, target_id)
     status_manager.update_last_active(user_id)
     status_manager.expire(60 * 5)
     
-    logging.info(f"用户 {user_id} 进入与用户 {target_id} 的聊天页面")
+    logging.info(f"用户 {username} 进入与用户 {target_id} 的聊天页面")
 
     try:
         # 标记已读并清除通知
@@ -79,10 +79,10 @@ def handle_enter_chat(data):
 @socketio.on('send_message')
 @jwt_required(optional=True)
 def handle_send_message(data):
-    sender_id = verify_token_in_websocket()
+    username, sender_id = verify_token_in_websocket()
     receiver_id = data['receiver_id']
     content = data['content']
-    logging.info(f"用户 {sender_id} 发送消息给用户 {receiver_id}: {content[:20]}...")
+    logging.info(f"用户 {username} 发送消息给用户 {receiver_id}: {content[:20]}...")
     
     msg = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
     db.session.add(msg)
@@ -139,7 +139,7 @@ def verify_token_in_websocket():
         logging.warning(f"WebSocket连接失败: 用户ID {user_id} 不存在")
         raise ConnectionRefusedError("WebSocket身份验证失败，用户不存在")
         
-    return user.username
+    return user.username, user.id
 
 
 def record_user_connect(user_id):

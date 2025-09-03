@@ -138,7 +138,7 @@ def online():
         u = User.query.get(user_id)
         users.append({"username": u.username, "nickName": u.nickname})
     online_total = len(users)
-    return success(data=users, extra={"total": online_total})
+    return success(data=users, total=online_total)
 
 
 @main.route("/user/<int:user_id>/interest_images")

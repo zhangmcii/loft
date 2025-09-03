@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, jsonify
+from flask import Flask, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, current_user
@@ -15,6 +15,7 @@ from .utils.swagger import setup_swagger
 from .utils.logger_compat import logger
 from dotenv import load_dotenv
 from .utils.logger import setup_logging
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 def my_key_func():
@@ -30,6 +31,16 @@ limiter = Limiter(my_key_func, storage_uri=f'redis://:1234@{os.getenv('REDIS_HOS
 
 def create_app(config_name):
     app = Flask(__name__)
+
+    # 设置代理配置
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,  # 对应 X-Forwarded-For（信任1层代理）
+        x_proto=1,  # 对应 X-Forwarded-Proto（信任1层代理）
+        x_host=1,  # 对应 X-Forwarded-Host（信任1层代理）
+        x_prefix=1  # 对应 X-Forwarded-Prefix（信任1层代理）
+    )
+
     # 跨域
     CORS(app)
 
@@ -80,6 +91,15 @@ def create_app(config_name):
 
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api/v1')
+
+    @app.route("/test_proxy")
+    def test_proxy():
+        return {
+            "real_ip": request.remote_addr,  # 若生效，会返回客户端真实IP（而非Nginx IP）
+            "scheme": request.scheme,  # 若生效，会返回 https（若客户端用HTTPS访问Nginx）
+            "host": request.host,  # 若生效，会返回客户端访问的域名（如 example.com）
+            "prefix": request.environ.get("HTTP_X_FORWARDED_PREFIX")  # 若配置，会返回 / 或 /api
+        }
 
     @app.errorhandler(Exception)
     def error_handler(e):

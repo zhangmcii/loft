@@ -40,7 +40,7 @@ def get_message_history():
         r1.update({"id": _id})
         r.append(r1)
         _id -= 1
-    return success(data=r, extra={"total": pagination.total})
+    return success(data=r, total=pagination.total)
 
 
 @main.route("/msg/read", methods=["POST"])

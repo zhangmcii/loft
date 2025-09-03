@@ -44,7 +44,7 @@ class MessageApi(DecoratedMethodView):
             r1.update({"id": _id})
             r.append(r1)
             _id -= 1
-        return success(data=r, extra={"total": pagination.total})
+        return success(data=r, total=pagination.total)
 
     def post(self, user_id):
         """标记消息为已读"""

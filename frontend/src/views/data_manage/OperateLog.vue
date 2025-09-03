@@ -78,9 +78,6 @@ export default {
           }
           this.table.log_count = res.total
           this.table.tableData = res.data
-          this.table.tableData.map((item) => {
-            item.operateTime = date.toDateStr(item.operateTime)
-          })
         }
       })
     },

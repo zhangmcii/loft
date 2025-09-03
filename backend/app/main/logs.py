@@ -27,7 +27,7 @@ def logs():
         page=page, per_page=per_page, error_out=False
     )
     logs = paginate.items
-    return success(data=[log.to_json() for log in logs], extra={"total": query.count()})
+    return success(data=[log.to_json() for log in logs], total=query.count())
 
 
 @main.route("/deleteLog", methods=["POST"])
