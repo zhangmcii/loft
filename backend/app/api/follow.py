@@ -10,7 +10,7 @@ from ..utils.common import get_avatars_url
 from ..utils.response import error, not_found, success
 from ..utils.time_util import DateUtils
 from . import api
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 from .users import get_user_data
 
 

@@ -7,7 +7,7 @@ from .. import db
 from ..models import User
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 编辑资料 ---------------------------

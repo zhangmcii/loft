@@ -9,7 +9,7 @@ from ..models import Log, User
 from ..utils.response import error, success
 from ..utils.socket_util import ManageSocket
 from . import api
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 日志管理 ---------------------------

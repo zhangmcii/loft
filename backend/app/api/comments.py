@@ -12,7 +12,7 @@ from ..utils.response import error, success
 from ..utils.text_filter import DFAFilter
 from ..utils.time_util import DateUtils
 from . import api
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 评论 ---------------------------

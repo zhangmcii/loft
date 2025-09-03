@@ -8,7 +8,7 @@ from .. import db, socketio
 from ..models import Comment, Notification, NotificationType, Post, Praise
 from ..utils.response import error, success
 from . import api
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 点赞功能 ---------------------------

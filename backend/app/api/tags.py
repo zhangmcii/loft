@@ -8,7 +8,7 @@ from .. import db
 from ..decorators import admin_required
 from ..models import Tag
 from ..utils.response import error, success
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 标签管理 ---------------------------

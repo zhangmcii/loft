@@ -6,7 +6,7 @@ from flask_jwt_extended import current_user, jwt_required
 from .. import db
 from ..models import Notification
 from ..utils.response import success
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 通知功能 ---------------------------

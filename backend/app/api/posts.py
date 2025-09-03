@@ -10,7 +10,7 @@ from ..main.uploads import del_qiniu_image
 from ..models import (Follow, Image, ImageType, Notification, NotificationType,
                       Permission, Post, PostType)
 from ..utils.response import error, success
-from .decorators import DecoratedMethodView
+from ..decorators import DecoratedMethodView
 
 
 class PostItemApi(DecoratedMethodView):
