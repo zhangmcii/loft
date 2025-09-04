@@ -1,31 +1,7 @@
 #!/bin/bash
 
 function front_to_remote(){
-    base_path=""
-    win_path="/e/project/vue-proj/responsive_new"
-    m_path="/Users/nizhenshi/Documents/proj/lof/frontend"
-
-    intel_path="/Users/v/Documents/proj_1/loft_1/frontend"
-
-    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        # MSYS或Cygwin环境通常在Windows上运行
-        echo "操作系统: Windows"
-        base_path=$win_path
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        # Darwin内核通常是macOS系统
-        echo "操作系统: macOS"
-        # 检测Mac的芯片类型
-        if sysctl -n machdep.cpu.brand_string | grep -q "Apple"; then
-            echo "芯片类型: Apple M系列 (ARM架构)"
-            base_path=$m_path
-        else
-            echo "芯片类型: Intel (x86_64架构)"
-            base_path=$intel_path
-        fi
-    else
-        # 其他操作系统
-        echo "操作系统: 未知 (${OSTYPE})"
-    fi
+    base_path=$(pwd)/frontend
     echo base_path: $base_path
     
     # 对项目打包
