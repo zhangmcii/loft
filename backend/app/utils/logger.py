@@ -89,7 +89,7 @@ def setup_logging(app=None):
             mail_handler.setLevel(logging.ERROR)
             root_logger.addHandler(mail_handler)
 
-            logging.info(f"已配置邮件处理器")
+            logging.info("已配置邮件处理器")
         logging.info("flask应用日志系统初始化完成")
     else:
         root_logger.addHandler(file_handler)

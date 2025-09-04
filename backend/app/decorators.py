@@ -3,15 +3,13 @@ from functools import wraps
 
 import requests
 from flask import abort, request
+from flask.views import MethodView
 from flask_jwt_extended import current_user
 from user_agents import parse
 
 from . import db
 from .models import Log, Permission
 from .utils.time_util import DateUtils
-
-from flask import request
-from flask.views import MethodView
 
 
 class DecoratedMethodView(MethodView):

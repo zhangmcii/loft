@@ -32,14 +32,15 @@ repos:
 
 
     # 后端 Python 相关工具
-#  - repo: https://github.com/PyCQA/flake8
-#    rev: 6.1.0
-#    hooks:
-#      - id: flake8
-#        name: Flake8
-#        files: ^backend/.*\.py$ # 只针对后端的 Python 文件
-#        exclude: ^backend/migrations/
-
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        name: Flake8
+        files: ^backend/.*\.py$ # 只针对后端的 Python 文件
+        exclude: ^backend/migrations/
+        args: [--config=backend/.flake8]
+#
 #  - repo: https://github.com/psf/black
 #    rev: 23.11.0
 #    hooks:

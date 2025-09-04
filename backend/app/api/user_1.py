@@ -4,10 +4,10 @@ from flask import request
 from flask_jwt_extended import current_user, jwt_required
 
 from .. import db
+from ..decorators import DecoratedMethodView
 from ..models import User
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
-from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 编辑资料 ---------------------------
@@ -69,7 +69,7 @@ class UserImageApi(DecoratedMethodView):
                 db.session.rollback()
                 return error(500, f"存储用户图像地址失败: {str(e)}")
         else:
-            return error(400, f"非当前用户，修改失败")
+            return error(400, "非当前用户，修改失败")
 
 
 # class UserAdminApi(MethodView):

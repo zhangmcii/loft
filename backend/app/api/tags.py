@@ -5,10 +5,9 @@ from flask import request
 from flask_jwt_extended import current_user, jwt_required
 
 from .. import db
-from ..decorators import admin_required
+from ..decorators import DecoratedMethodView, admin_required
 from ..models import Tag
 from ..utils.response import error, success
-from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 标签管理 ---------------------------

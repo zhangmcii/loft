@@ -5,14 +5,13 @@ from flask_jwt_extended import current_user, jwt_required
 from werkzeug.exceptions import TooManyRequests
 
 from .. import db, limiter, socketio
-from ..decorators import permission_required
+from ..decorators import DecoratedMethodView, permission_required
 from ..models import Comment, Notification, NotificationType, Permission, Post
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
 from ..utils.text_filter import DFAFilter
 from ..utils.time_util import DateUtils
 from . import api
-from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 评论 ---------------------------
@@ -279,11 +278,11 @@ class CommentManageApi(DecoratedMethodView):
 
     def delete(self, comment_id):
         """删除评论"""
-        return error(500, f"操作失败")
+        return error(500, "操作失败")
 
     def put(self, comment_id):
         """修改评论"""
-        return error(500, f"操作失败: ")
+        return error(500, "操作失败: ")
 
 
 def register_comment_api(bp, *, comment_url, comment_manage_url):

@@ -5,10 +5,10 @@ from flask import request
 from flask_jwt_extended import current_user, jwt_required
 
 from .. import db, socketio
+from ..decorators import DecoratedMethodView
 from ..models import Comment, Notification, NotificationType, Post, Praise
 from ..utils.response import error, success
 from . import api
-from ..decorators import DecoratedMethodView
 
 
 # --------------------------- 点赞功能 ---------------------------
@@ -85,7 +85,7 @@ class PraisePostApi(DecoratedMethodView):
 
     def delete(self, post_id):
         # 取消文章点赞
-        return error(500, f"取消点赞失败")
+        return error(500, "取消点赞失败")
 
 
 class PraiseCommentApi(DecoratedMethodView):
@@ -143,7 +143,7 @@ class PraiseCommentApi(DecoratedMethodView):
 
     def delete(self, comment_id):
         # 取消评论点赞
-        return error(500, f"取消点赞失败")
+        return error(500, "取消点赞失败")
 
 
 def register_praise_api(bp, *, post_praise_url, comment_praise_url):

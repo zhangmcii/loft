@@ -23,7 +23,8 @@ from . import auth
 def before_request():
     if current_user:
         current_user.ping()
-        # if not current_user.confirmed and request.endpoint and request.blueprint != 'auth' and request.endpoint != 'static':
+        # if (not current_user.confirmed and request.endpoint
+        #         and request.blueprint != 'auth' and request.endpoint != 'static'):
         #     return '用户邮件未认证'
 
 
