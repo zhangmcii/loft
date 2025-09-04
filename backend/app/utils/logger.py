@@ -5,6 +5,7 @@ import logging
 import logging.handlers
 import os
 from datetime import datetime
+from .time_util import DateUtils
 
 
 class FlaskMailHandler(logging.Handler):
@@ -25,10 +26,11 @@ class FlaskMailHandler(logging.Handler):
             log_text = self.format(record)
             send_email.delay(
                 "1912592745@qq.com",
-                "Loft App Error",
+                "Loft应用系统错误告警",
                 "error_email.html",
                 username="admin",
                 error_message=log_text,
+                year=DateUtils.get_year()
             )
         except Exception:
             self.handleError(record)
@@ -84,7 +86,7 @@ def setup_logging(app=None):
         app.logger.propagate = True
 
         # 邮件处理器
-        if not app.debug:
+        if app.debug:
             mail_handler = FlaskMailHandler()
             mail_handler.setLevel(logging.ERROR)
             root_logger.addHandler(mail_handler)

@@ -22,22 +22,12 @@ def missing_token_callback(error_msg):
 @main.app_errorhandler(403)
 def forbidden(e):
     logging.warning(f"权限不足: {request.path}, 错误: {str(e)}")
-    if (
-        request.accept_mimetypes.accept_json
-        and not request.accept_mimetypes.accept_html
-    ):
-        return forbidden_response("权限不足")
     return forbidden_response("权限不足"), 403
 
 
 @main.app_errorhandler(404)
 def page_not_found(e):
     logging.warning(f"404错误: {request.path}")
-    if (
-        request.accept_mimetypes.accept_json
-        and not request.accept_mimetypes.accept_html
-    ):
-        return not_found_response("资源不存在")
     return not_found_response("资源不存在"), 404
 
 
@@ -50,9 +40,4 @@ def handle_429(e):
 @main.app_errorhandler(500)
 def internal_server_error(e):
     logging.error(f"服务器内部错误: {request.path}, 错误: {str(e)}", exc_info=True)
-    if (
-        request.accept_mimetypes.accept_json
-        and not request.accept_mimetypes.accept_html
-    ):
-        return error(500, "服务器内部错误")
     return error(500, "服务器内部错误"), 500

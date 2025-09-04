@@ -6,7 +6,7 @@
       </div>
       <div class="prompt-text">
         <h3>登录后可以获得更多功能</h3>
-        <p>发布文章、点赞评论、关注作者</p>
+        <p>发布文章、点赞评论、关注作者、接收消息</p>
       </div>
       <div class="prompt-actions">
         <el-button

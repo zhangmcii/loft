@@ -4,7 +4,7 @@ from celery import Celery, Task
 def celery_init_app(app) -> Celery:
     """
     启动目录(mac环境)：  cd blog_backend
-    celery -A app.make_celery worker --loglevel INFO
+    mac: celery -A app.make_celery worker --loglevel INFO
 
     windows: celery -A app.make_celery worker --loglevel INFO -P eventlet
     """

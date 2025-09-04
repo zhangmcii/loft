@@ -146,7 +146,7 @@ const mentionSearch = (val) => {
 // 评论提交事件
 const submit = ({ content, parentId, reply, finish, mentionList }) => {
   if (!currentUser.isLogin) {
-    loginReminder("快去登录再发布文章吧");
+    loginReminder("快去登录再发布评论吧");
     return;
   }
 

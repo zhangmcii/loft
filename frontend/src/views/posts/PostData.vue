@@ -9,7 +9,7 @@ import "vue-amazing-ui/es/gradienttext/GradientText.css";
 import SkeletonUtil from "@/utils/components/SkeletonUtil.vue";
 import ICP from "@/utils/components/ICP.vue";
 import PublishEntry from "@/views/posts/components/PublishEntry.vue";
-import RegisterPrompt from "@/components/RegisterPrompt.vue";
+import RegisterPrompt from "@/views/posts/components/RegisterPrompt.vue";
 import emitter from "@/utils/emitter.js";
 
 export default {
