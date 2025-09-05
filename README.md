@@ -1,4 +1,4 @@
-# 🌟 The Reverie Loft(随想阁楼) - 移动端社交平台
+# 🌟 The-Reverie-Loft(随想阁楼) - 移动端社交平台
 
 > 一个基于 Vue3 + Flask 的移动端优先的社交平台
 
@@ -6,7 +6,7 @@
 
 ## 📖 项目简介
 
-The Reverie Loft(随想阁楼) 是一个专为移动端设计的社交平台，提供完整的社交功能体验。项目采用前后端分离架构，前端使用 Vue3 构建移动端界面，后端基于 Flask 提供稳定的 API 服务。
+The-Reverie-Loft(随想阁楼) 是一个专为移动端设计的社交平台，提供完整的社交功能体验。项目采用前后端分离架构，前端使用 Vue3 构建移动端界面，后端基于 Flask 提供稳定的 API 服务。
 
 ### 移动端界面
 ![登录页面](./docs/登录页面.png)
@@ -46,7 +46,7 @@ The Reverie Loft(随想阁楼) 是一个专为移动端设计的社交平台，�
   - 互动提醒
 
   
-- 🛠️ **安全与管理**
+- 🔐 **安全与管理**
   - JWT 权限验证
   - 用户角色管理（普通用户、内容管理员、管理员）
   - 评论敏感词过滤
@@ -302,8 +302,7 @@ pre-commit run --all-files
 
 ## 📞 联系我们
 
-- 项目主页: https://github.com/nizhensh-i/loft
-- 问题反馈: https://github.com/nizhensh-i/loft/issues
+- 问题反馈: https://github.com/nizhensh-i/The-Reverie-Loft/issues
 - 邮箱: zmc_li@foxmail.com
 
 ---
