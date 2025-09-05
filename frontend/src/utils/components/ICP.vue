@@ -5,7 +5,7 @@ let beginYear = "2024";
 let currentYear = new Date().getFullYear();
 let author = {
   name: "随想阁楼",
-  link: "https://github.com/nizhensh-i",
+  link: "https://github.com/nizhensh-i/loft",
   title: "随想阁楼", // 鼠标悬停时的 hint，不是必须的。
 };
 // ICP 备案

@@ -6,12 +6,13 @@
 
 ## 📖 项目简介
 
-The Reverie Loft 是一个专为移动端设计的社交平台，提供完整的社交功能体验。项目采用前后端分离架构，前端使用 Vue3 构建响应式移动端界面，后端基于 Flask 提供稳定的 API 服务。
+The Reverie Loft(随想阁楼) 是一个专为移动端设计的社交平台，提供完整的社交功能体验。项目采用前后端分离架构，前端使用 Vue3 构建移动端界面，后端基于 Flask 提供稳定的 API 服务。
 
 ### 移动端界面
 ![登录页面](./docs/登录页面.png)
 ![用户首页](./docs/用户首页.png)
-![个人资料](./docs/个人资料.png)
+![个人资料1](./docs/个人资料1.png)
+![个人资料2](./docs/个人资料2.png)
 ![聊天](./docs/聊天.png)
 ![文章详情](./docs/文章详情.png)
 ![评论详情](./docs/评论详情.png)
@@ -171,22 +172,20 @@ SECRET_KEY=your-flask-secret-key
 在 `frontend/` 目录下创建 `.env` 文件：
 
 ```bash
-# API 基础地址  
-VITE_API_BASE_URL=http://localhost:5000  
+# 平台本地运行端口号
+VITE_PORT=5172
+VITE_BASE=/
 
-# 应用配置  
-VITE_APP_TITLE=Loft 社交平台  
-```
+# 图片域名
+VITE_QINIU_DOMAIN=QINIU_DOMAIN
+# 七牛云bucket名称
+VITE_QINIU_BUCKET=QINIU_BUCKET
 
-### 🗄️ 数据库初始化
+# 后端代理地址
+VITE_APP_BASE_API = '/api'
 
-```bash
-# 创建数据库 (MySQL 示例)  
-mysql -u root -p  
-CREATE DATABASE loft_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  
-
-# 或者 PostgreSQLpsql -U postgres  
-CREATE DATABASE loft_db;  
+# ICP 备案号
+VITE_ICP=xxxx
 ```
 
 ## 🏃‍♂️ 启动方式
@@ -216,7 +215,8 @@ flask db upgrade
 redis-server  
 
 # 7. 启动 Celery 异步任务 (另开终端)  
-celery -A app.mycelery.celery worker --loglevel=info  
+celery -A app.make_celery worker --loglevel INFO -P eventlet # windows
+celery -A app.make_celery worker --loglevel INFO    # mac
 
 # 8. 启动后端服务  
 python flasky.py  
@@ -243,8 +243,9 @@ npm run dev
 ### 如何成为超级管理员身份？
 配置backend/config.py中的FLASKY_ADMIN变量
 当你绑定的邮箱与后端配置的邮箱相同时，该账号将具有管理员的权限。
-拥有管理员的权限 你将可以对所有的评论审核，增加/删除tag标签，帮助未绑定邮箱的用户找回密码！
+拥有管理员的权限， 你将可以对所有的评论审核，增加/删除tag标签，帮助未绑定邮箱的用户找回密码！
 ![管理员邮箱配置](./docs/管理员邮箱配置.png)
+![管理员页面](./docs/管理员页面.png)
 
 ## 🤝 贡献指南
 
@@ -288,7 +289,16 @@ pre-commit run --all-files
 
 ## 🙏 致谢
 
-本项目部分设计思路参考了 Miguel Grinberg 的《Flask Web开发（第二版）》一书，在此致谢。
+在本项目的开发过程中，参考了以下开源项目和资料，特此致谢：
+
+- **用户资料设计灵感**  
+  - [leleo-home-page](https://github.com/leleo886/leleo-home-page) 
+
+- **网站引导页部分实现借鉴**  
+  - [Blog-Index](https://github.com/EsunR/Blog-Index)
+
+- **设计思路**  
+  - Miguel Grinberg 著，《Flask Web开发：基于 Python 的 Web 应用开发实战（第二版）》
 
 ## 📞 联系我们
 
