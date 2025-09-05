@@ -11,6 +11,14 @@ The Reverie Loft 是一个专为移动端设计的社交平台，提供完整的
 ## 🎨 项目预览
 
 ### 移动端界面
+![预览图](./docs/游客首页.png)
+![预览图](./docs/用户首页.png)
+![预览图](./docs/个人资料.png)
+![预览图](./docs/聊天.png)
+![预览图](./docs/文章详情.png)
+![预览图](./docs/评论详情.png)
+![预览图](./docs/通知面板.png)
+![预览图](./docs/发布文章.png)
 
 ### 功能演示
 
@@ -211,7 +219,7 @@ redis-server
 celery -A app.mycelery.celery worker --loglevel=info  
 
 # 8. 启动后端服务  
-python run.py  
+python flasky.py  
 ```
 
 后端服务将在 `http://localhost:8082` 启动
@@ -224,12 +232,10 @@ cd frontend
 
 # 2. 安装依赖  
 npm install  
-# 或者使用 yarnyarn install  
 
 # 3. 启动开发服务器  
 npm run dev  
-# 或者  
-yarn dev  
+
 ```
 
 前端服务将在 `http://localhost:5172` 启动
