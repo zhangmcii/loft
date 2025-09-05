@@ -238,8 +238,15 @@ yarn dev
 
 ### Docker 部署 (推荐)
 
+1.部署mysql
+
+2.部署redis
+
+3.部署应用
 ```bash
 
+#执行项目根目录的deploy.sh文件
+ bash deploy.sj
 ```
 
 ### 手动部署
