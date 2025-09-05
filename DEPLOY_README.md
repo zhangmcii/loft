@@ -4,6 +4,19 @@
 
 ## 🚀 快速开始
 
+### 部署流程说明
+
+**首次部署**：使用 `./deploy.sh init` 命令
+- 自动拉取并部署 MySQL 和 Redis 服务
+- 创建必要的 Docker 网络和数据卷
+- 部署前端和后端应用
+- 完整的环境初始化
+
+**后续更新**：使用 `./deploy.sh` 或 `./deploy.sh all` 命令
+- 仅更新应用代码（前端和后端）
+- 数据库和缓存服务保持不变
+- 快速更新部署
+
 ### 1. 配置部署参数
 
 编辑 `deploy.sh` 文件顶部的配置区域：
@@ -33,13 +46,17 @@ MAIL_PASSWORD="your_password"
 # 给脚本执行权限
 chmod +x deploy.sh
 
-# 完整部署（前端 + 后端）
-./deploy.sh
+# 首次部署（推荐）- 初始化数据库、缓存和应用
+./deploy.sh init
 
-# 或者指定部署类型
-./deploy.sh all        # 完整部署
+# 后续更新部署
+./deploy.sh            # 完整部署（前端 + 后端）
+./deploy.sh all        # 完整部署（前端 + 后端）
+
+# 单独部署
 ./deploy.sh frontend   # 仅部署前端
 ./deploy.sh backend    # 仅部署后端
+./deploy.sh services   # 仅初始化数据库和缓存服务
 ```
 
 ## 📋 配置说明
@@ -68,6 +85,20 @@ chmod +x deploy.sh
 | `FRONTEND_BUILD_MODE` | 构建模式 | `"production"` |
 | `FRONTEND_BUILD_DIR` | 本地构建输出目录 | `"dist"` |
 | `FRONTEND_NGINX_DIR` | 远程Nginx静态文件目录 | `"/usr/local/nginx/html"` |
+
+### 数据库和缓存服务配置
+
+| 变量名 | 说明 | 示例值 |
+|--------|------|--------|
+| `MYSQL_IMAGE` | MySQL 镜像名称 | `"mysql/mysql-server:latest"` |
+| `MYSQL_CONTAINER_NAME` | MySQL 容器名称 | `"mysql"` |
+| `MYSQL_DATABASE` | 数据库名称 | `"flasky"` |
+| `MYSQL_USER` | 数据库用户名 | `"flasky"` |
+| `MYSQL_PASSWORD` | 数据库密码 | `"1234"` |
+| `REDIS_IMAGE` | Redis 镜像名称 | `"redis:latest"` |
+| `REDIS_CONTAINER_NAME` | Redis 容器名称 | `"myredis"` |
+| `REDIS_PASSWORD` | Redis 密码 | `"1234"` |
+| `REDIS_CONFIG_PATH` | Redis 配置文件路径 | `"/root/user/blog/redis.conf"` |
 
 ### 后端部署配置
 
@@ -156,6 +187,31 @@ your_project/
    ```bash
    # 检查 Nginx 状态
    ssh your_user@your_host "nginx -t && systemctl status nginx"
+   ```
+
+5. **数据库连接失败**
+   ```bash
+   # 检查 MySQL 容器状态
+   ssh your_user@your_host "docker logs mysql"
+   
+   # 检查数据库连接
+   ssh your_user@your_host "docker exec -it mysql mysql -u flasky -p"
+   ```
+
+6. **Redis 连接失败**
+   ```bash
+   # 检查 Redis 容器状态
+   ssh your_user@your_host "docker logs myredis"
+   
+   # 测试 Redis 连接
+   ssh your_user@your_host "docker exec -it myredis redis-cli -a 1234"
+   ```
+
+7. **初始化失败**
+   ```bash
+   # 清理环境重新初始化
+   ssh your_user@your_host "docker rm -f mysql myredis && docker volume rm mysql_data redis_data"
+   ./deploy.sh init
    ```
 
 ### 日志查看
