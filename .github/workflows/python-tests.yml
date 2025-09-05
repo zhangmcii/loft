@@ -58,5 +58,10 @@ jobs:
         env:
           DATABASE_URL: mysql+pymysql://root:1234@127.0.0.1:3306/test_backend_flask
           REDIS_URL: redis://:1234@127.0.0.1:6379/0
+          TEST_DATABASE_URL: mysql+pymysql://root:1234@127.0.0.1:3306/test_backend_flask
+          TEST_REDIS_URL: redis://:1234@127.0.0.1:6379/0
+          SECRET_KEY: test-secret-key-for-github-actions
+          JWT_SECRET_KEY: test-jwt-secret-key-for-github-actions
+          MAIL_PASSWORD: test-mail-password
         run: pytest backend/tests_api -v
 
