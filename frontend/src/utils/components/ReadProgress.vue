@@ -9,7 +9,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 const props = defineProps({
   tartget: {
     type: String,
-    default: ".scrollbar-container",
+    default: ".el-scrollbar__wrap",
   },
 });
 const read = ref(0);

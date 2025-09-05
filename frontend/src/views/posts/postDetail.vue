@@ -103,9 +103,9 @@ export default {
 <template>
   <PageHeadBack>
     <!-- 回到顶部 -->
-    <el-backtop target=".scrollbar-container" :right="20" :bottom="30" />
+    <el-backtop target=".el-scrollbar__wrap" :right="20" :bottom="30" />
     <!-- 阅读进度条 -->
-    <ReadProgress target=".scrollbar-container" />
+    <ReadProgress target=".el-scrollbar__wrap" />
     <div class="post-detail-container">
       <div class="post-main-content">
         <PostHeader :post="post" class="post-header" />

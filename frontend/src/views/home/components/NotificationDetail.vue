@@ -1,5 +1,4 @@
 <script>
-import { Scrollbar } from "vue-amazing-ui";
 import NotificationTitle from "./NotificationTitle.vue";
 import date from "@/utils/date.js";
 
@@ -15,7 +14,6 @@ export default {
     },
   },
   components: {
-    Scrollbar,
     NotificationTitle,
   },
   data() {
@@ -53,7 +51,7 @@ export default {
 </script>
 
 <template>
-  <Scrollbar class="notification-scrollbar" v-if="notifications.length > 0">
+  <el-scrollbar class="notification-scrollbar" v-if="notifications.length > 0">
     <ul class="notifications-list">
       <template v-for="item in notifications" :key="item.title">
         <li
@@ -104,7 +102,7 @@ export default {
         </li>
       </template>
     </ul>
-  </Scrollbar>
+  </el-scrollbar>
 
   <template v-else>
     <div class="empty-state">

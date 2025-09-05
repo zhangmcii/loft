@@ -4,8 +4,6 @@ import PostImage from "@/views/posts/components/PostImage.vue";
 import notificationApi from "@/api/notification/notificationApi.js";
 import postApi from "@/api/posts/postApi.js";
 import { useCurrentUserStore } from "@/stores/user";
-import { GradientText } from "vue-amazing-ui";
-import "vue-amazing-ui/es/gradienttext/GradientText.css";
 import SkeletonUtil from "@/utils/components/SkeletonUtil.vue";
 import ICP from "@/utils/components/ICP.vue";
 import PublishEntry from "@/views/posts/components/PublishEntry.vue";
@@ -16,7 +14,6 @@ export default {
   components: {
     PostPreview,
     PostImage,
-    GradientText,
     PublishEntry,
     SkeletonUtil,
     ICP,

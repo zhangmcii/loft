@@ -8,9 +8,6 @@ const include = [
   "mitt",
   "dayjs",
   "axios",
-  "swiper",
-  "qrcode",
-  "vue-amazing-ui",
   "canvas-confetti",
   "vue3-photo-preview",
   "@pureadmin/utils",
@@ -19,9 +16,7 @@ const include = [
   "@wangeditor/plugin-md",
   "@wangeditor/editor",
   "@wangeditor/editor-for-vue",
-  "swiper/vue",
   "@vueuse/core",
-  "swiper/modules",
 ];
 
 /**

@@ -86,7 +86,7 @@ def setup_logging(app=None):
         app.logger.propagate = True
 
         # 邮件处理器
-        if app.debug:
+        if not app.debug:
             mail_handler = FlaskMailHandler()
             mail_handler.setLevel(logging.ERROR)
             root_logger.addHandler(mail_handler)
