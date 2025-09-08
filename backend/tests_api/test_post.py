@@ -70,7 +70,7 @@ class TestApiCase:
         assert r.json.get("code") == 200
         assert r.json.get("total") == 3
         data = r.json.get("data")
-        assert "测试markdown文章" in data[2].get("body")
+        assert "测试markdown文章" in data[-1].get("body")
         assert "abc.png" in data[-1].get("body_html")
         assert "abc.png" in data[-1].get("body_html")
-        assert "1" in data[2].get("pos")
+        assert "1" in data[-1].get("pos")

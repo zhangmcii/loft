@@ -40,8 +40,12 @@ def login():
 
 
 def get_random_user_avatars():
-    avatars, total = dir_file_name("userAvatars/", 1, 10, False)
-    return avatars[random.randint(0, total - 1)]
+    try:
+        avatars, total = dir_file_name("userAvatars/", 1, 10, False)
+        return avatars[random.randint(0, total - 1)]
+    except Exception as e:
+        logging.warning(f'注册时从七牛云随机指定图像失败，原因：{e}')
+        return ''
 
 
 @auth.route("/register", methods=["POST"])
