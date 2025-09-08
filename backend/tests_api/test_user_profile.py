@@ -16,9 +16,16 @@ class TestUserProfileCase:
 
     def test_get_user_profile(self, client, auth):
         """测试获取用户资料"""
-        # 注册并登录用户
-        auth.register()
-        auth.login()
+        # 注册并验证成功
+        register_response = auth.register()
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录并验证成功
+        login_response = auth.login()
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 获取当前用户信息
         r = client.get(self.pre_fix + "/users/1", headers=auth.get_headers())
@@ -32,9 +39,16 @@ class TestUserProfileCase:
 
     def test_update_user_profile(self, client, auth):
         """测试更新用户资料"""
-        # 注册并登录用户
-        auth.register()
-        auth.login()
+        # 注册并验证成功
+        register_response = auth.register()
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录并验证成功
+        login_response = auth.login()
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 更新用户资料
         update_data = {
@@ -54,14 +68,28 @@ class TestUserProfileCase:
 
     def test_follow_unfollow_user(self, client, auth):
         """测试关注和取消关注用户"""
-        # 注册第一个用户
-        auth.register(username="user1", password="password1")
-        auth.login(username="user1", password="password1")
+        # 注册第一个用户并验证成功
+        register_response = auth.register(username="user1", password="password1")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第一个用户并验证成功
+        login_response = auth.login(username="user1", password="password1")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         headers_user1 = auth.get_headers()
 
-        # 注册第二个用户
-        auth.register(username="user2", password="password2")
-        auth.login(username="user2", password="password2")
+        # 注册第二个用户并验证成功
+        register_response = auth.register(username="user2", password="password2")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第二个用户并验证成功
+        login_response = auth.login(username="user2", password="password2")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         headers_user2 = auth.get_headers()
 
         # 获取用户ID

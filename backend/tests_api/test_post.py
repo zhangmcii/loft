@@ -23,8 +23,16 @@ class TestApiCase:
         """模拟新用户注册、登陆，发布普通文章，图文，markdown文章的过程"""
         r = Role.query.filter_by(name="User").first()
         assert r
-        auth.register()
-        auth.login()
+        # 注册并验证成功
+        register_response = auth.register()
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录并验证成功
+        login_response = auth.login()
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 发布普通文章
         r = client.post(

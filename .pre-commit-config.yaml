@@ -40,14 +40,14 @@ repos:
         files: ^backend/.*\.py$ # 只针对后端的 Python 文件
         exclude: ^backend/migrations/
         args: [--config=backend/.flake8]
-#
-#  - repo: https://github.com/psf/black
-#    rev: 23.11.0
-#    hooks:
-#      - id: black
-#        name: Black
-#        files: ^backend/.*\.py$
-#        exclude: ^backend/migrations/
+
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        name: Black
+        files: ^backend/.*\.py$
+        exclude: ^backend/migrations/
 #
 #  - repo: https://github.com/pycqa/isort
 #    rev: 5.12.0

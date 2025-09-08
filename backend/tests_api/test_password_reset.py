@@ -16,9 +16,16 @@ class TestPasswordResetCase:
 
     def test_change_password(self, client, auth):
         """测试修改密码"""
-        # 注册并登录用户
-        auth.register()
-        auth.login()
+        # 注册并验证成功
+        register_response = auth.register()
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录并验证成功
+        login_response = auth.login()
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 修改密码
         r = client.post(

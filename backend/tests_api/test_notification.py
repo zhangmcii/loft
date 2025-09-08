@@ -16,9 +16,16 @@ class TestNotificationCase:
 
     def test_comment_notification(self, client, auth):
         """测试评论通知"""
-        # 注册第一个用户并发布文章
-        auth.register(username="author1", password="password")
-        auth.login(username="author1", password="password")
+        # 注册第一个用户并验证成功
+        register_response = auth.register(username="author1", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第一个用户并验证成功
+        login_response = auth.login(username="author1", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         author_headers = auth.get_headers()
 
         # 发布文章
@@ -30,9 +37,16 @@ class TestNotificationCase:
         assert r.json.get("code") == 200
         post_id = r.json.get("data")[0].get("id")
 
-        # 注册第二个用户
-        auth.register(username="commenter1", password="password")
-        auth.login(username="commenter1", password="password")
+        # 注册第二个用户并验证成功
+        register_response = auth.register(username="commenter1", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第二个用户并验证成功
+        login_response = auth.login(username="commenter1", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 第二个用户评论第一个用户的文章
         r = client.post(
@@ -56,9 +70,16 @@ class TestNotificationCase:
 
     def test_like_notification(self, client, auth):
         """测试点赞通知"""
-        # 注册第一个用户并发布文章
-        auth.register(username="author2", password="password")
-        auth.login(username="author2", password="password")
+        # 注册第一个用户并验证成功
+        register_response = auth.register(username="author2", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第一个用户并验证成功
+        login_response = auth.login(username="author2", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         author_headers = auth.get_headers()
 
         # 发布文章
@@ -70,9 +91,16 @@ class TestNotificationCase:
         assert r.json.get("code") == 200
         post_id = r.json.get("data")[0].get("id")
 
-        # 注册第二个用户
-        auth.register(username="liker2", password="password")
-        auth.login(username="liker2", password="password")
+        # 注册第二个用户并验证成功
+        register_response = auth.register(username="liker2", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第二个用户并验证成功
+        login_response = auth.login(username="liker2", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         liker_headers = auth.get_headers()
 
         # 第二个用户点赞第一个用户的文章
@@ -94,9 +122,16 @@ class TestNotificationCase:
 
     def test_reply_notification(self, client, auth):
         """测试回复通知"""
-        # 注册第一个用户并发布文章和评论
-        auth.register(username="commenter3", password="password")
-        auth.login(username="commenter3", password="password")
+        # 注册第一个用户并验证成功
+        register_response = auth.register(username="commenter3", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第一个用户并验证成功
+        login_response = auth.login(username="commenter3", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         commenter1_headers = auth.get_headers()
 
         # 发布文章
@@ -117,9 +152,16 @@ class TestNotificationCase:
         assert r.status_code == 200
         comment_id = r.json.get("data").get("id")
 
-        # 注册第二个用户
-        auth.register(username="commenter31", password="password")
-        auth.login(username="commenter31", password="password")
+        # 注册第二个用户并验证成功
+        register_response = auth.register(username="commenter31", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第二个用户并验证成功
+        login_response = auth.login(username="commenter31", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 第二个用户回复第一个用户的评论
         r = client.post(
@@ -143,9 +185,16 @@ class TestNotificationCase:
 
     def test_mark_notification_as_read(self, client, auth):
         """测试标记通知为已读"""
-        # 注册第一个用户并发布文章
-        auth.register(username="author4", password="password")
-        auth.login(username="author4", password="password")
+        # 注册第一个用户并验证成功
+        register_response = auth.register(username="author4", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第一个用户并验证成功
+        login_response = auth.login(username="author4", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
         author_headers = auth.get_headers()
 
         # 发布文章
@@ -157,9 +206,16 @@ class TestNotificationCase:
         assert r.json.get("code") == 200
         post_id = r.json.get("data")[0].get("id")
 
-        # 注册第二个用户
-        auth.register(username="commenter4", password="password")
-        auth.login(username="commenter4", password="password")
+        # 注册第二个用户并验证成功
+        register_response = auth.register(username="commenter4", password="password")
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录第二个用户并验证成功
+        login_response = auth.login(username="commenter4", password="password")
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 第二个用户评论第一个用户的文章
         r = client.post(

@@ -16,9 +16,16 @@ class TestPraiseCommentCase:
 
     def test_post_comment_and_praise(self, client, auth):
         """测试发表评论和点赞文章"""
-        # 注册并登录用户
-        auth.register()
-        auth.login()
+        # 注册并验证成功
+        register_response = auth.register()
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录并验证成功
+        login_response = auth.login()
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 发布一篇文章
         r = client.post(
@@ -66,9 +73,16 @@ class TestPraiseCommentCase:
 
     def test_comment_reply_and_praise(self, client, auth):
         """测试评论回复和点赞评论"""
-        # 注册并登录用户
-        auth.register()
-        auth.login()
+        # 注册并验证成功
+        register_response = auth.register()
+        assert register_response.status_code == 200
+        assert register_response.json.get("code") == 200
+
+        # 登录并验证成功
+        login_response = auth.login()
+        assert login_response.status_code == 200
+        assert login_response.json.get("code") == 200
+        assert login_response.json.get("token") is not None
 
         # 发布一篇文章
         r = client.post(
