@@ -44,6 +44,8 @@ export default {
       fontSize: 14,
       // 是否显示搜索框
       showSearch: false,
+      // 文章目录
+      toc: [],
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -71,7 +73,55 @@ export default {
     );
   },
   computed: {},
+
+  mounted() {
+    this.$nextTick(() => {
+      this.generateToc();
+    });
+  },
+
+  watch: {
+    "post.body": {
+      handler() {
+        this.$nextTick(() => {
+          this.generateToc();
+        });
+      },
+      deep: true,
+    },
+  },
+
   methods: {
+    // 生成目录
+    generateToc() {
+      const contentEl = this.$refs.postContent?.$el;
+      if (!contentEl) return [];
+
+      const headings = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const toc = [];
+
+      headings.forEach((heading) => {
+        const id = heading.textContent.toLowerCase().replace(/\s+/g, "-");
+        heading.id = id;
+
+        toc.push({
+          level: parseInt(heading.tagName.substring(1)),
+          text: heading.textContent,
+          id: id,
+        });
+      });
+
+      this.toc = toc;
+    },
+
+    // 跳转到标题位置
+    scrollToHeading(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    },
+
     getPostById(postId) {
       postApi
         .getPost(postId)
@@ -109,6 +159,19 @@ export default {
     <div class="post-detail-container">
       <div class="post-main-content">
         <PostHeader :post="post" class="post-header" />
+        <div class="toc-container" v-if="toc.length > 0">
+          <div class="toc-title">目录</div>
+          <div
+            v-for="item in toc"
+            :key="item.id"
+            class="toc-item"
+            :style="{ paddingLeft: `${(item.level - 1) * 12}px` }"
+            @click="scrollToHeading(item.id)"
+          >
+            {{ item.text }}
+          </div>
+        </div>
+
         <PostContent
           :postContent="post.body"
           class="post-content"
@@ -157,6 +220,37 @@ export default {
 
 <style scoped lang="scss">
 @use "./components/PostDetail.scss" as *;
+
+.toc-container {
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .toc-title {
+    font-weight: bold;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eaeaea;
+  }
+
+  .toc-item {
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #555;
+
+    &:hover {
+      color: #409eff;
+      transform: translateX(4px);
+    }
+  }
+}
 
 .search-button {
   position: fixed;
