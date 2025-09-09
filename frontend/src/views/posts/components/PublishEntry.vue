@@ -169,7 +169,7 @@ export default {
         body: "",
         bodyHtml: "",
         images: [],
-        type: "markdown",
+        type: "",
       },
     };
   },
@@ -281,6 +281,7 @@ export default {
     async publishMarkdown() {
       const images = await this.$refs.md.uploadPhotos();
       this.markdownContent.images = images;
+      this.markdownContent.type = "markdown";
       return await postApi.publish_post(this.markdownContent);
     },
 

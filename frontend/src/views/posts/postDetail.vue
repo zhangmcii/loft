@@ -8,6 +8,7 @@ import PostContent from "@/views/posts/components/PostContent.vue";
 import ReadProgress from "@/utils/components/ReadProgress.vue";
 import FontSizeAdjuster from "@/views/posts/components/FontSizeAdjuster.vue";
 import PostSearch from "@/views/posts/components/PostSearch.vue";
+import PostToc from "@/views/posts/components/PostToc.vue";
 import postApi from "@/api/posts/postApi.js";
 import message from "@/utils/message";
 
@@ -22,6 +23,7 @@ export default {
     ReadProgress,
     FontSizeAdjuster,
     PostSearch,
+    PostToc,
   },
   data() {
     return {
@@ -46,6 +48,10 @@ export default {
       showSearch: false,
       // 文章目录
       toc: [],
+      // 当前激活的标题ID
+      activeHeadingId: "",
+      // 滚动监听器
+      scrollObserver: null,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -91,6 +97,12 @@ export default {
     },
   },
 
+  beforeUnmount() {
+    if (this.scrollObserver) {
+      this.scrollObserver.disconnect();
+    }
+  },
+
   methods: {
     // 生成目录
     generateToc() {
@@ -112,13 +124,56 @@ export default {
       });
 
       this.toc = toc;
+
+      // 初始化滚动监听
+      this.setupScrollObserver();
+    },
+
+    setupScrollObserver() {
+      if (this.scrollObserver) {
+        this.scrollObserver.disconnect();
+      }
+
+      const contentEl = this.$refs.postContent?.$el;
+      if (!contentEl) return;
+
+      const headings = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      if (headings.length === 0) return;
+
+      const options = {
+        root: null,
+        rootMargin: "0px 0px -50% 0px",
+        threshold: 0.5,
+      };
+
+      this.scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            this.activeHeadingId = entry.target.id;
+          }
+        });
+      }, options);
+
+      headings.forEach((heading) => {
+        this.scrollObserver.observe(heading);
+      });
     },
 
     // 跳转到标题位置
     scrollToHeading(id) {
       const el = document.getElementById(id);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+        // 添加偏移量避免被顶部导航栏遮挡
+        const offset = 80;
+        const elementPosition =
+          el.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPosition - offset,
+          behavior: "smooth",
+        });
+
+        // 手动设置当前激活的标题
+        this.activeHeadingId = id;
       }
     },
 
@@ -159,18 +214,6 @@ export default {
     <div class="post-detail-container">
       <div class="post-main-content">
         <PostHeader :post="post" class="post-header" />
-        <div class="toc-container" v-if="toc.length > 0">
-          <div class="toc-title">目录</div>
-          <div
-            v-for="item in toc"
-            :key="item.id"
-            class="toc-item"
-            :style="{ paddingLeft: `${(item.level - 1) * 12}px` }"
-            @click="scrollToHeading(item.id)"
-          >
-            {{ item.text }}
-          </div>
-        </div>
 
         <PostContent
           :postContent="post.body"
@@ -188,7 +231,11 @@ export default {
       <div class="post-comments">
         <CommentCard :post-id="postId" />
       </div>
-
+      <PostToc
+        :toc="toc"
+        :activeId="activeHeadingId"
+        @navigate="scrollToHeading"
+      />
       <!-- 字体大小调整悬浮按钮 -->
       <FontSizeAdjuster
         :defaultFontSize="fontSize"

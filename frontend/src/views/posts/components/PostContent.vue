@@ -162,6 +162,13 @@ export default {
       box-shadow-style="#ffffff"
       default-open="preview"
       :toolbars-flag="false"
+      :markdown-options="{
+        breaks: true,
+        linkify: true,
+        typographer: true,
+        highlight: false,
+        bulletListMarker: '-',
+      }"
     />
   </div>
 </template>
@@ -228,6 +235,11 @@ export default {
   ol {
     padding-left: 1.5em;
     margin: 0.8em 0;
+  }
+
+  ul {
+    list-style-type: disc;
+    padding-left: 2em;
   }
 
   li {
