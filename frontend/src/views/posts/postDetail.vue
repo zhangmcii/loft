@@ -81,17 +81,17 @@ export default {
   computed: {},
 
   mounted() {
-    this.$nextTick(() => {
-      this.generateToc();
-    });
+    // 移除这里的调用，只在post.body变化时生成目录
   },
 
   watch: {
     "post.body": {
-      handler() {
-        this.$nextTick(() => {
-          this.generateToc();
-        });
+      handler(newVal) {
+        if (newVal) {
+          this.$nextTick(() => {
+            this.generateToc();
+          });
+        }
       },
       deep: true,
     },
@@ -107,18 +107,31 @@ export default {
     // 生成目录
     generateToc() {
       const contentEl = this.$refs.postContent?.$el;
-      if (!contentEl) return [];
+      if (!contentEl) {
+        this.toc = [];
+        return;
+      }
 
       const headings = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
       const toc = [];
-
+       // 用于去重
+      const seenTexts = new Set();
+      
       headings.forEach((heading) => {
-        const id = heading.textContent.toLowerCase().replace(/\s+/g, "-");
+        const text = heading.textContent.trim();
+        
+        // 跳过空标题和重复标题
+        if (!text || seenTexts.has(text)) {
+          return;
+        }
+        
+        seenTexts.add(text);
+        const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
         heading.id = id;
 
         toc.push({
           level: parseInt(heading.tagName.substring(1)),
-          text: heading.textContent,
+          text: text,
           id: id,
         });
       });
