@@ -114,19 +114,19 @@ export default {
 
       const headings = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
       const toc = [];
-       // 用于去重
+      // 用于去重
       const seenTexts = new Set();
-      
+
       headings.forEach((heading) => {
         const text = heading.textContent.trim();
-        
+
         // 跳过空标题和重复标题
         if (!text || seenTexts.has(text)) {
           return;
         }
-        
+
         seenTexts.add(text);
-        const id = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]/g, "");
+        const id = text.toLowerCase().replace(/\s+/g, "-");
         heading.id = id;
 
         toc.push({

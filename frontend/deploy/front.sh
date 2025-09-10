@@ -3,7 +3,7 @@
 function front_to_remote(){
     base_path=""
     win_path="/e/project/vue-proj/responsive_new"
-    m_path="/Users/nizhenshi/Documents/proj/lof/frontend"
+    m_path="/Users/nizhenshi/Documents/proj/loft/frontend"
 
     intel_path="/Users/v/Documents/proj_1/loft_1/frontend"
 
