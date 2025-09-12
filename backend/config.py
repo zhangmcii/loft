@@ -41,6 +41,8 @@ class Config:
 
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
 
+    CACHE_TYPE = "SimpleCache"
+
     @staticmethod
     def init_app(app):
         pass

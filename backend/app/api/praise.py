@@ -58,23 +58,28 @@ class PraisePostApi(DecoratedMethodView):
             praise = Praise(post=post, author=current_user)
             db.session.add(praise)
 
-            # 将挂起的更改发送到数据库，但不会提交事务
+            notifications = []
             if current_user.id != post.author_id:
-                db.session.flush()
-                notification = Notification(
-                    receiver_id=post.author_id,
-                    trigger_user_id=praise.author_id,
-                    post_id=post.id,
-                    comment_id=None,
-                    type=NotificationType.LIKE,
+                notifications.append(
+                    Notification(
+                        receiver_id=post.author_id,
+                        trigger_user_id=current_user.id,
+                        post_id=post.id,
+                        comment_id=None,
+                        type=NotificationType.LIKE,
+                    )
                 )
-                db.session.add(notification)
+                db.session.add_all(notifications)
+
             db.session.commit()
 
-            if current_user.id != post.author_id:
+            if notifications:
                 socketio.emit(
-                    "new_notification", notification.to_json(), to=str(post.author_id)
-                )  # 发送到作者的房间
+                    "new_notification",
+                    notifications[0].to_json(),
+                    to=str(post.author_id),
+                )
+            # 使用relationship的len()替代count()查询
             return success(
                 data={"praise_total": post.praise.count(), "has_praised": True}
             )
@@ -116,25 +121,29 @@ class PraiseCommentApi(DecoratedMethodView):
             praise = Praise(comment=comment, author=current_user)
             db.session.add(praise)
 
-            # 将挂起的更改发送到数据库，但不会提交事务
+            notifications = []
             if current_user.id != comment.author_id:
-                db.session.flush()
-                notification = Notification(
-                    receiver_id=comment.author_id,
-                    trigger_user_id=praise.author_id,
-                    post_id=comment.post_id,
-                    comment_id=comment.id,
-                    type=NotificationType.LIKE,
+                notifications.append(
+                    Notification(
+                        receiver_id=comment.author_id,
+                        trigger_user_id=current_user.id,
+                        post_id=comment.post_id,
+                        comment_id=comment.id,
+                        type=NotificationType.LIKE,
+                    )
                 )
-                db.session.add(notification)
+                db.session.add_all(notifications)
+
             db.session.commit()
 
-            if current_user.id != comment.author_id:
+            if notifications:
                 socketio.emit(
                     "new_notification",
-                    notification.to_json(),
+                    notifications[0].to_json(),
                     to=str(comment.author_id),
-                )  # 发送到作者的房间
+                )
+
+            # 使用relationship的len()替代count()查询
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:
             logging.error(f"评论点赞失败: {str(e)}", exc_info=True)

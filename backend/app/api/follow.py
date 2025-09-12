@@ -69,29 +69,38 @@ def followers(username):
         return success(data=followers)
 
     page = request.args.get("page", 1, type=int)
-    pagination = user.followers.order_by(Follow.timestamp.desc()).paginate(
-        page=page,
-        per_page=current_app.config["FLASKY_FOLLOWERS_PER_PAGE"],
-        error_out=False,
+    pagination = (
+        user.followers.join(Follow.follower)
+        .filter(User.username != username)
+        .order_by(Follow.timestamp.desc())
+        .paginate(
+            page=page,
+            per_page=current_app.config["FLASKY_FOLLOWERS_PER_PAGE"],
+            error_out=False,
+        )
     )
-    follows = []
-    for item in pagination.items:
-        if item.follower.username != username:
-            is_following_back = (
-                Follow.query.filter_by(follower=user, followed=item.follower).first()
-                is not None
-            )
-            follows.append(
-                {
-                    "id": item.follower.id,
-                    "nickname": item.follower.nickname,
-                    "username": item.follower.username,
-                    "image": get_avatars_url(item.follower.image),
-                    "timestamp": DateUtils.datetime_to_str(item.timestamp),
-                    "is_following": is_following_back,
-                }
-            )
-    return success(data=follows, total=user.followers.count() - 1)
+
+    # 批量查询反向关注状态
+    follower_ids = [item.follower.id for item in pagination.items]
+    following_back = set(
+        Follow.query.filter_by(follower_id=user.id)
+        .filter(Follow.followed_id.in_(follower_ids))
+        .with_entities(Follow.followed_id)
+        .all()
+    )
+
+    follows = [
+        {
+            "id": item.follower.id,
+            "nickname": item.follower.nickname,
+            "username": item.follower.username,
+            "image": get_avatars_url(item.follower.image),
+            "timestamp": DateUtils.datetime_to_str(item.timestamp),
+            "is_following": item.follower.id in following_back,
+        }
+        for item in pagination.items
+    ]
+    return success(data=follows, total=pagination.total)
 
 
 @api.route("/users/<username>/following")
@@ -109,29 +118,38 @@ def followed_by(username):
         return success(data=follows)
 
     page = request.args.get("page", 1, type=int)
-    pagination = user.followed.order_by(Follow.timestamp.desc()).paginate(
-        page=page,
-        per_page=current_app.config["FLASKY_FOLLOWERS_PER_PAGE"],
-        error_out=False,
+    pagination = (
+        user.followed.join(Follow.followed)
+        .filter(User.username != username)
+        .order_by(Follow.timestamp.desc())
+        .paginate(
+            page=page,
+            per_page=current_app.config["FLASKY_FOLLOWERS_PER_PAGE"],
+            error_out=False,
+        )
     )
-    follows = []
-    for item in pagination.items:
-        if item.followed.username != username:
-            is_following_back = (
-                Follow.query.filter_by(follower=item.followed, followed=user).first()
-                is not None
-            )
-            follows.append(
-                {
-                    "id": item.followed.id,
-                    "nickname": item.followed.nickname,
-                    "username": item.followed.username,
-                    "image": get_avatars_url(item.followed.image),
-                    "timestamp": DateUtils.datetime_to_str(item.timestamp),
-                    "is_following_back": is_following_back,
-                }
-            )
-    return success(data=follows, total=user.followed.count() - 1)
+
+    # 批量查询反向关注状态
+    followed_ids = [item.followed.id for item in pagination.items]
+    following_back = set(
+        Follow.query.filter_by(followed_id=user.id)
+        .filter(Follow.follower_id.in_(followed_ids))
+        .with_entities(Follow.follower_id)
+        .all()
+    )
+
+    follows = [
+        {
+            "id": item.followed.id,
+            "nickname": item.followed.nickname,
+            "username": item.followed.username,
+            "image": get_avatars_url(item.followed.image),
+            "timestamp": DateUtils.datetime_to_str(item.timestamp),
+            "is_following_back": item.followed.id in following_back,
+        }
+        for item in pagination.items
+    ]
+    return success(data=follows, total=pagination.total)
 
 
 class UserFollowApi(DecoratedMethodView):

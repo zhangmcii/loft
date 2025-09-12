@@ -7,9 +7,18 @@ from flask_jwt_extended import current_user, jwt_required
 from .. import db, limiter, socketio
 from ..decorators import DecoratedMethodView, log_operate
 from ..main.uploads import del_qiniu_image
-from ..models import (Follow, Image, ImageType, Notification, NotificationType,
-                      Permission, Post, PostType)
+from ..models import (
+    Follow,
+    Image,
+    ImageType,
+    Notification,
+    NotificationType,
+    Permission,
+    Post,
+    PostType,
+)
 from ..utils.response import error, success
+from .. import cache
 
 
 class PostItemApi(DecoratedMethodView):
@@ -101,48 +110,52 @@ class PostGroupApi(DecoratedMethodView):
     }
 
     @staticmethod
+    @cache.memoize(timeout=60)
     def query_post(page, per_page, tab_name=None):
         if tab_name and tab_name == "showFollowed":
             query = current_user.followed_posts
         else:
             query = Post.query
+
         paginate = query.order_by(Post.timestamp.desc()).paginate(
             page=page, per_page=per_page, error_out=False
         )
         posts = paginate.items
-        return [post.to_json() for post in posts], query.count()
+        return [post.to_json() for post in posts], paginate.total
 
     @staticmethod
     def new_post_notification(post_id):
         """创建新文章通知并推送给粉丝"""
-        # 查询当前用户的所有粉丝（排除自己）
-        followers = Follow.query.filter_by(followed_id=current_user.id).all()
+        # 批量查询当前用户的所有粉丝（排除自己）
+        followers = (
+            Follow.query.filter_by(followed_id=current_user.id)
+            .filter(Follow.follower_id != current_user.id)
+            .all()
+        )
 
-        # 为每个粉丝创建通知并推送
-        for follow in followers:
-            # 跳过作者自己（虽然逻辑上自己不会关注自己，但以防万一）
-            if follow.follower_id == current_user.id:
-                continue
+        if not followers:
+            return
 
-            # 创建通知
-            notification = Notification(
-                receiver_id=follow.follower_id,  # 粉丝ID
-                trigger_user_id=current_user.id,  # 触发用户（作者）
-                post_id=post_id,  # 关联文章ID
-                type=NotificationType.NewPost,  # 通知类型：新文章
+        # 批量创建通知
+        notifications = [
+            Notification(
+                receiver_id=follow.follower_id,
+                trigger_user_id=current_user.id,
+                post_id=post_id,
+                type=NotificationType.NewPost,
             )
-            db.session.add(notification)
-            db.session.flush()  # 刷新以获取通知ID
+            for follow in followers
+        ]
+        db.session.add_all(notifications)
+        db.session.commit()
 
-            # 实时推送给粉丝
+        # 批量推送通知
+        for notification in notifications:
             socketio.emit(
                 "new_notification",
                 notification.to_json(),
-                to=str(follow.follower_id),  # 发送到粉丝的房间
+                to=str(notification.receiver_id),
             )
-
-        # 提交所有通知
-        db.session.commit()
 
     @staticmethod
     def submit_to_db(post_type, body, body_html, images=None):
@@ -212,6 +225,7 @@ class PostGroupApi(DecoratedMethodView):
         if current_user.can(Permission.WRITE):
             try:
                 PostGroupApi.posts_publish(request.json)
+                cache.delete_memoized(PostGroupApi.query_post)
             except Exception as e:
                 return error(500, f"{str(e)}")
             posts, total = PostGroupApi.query_post(

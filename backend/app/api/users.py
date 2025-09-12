@@ -52,7 +52,7 @@ def get_post_by_user(username):
     )
     posts = pagination.items
     return success(
-        data={"posts": [post.to_json() for post in posts]}, total=user.posts.count()
+        data={"posts": [post.to_json() for post in posts]}, total=pagination.total
     )
 
 

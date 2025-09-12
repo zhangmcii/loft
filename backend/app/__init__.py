@@ -13,6 +13,7 @@ from flask_redis import FlaskRedis
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_caching import Cache
 
 from .mycelery import celery_init_app
 from .utils.logger import setup_logging
@@ -33,6 +34,7 @@ limiter = Limiter(
     my_key_func,
     storage_uri=f"redis://:1234@{os.getenv('REDIS_HOST') or os.getenv('FLASK_RUN_HOST')}:6379/3",
 )
+cache = Cache()
 
 
 def create_app(config_name):
@@ -85,9 +87,8 @@ def create_app(config_name):
     celery_init_app(app)
     socketio.init_app(app, cors_allowed_origins="*", ping_timeout=30, ping_interval=60)
     limiter.init_app(app)
-
-    # 设置Swagger UI
     setup_swagger(app)
+    cache.init_app(app)
 
     from .auth import auth as auth_blueprint
 

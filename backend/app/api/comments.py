@@ -104,16 +104,19 @@ class CommentApi(DecoratedMethodView):
                     )
                 )
 
-        # @的通知
-        for receiver_id in at_list:
-            notifications.append(
-                Notification(
-                    receiver_id=receiver_id,
-                    trigger_user_id=current_user.id,
-                    post_id=post.id,
-                    comment_id=comment.id,
-                    type=NotificationType.AT,
-                )
+        # 批量创建@的通知
+        if at_list:
+            notifications.extend(
+                [
+                    Notification(
+                        receiver_id=receiver_id,
+                        trigger_user_id=current_user.id,
+                        post_id=post.id,
+                        comment_id=comment.id,
+                        type=NotificationType.AT,
+                    )
+                    for receiver_id in at_list
+                ]
             )
         return notifications
 
