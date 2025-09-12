@@ -1,5 +1,6 @@
-from base64 import b64encode
+import time
 
+from base64 import b64encode
 from app.models import Role
 
 
@@ -33,7 +34,6 @@ class TestApiCase:
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
         assert login_response.json.get("token") is not None
-
         # 发布普通文章
         r = client.post(
             self.pre_fix + "/posts",
@@ -45,25 +45,27 @@ class TestApiCase:
         # 获取刚刚发布的文章
         r = client.get(self.pre_fix + "/posts", headers=auth.get_headers())
         assert r.status_code == 200
-        assert r.json.get("data")[-1].get("body") == "666"
-        assert r.json.get("data")[-1].get("author") == "test"
+        assert r.json.get("data")[0].get("body") == "666"
+        assert r.json.get("data")[0].get("author") == "test"
 
+        time.sleep(1)
         # 发布图文文章
         r = client.post(
-            "/rich_post",
+            self.pre_fix + "/posts",
             headers=auth.get_headers(),
             json={
-                "content": "测试图文文章",
-                "imageUrls": ["123.png", "456.png"],
+                "body": "测试图文文章",
+                "bodyHtml": "",
+                "images": ["123.png", "456.png"],
                 "type": "image",
             },
         )
-        response = r.json
-        assert response.get("code") == 200
-        new_post = response.get("data")[-1]
-        assert "测试图文文章" in new_post.get("body")
-        assert len(new_post.get("post_images")) == 2
+        assert r.json.get("code") == 200
+        data = r.json.get("data")
+        assert "测试图文文章" in data[0].get("body")
+        assert len(data[0].get("post_images")) == 2
 
+        time.sleep(1)
         # 发布markdown文章
         r = client.post(
             self.pre_fix + "/posts",
@@ -78,7 +80,6 @@ class TestApiCase:
         assert r.json.get("code") == 200
         assert r.json.get("total") == 3
         data = r.json.get("data")
-        assert "测试markdown文章" in data[-1].get("body")
-        assert "abc.png" in data[-1].get("body_html")
-        assert "abc.png" in data[-1].get("body_html")
-        assert "1" in data[-1].get("pos")
+        assert "测试markdown文章" in data[0].get("body")
+        assert "abc.png" in data[0].get("body_html")
+        assert "1" in data[0].get("pos")
