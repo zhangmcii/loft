@@ -17,7 +17,6 @@ from flask_caching import Cache
 
 from .mycelery import celery_init_app
 from .utils.logger import setup_logging
-from .utils.swagger import setup_swagger
 
 
 def my_key_func():
@@ -87,7 +86,6 @@ def create_app(config_name):
     celery_init_app(app)
     socketio.init_app(app, cors_allowed_origins="*", ping_timeout=30, ping_interval=60)
     limiter.init_app(app)
-    setup_swagger(app)
     cache.init_app(app)
 
     from .auth import auth as auth_blueprint
