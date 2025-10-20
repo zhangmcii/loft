@@ -35,7 +35,7 @@ function front_to_remote(){
     # 本地打包目录
     LOCAL_BUILD_DIR="dist"
     # 服务器目录
-    SERVER_DIR="/usr/local/nginx/html"
+    SERVER_DIR="/usr/share/nginx/html"
 
     # 压缩本地dist目录
     echo "压缩本地dist目录..."
@@ -51,7 +51,7 @@ function front_to_remote(){
         echo "传输失败"
     fi
 
-    ssh $ROMOTE_USER@$ROMOTE_HOST "cd $SERVER_DIR; echo '解压压缩文件'; tar -xzf dist.tar.gz -C . --no-xattrs;echo '删除远程压缩包'; rm dist.tar.gz; echo '重启Nginx...'; nginx -s reload"
+    ssh $ROMOTE_USER@$ROMOTE_HOST "cd $SERVER_DIR; echo '解压压缩文件'; tar -xzf dist.tar.gz -C . --no-xattrs;echo '删除远程压缩包'; rm dist.tar.gz"
 
     # 删除本地压缩包
     echo "删除本地压缩包..."
