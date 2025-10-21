@@ -19,4 +19,4 @@ function deploy() {
     wait $backend
 }
 
-deploy_front
+deploy
