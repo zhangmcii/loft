@@ -19,13 +19,10 @@
     />
     <div class="area-container">
       <div class="avatar" style="margin-top: 1rem">
-        <el-image
-          fit="cover"
-          style="border-radius: 50%; width: 120px; height: 120px"
-          alt="用户图像"
-          :src="user.image"
-          :preview-src-list="srcList"
-        />
+      <music-player
+        :avatar="user.image"
+        :music-config="musicConfig"
+      ></music-player>
       </div>
 
       <div v-show="isUserPage">

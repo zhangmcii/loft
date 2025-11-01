@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { showConfirmDialog } from "vant";
 import { loginReminder, waitImage } from "@/utils/common.js";
 import { ElLoading } from "element-plus";
+import musicPlayer from './music.vue';
 
 export default {
   components: {
@@ -25,6 +26,7 @@ export default {
     SkeletonUtil,
     PostImage,
     PostPreview,
+    musicPlayer
   },
   data() {
     return {
@@ -79,6 +81,11 @@ export default {
       originalFiles: [],
       // 压缩后的文件
       compressedImages: [],
+      musicConfig: {
+        server: 'netease',  //服务提供商 --网易云音乐
+        type: 'playlist',   //歌单类型
+        id: '8295686122'  //歌单id ---> music.163.com/#/playlist?id=2028178887
+      }
     };
   },
   setup() {
@@ -140,9 +147,6 @@ export default {
       return Object.values(this.user.social_account).every(
         (value) => value === "" || value === null || value === undefined
       );
-    },
-    srcList() {
-      return [this.user.image];
     },
   },
   // 当从A资料跳转B资料时，更新资料页面
