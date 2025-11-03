@@ -21,6 +21,12 @@ const updateUser = [
     component: () => import("../views/user/edit/Interest.vue"),
     meta: { requireAuth: true },
   },
+  {
+    path: "/editMusic",
+    name: "editMusic",
+    component: () => import("../views/user/edit/Music.vue"),
+    meta: { requireAuth: true },
+  },
 ];
 const setting = [
   {

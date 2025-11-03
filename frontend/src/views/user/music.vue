@@ -10,11 +10,18 @@
         :src="avatar"
         alt="用户图像"
         :class="{ 'leleo-spin': isPlaying }"
-        :style="{ animation: isPlaying ? 'spin 6s linear infinite' : 'none', transformOrigin: 'center' }"
+        :style="{
+          animation: isPlaying ? 'spin 6s linear infinite' : 'none',
+          transformOrigin: 'center',
+        }"
       />
 
       <transition name="fade">
-        <div v-show="showMusicPlayer" class="music-player-overlay" :class="{ 'fade-in': showMusicPlayer }">
+        <div
+          v-show="showMusicPlayer"
+          class="music-player-overlay"
+          :class="{ 'fade-in': showMusicPlayer }"
+        >
           <div v-if="audioLoading" class="loading-spinner">
             <el-icon class="is-loading">
               <Loading />
@@ -22,8 +29,10 @@
           </div>
 
           <div class="song-info">
-            <span class="song-title">{{ currentSong?.title || '加载中...' }}</span>
-            <span class="song-author">{{ currentSong?.author || '' }}</span>
+            <span class="song-title">{{
+              currentSong?.title || "加载中..."
+            }}</span>
+            <span class="song-author">{{ currentSong?.author || "" }}</span>
           </div>
 
           <audio
@@ -31,7 +40,7 @@
             :src="currentSong?.url"
             @waiting="onWaiting"
             @canplay="onCanPlay"
-            style="display: none;"
+            style="display: none"
           ></audio>
 
           <div class="player-controls">
@@ -70,162 +79,165 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { ElAvatar, ElButton, ElIcon } from 'element-plus'
-import { Loading, CaretLeft, CaretRight, VideoPlay, VideoPause } from '@element-plus/icons-vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { ElAvatar, ElButton, ElIcon } from "element-plus";
+import {
+  Loading,
+  CaretLeft,
+  CaretRight,
+  VideoPlay,
+  VideoPause,
+} from "@element-plus/icons-vue";
 
 // Props
 const props = defineProps({
   // 头像图片URL
   avatar: {
     type: String,
-    required: true
+    required: true,
   },
   // 音乐配置
   musicConfig: {
     type: Object,
     required: true,
     validator: (value) => {
-      return value.server && value.type && value.id
-    }
+      return value.server && value.type && value.id;
+    },
   },
-})
-
-// Emits
-const emit = defineEmits(['toggle-background-muted'])
+});
 
 // Refs
-const showMusicPlayer = ref(false)
-const isPlaying = ref(false)
-const playlistIndex = ref(0)
-const audioLoading = ref(false)
-const musicInfo = ref([])
-const musicInfoLoading = ref(false)
-const audioPlayer = ref(null)
+const showMusicPlayer = ref(false);
+const isPlaying = ref(false);
+const playlistIndex = ref(0);
+const audioLoading = ref(false);
+const musicInfo = ref([]);
+const musicInfoLoading = ref(false);
+const audioPlayer = ref(null);
 
-const isMobile = ref(/Mobi|Android|iPhone/i.test(navigator.userAgent))
-
-
+const isMobile = ref(/Mobi|Android|iPhone/i.test(navigator.userAgent));
 
 // Computed
 const currentSong = computed(() => {
-  return musicInfo.value[playlistIndex.value]
-})
+  return musicInfo.value[playlistIndex.value];
+});
 
 const controlSize = computed(() => {
-  return isMobile ? 'small' : 'default'
-})
+  return isMobile ? "small" : "default";
+});
 
 const playButtonSize = computed(() => {
-  return isMobile ? 'default' : 'large'
-})
+  return isMobile ? "default" : "large";
+});
 
 // Methods
 const fetchMusicInfo = async () => {
-  musicInfoLoading.value = true
+  musicInfoLoading.value = true;
   try {
-    console.log('开始请求音乐信息，配置:', props.musicConfig)
+    console.log("开始请求音乐信息，配置:", props.musicConfig);
     const response = await fetch(
       `https://api.i-meto.com/meting/api?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
-    )
+    );
     if (!response.ok) {
-      throw new Error(`网络请求失败: ${response.status}`)
+      throw new Error(`网络请求失败: ${response.status}`);
     }
-    const data = await response.json()
-    console.log('音乐信息获取成功:', data)
-    musicInfo.value = data
+    const data = await response.json();
+    console.log("音乐信息获取成功:", data);
+    musicInfo.value = data;
   } catch (error) {
-    console.error('请求音乐信息失败:', error)
+    console.error("请求音乐信息失败:", error);
     // 设置默认音乐信息以防请求失败
-    musicInfo.value = [{
-      title: '音乐加载失败',
-      author: '请检查网络连接',
-      url: ''
-    }]
+    musicInfo.value = [
+      {
+        title: "音乐加载失败",
+        author: "请检查网络连接",
+        url: "",
+      },
+    ];
   } finally {
-    musicInfoLoading.value = false
+    musicInfoLoading.value = false;
   }
-}
+};
 
 const setupAudioListener = () => {
   if (audioPlayer.value) {
-    audioPlayer.value.addEventListener('ended', nextTrack)
+    audioPlayer.value.addEventListener("ended", nextTrack);
   }
-}
+};
 
 const togglePlay = () => {
-  if (!audioPlayer.value) return
+  if (!audioPlayer.value) return;
 
   if (!isPlaying.value) {
-    audioPlayer.value.play()
-    emit('toggle-background-muted', true)
-    isPlaying.value = true
+    audioPlayer.value.play();
+    isPlaying.value = true;
   } else {
-    audioPlayer.value.pause()
-    emit('toggle-background-muted', false)
-    isPlaying.value = false
+    audioPlayer.value.pause();
+    isPlaying.value = false;
   }
-}
+};
 
 const previousTrack = () => {
-  playlistIndex.value = playlistIndex.value > 0 ? playlistIndex.value - 1 : musicInfo.value.length - 1
-  updateAudio()
-}
+  playlistIndex.value =
+    playlistIndex.value > 0
+      ? playlistIndex.value - 1
+      : musicInfo.value.length - 1;
+  updateAudio();
+};
 
 const nextTrack = () => {
-  playlistIndex.value = playlistIndex.value < musicInfo.value.length - 1 ? playlistIndex.value + 1 : 0
-  updateAudio()
-}
+  playlistIndex.value =
+    playlistIndex.value < musicInfo.value.length - 1
+      ? playlistIndex.value + 1
+      : 0;
+  updateAudio();
+};
 
 const updateAudio = () => {
-  if (!audioPlayer.value || !currentSong.value) return
+  if (!audioPlayer.value || !currentSong.value) return;
 
   // 先暂停当前播放
-  audioPlayer.value.pause()
-  
+  audioPlayer.value.pause();
+
   // 设置新的音频源
-  audioPlayer.value.src = currentSong.value.url
-  
+  audioPlayer.value.src = currentSong.value.url;
+
   // 等待音频可以播放后再开始播放
   audioPlayer.value.oncanplay = () => {
-    isPlaying.value = true
-    audioPlayer.value.play().catch(error => {
-      console.log('播放失败:', error)
-      isPlaying.value = false
-    })
-  }
-}
+    isPlaying.value = true;
+    audioPlayer.value.play().catch((error) => {
+      console.log("播放失败:", error);
+      isPlaying.value = false;
+    });
+  };
+};
 
 const onWaiting = () => {
-  audioLoading.value = true
-}
+  audioLoading.value = true;
+};
 
 const onCanPlay = () => {
-  audioLoading.value = false
-}
-const handleBackgroundMuted = (isMuted)=> {
-  if (this.$refs.VdPlayer) {
-    this.$refs.VdPlayer.muted = isMuted;
-  }
-}
+  audioLoading.value = false;
+};
+
 // Lifecycle
 onMounted(async () => {
-  await fetchMusicInfo()
-  setupAudioListener()
-})
+  await fetchMusicInfo();
+  setupAudioListener();
+});
 
 onBeforeUnmount(() => {
   if (audioPlayer.value) {
-    audioPlayer.value.removeEventListener('ended', nextTrack)
+    audioPlayer.value.removeEventListener("ended", nextTrack);
   }
-})
+});
 
 // Watchers
 watch(audioLoading, (val) => {
   if (!val && audioPlayer.value && audioPlayer.value.paused) {
-    isPlaying.value = false
+    isPlaying.value = false;
   }
-})
+});
 </script>
 
 <style scoped>
@@ -342,8 +354,12 @@ watch(audioLoading, (val) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .fade-in {
@@ -359,11 +375,13 @@ watch(audioLoading, (val) => {
   }
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.8s;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 

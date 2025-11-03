@@ -306,9 +306,10 @@ export default {
       :value="localUserInfo.about_me"
       @click="$router.push({ path: '/editCommonField', query: { type: 2 } })"
     />
+    <van-cell title="音乐" is-link @click="$router.push('/editMusic')" />
 
     <van-cell
-      title="兴趣图片"
+      title="兴趣封面"
       class="image"
       is-link
       @click="$router.push('/editInterest')"
@@ -318,7 +319,6 @@ export default {
       is-link
       @click="$router.push('/editBackGround')"
     />
-
     <van-cell
       title="社交账号"
       class="socical-link"
