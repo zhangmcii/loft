@@ -9,7 +9,7 @@
       <img
         :src="avatar"
         alt="用户图像"
-        :class="{ 'leleo-spin': isPlaying }"
+        :class="{ 'avatar-spin': isPlaying }"
         :style="{
           animation: isPlaying ? 'spin 6s linear infinite' : 'none',
           transformOrigin: 'center',
@@ -24,13 +24,13 @@
         >
           <div v-if="audioLoading" class="loading-spinner">
             <el-icon class="is-loading">
-              <Loading />
+              <i-ep-Loading />
             </el-icon>
           </div>
 
           <div class="song-info">
             <span class="song-title">{{
-              currentSong?.title || "加载中..."
+              currentSong?.title || "暂无音乐..."
             }}</span>
             <span class="song-author">{{ currentSong?.author || "" }}</span>
           </div>
@@ -43,33 +43,15 @@
             style="display: none"
           ></audio>
 
-          <div class="player-controls">
-            <el-button
-              :size="controlSize"
-              circle
-              @click="previousTrack"
-              class="control-btn"
-            >
-              <el-icon><CaretLeft /></el-icon>
-            </el-button>
-
+          <div class="player-controls" v-if="currentSong?.title">
             <el-button
               :size="playButtonSize"
               circle
               @click="togglePlay"
               class="play-btn"
             >
-              <el-icon v-if="isPlaying"><VideoPause /></el-icon>
-              <el-icon v-else><VideoPlay /></el-icon>
-            </el-button>
-
-            <el-button
-              :size="controlSize"
-              circle
-              @click="nextTrack"
-              class="control-btn"
-            >
-              <el-icon><CaretRight /></el-icon>
+              <el-icon v-if="isPlaying"><i-ep-VideoPause /></el-icon>
+              <el-icon v-else><i-ep-VideoPlay /></el-icon>
             </el-button>
           </div>
         </div>
@@ -79,15 +61,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { ElAvatar, ElButton, ElIcon } from "element-plus";
-import {
-  Loading,
-  CaretLeft,
-  CaretRight,
-  VideoPlay,
-  VideoPause,
-} from "@element-plus/icons-vue";
 
 // Props
 const props = defineProps({
@@ -104,66 +79,31 @@ const props = defineProps({
       return value.server && value.type && value.id;
     },
   },
+  musics: {
+    type: Object,
+    required: false,
+    default: () => {
+      return { title: "", author: "", url: "" };
+    },
+  },
 });
 
 // Refs
 const showMusicPlayer = ref(false);
 const isPlaying = ref(false);
-const playlistIndex = ref(0);
 const audioLoading = ref(false);
-const musicInfo = ref([]);
-const musicInfoLoading = ref(false);
 const audioPlayer = ref(null);
 
 const isMobile = ref(/Mobi|Android|iPhone/i.test(navigator.userAgent));
 
 // Computed
 const currentSong = computed(() => {
-  return musicInfo.value[playlistIndex.value];
-});
-
-const controlSize = computed(() => {
-  return isMobile ? "small" : "default";
+  return props.musics;
 });
 
 const playButtonSize = computed(() => {
   return isMobile ? "default" : "large";
 });
-
-// Methods
-const fetchMusicInfo = async () => {
-  musicInfoLoading.value = true;
-  try {
-    console.log("开始请求音乐信息，配置:", props.musicConfig);
-    const response = await fetch(
-      `https://api.i-meto.com/meting/api?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
-    );
-    if (!response.ok) {
-      throw new Error(`网络请求失败: ${response.status}`);
-    }
-    const data = await response.json();
-    console.log("音乐信息获取成功:", data);
-    musicInfo.value = data;
-  } catch (error) {
-    console.error("请求音乐信息失败:", error);
-    // 设置默认音乐信息以防请求失败
-    musicInfo.value = [
-      {
-        title: "音乐加载失败",
-        author: "请检查网络连接",
-        url: "",
-      },
-    ];
-  } finally {
-    musicInfoLoading.value = false;
-  }
-};
-
-const setupAudioListener = () => {
-  if (audioPlayer.value) {
-    audioPlayer.value.addEventListener("ended", nextTrack);
-  }
-};
 
 const togglePlay = () => {
   if (!audioPlayer.value) return;
@@ -177,41 +117,6 @@ const togglePlay = () => {
   }
 };
 
-const previousTrack = () => {
-  playlistIndex.value =
-    playlistIndex.value > 0
-      ? playlistIndex.value - 1
-      : musicInfo.value.length - 1;
-  updateAudio();
-};
-
-const nextTrack = () => {
-  playlistIndex.value =
-    playlistIndex.value < musicInfo.value.length - 1
-      ? playlistIndex.value + 1
-      : 0;
-  updateAudio();
-};
-
-const updateAudio = () => {
-  if (!audioPlayer.value || !currentSong.value) return;
-
-  // 先暂停当前播放
-  audioPlayer.value.pause();
-
-  // 设置新的音频源
-  audioPlayer.value.src = currentSong.value.url;
-
-  // 等待音频可以播放后再开始播放
-  audioPlayer.value.oncanplay = () => {
-    isPlaying.value = true;
-    audioPlayer.value.play().catch((error) => {
-      console.log("播放失败:", error);
-      isPlaying.value = false;
-    });
-  };
-};
-
 const onWaiting = () => {
   audioLoading.value = true;
 };
@@ -220,19 +125,6 @@ const onCanPlay = () => {
   audioLoading.value = false;
 };
 
-// Lifecycle
-onMounted(async () => {
-  await fetchMusicInfo();
-  setupAudioListener();
-});
-
-onBeforeUnmount(() => {
-  if (audioPlayer.value) {
-    audioPlayer.value.removeEventListener("ended", nextTrack);
-  }
-});
-
-// Watchers
 watch(audioLoading, (val) => {
   if (!val && audioPlayer.value && audioPlayer.value.paused) {
     isPlaying.value = false;
@@ -321,16 +213,6 @@ watch(audioLoading, (val) => {
   z-index: 1;
 }
 
-.control-btn {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border: none !important;
-  color: white !important;
-}
-
-.control-btn:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
-}
-
 .play-btn {
   background: rgba(255, 255, 255, 0.3) !important;
   border: none !important;
@@ -349,7 +231,7 @@ watch(audioLoading, (val) => {
   z-index: 2;
 }
 
-.leleo-spin {
+.avatar-spin {
   animation: spin 6s linear infinite !important;
 }
 

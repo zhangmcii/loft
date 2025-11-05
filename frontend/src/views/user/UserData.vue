@@ -19,10 +19,11 @@
     />
     <div class="area-container">
       <div class="avatar" style="margin-top: 1rem">
-      <music-player
-        :avatar="user.image"
-        :music-config="musicConfig"
-      ></music-player>
+        <music-player
+          :avatar="user.image"
+          :music-config="musicConfig"
+          :musics="user.music"
+        ></music-player>
       </div>
 
       <div v-show="isUserPage">

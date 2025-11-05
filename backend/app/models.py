@@ -175,6 +175,17 @@ class User(db.Model):
             "email": None,
         },
     )
+    # https://github.com/metowolf/MetingJS字段格式
+    music = db.Column(
+        db.JSON,
+        default=lambda: {
+            "title": None,
+            "author": None,
+            "url": None,
+            "pic": None,
+            "lrc": None,
+        },
+    )
     # secondary参数必须设置为关联表
     tags = db.relationship(
         "Tag",
@@ -428,6 +439,7 @@ class User(db.Model):
             else False,
             "interest": interest,
             "social_account": self.social_account,
+            "music": self.music,
             "tags": [tag.name for tag in self.tags],
         }
         return json_user

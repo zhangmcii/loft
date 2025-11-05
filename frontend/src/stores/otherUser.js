@@ -14,6 +14,13 @@ export const useOtherUserStore = defineStore("otherUser", {
         bilibili: "",
         twitter: "",
       },
+      music: {
+        title: "",
+        author: "",
+        url: "",
+        pic: "",
+        lrc: "",
+      },
     },
     defaultBackground: `${
       import.meta.env.VITE_QINIU_DOMAIN

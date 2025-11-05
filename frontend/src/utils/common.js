@@ -83,6 +83,16 @@ function debounce(func, wait) {
 }
 
 /*
+ * @description: 清空对象属性值
+ */
+function clearObj(obj) {
+  Object.keys(obj).forEach((key) => {
+    obj[key] = "";
+  });
+  return obj;
+}
+
+/*
  * @description: 处理图片压缩
  * @param {Array} originalFiles 原始文件列表
  * @param {Array} _compressedImages 已压缩的图片列表
@@ -253,6 +263,7 @@ export {
   randomNum,
   isNode,
   debounce,
+  clearObj,
   compressImages,
   uploadFiles,
   beforePicUpload,

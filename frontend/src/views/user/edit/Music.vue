@@ -1,9 +1,33 @@
 <script setup>
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
-import { ref, reactive, computed, onMounted } from "vue";
+import { useCurrentUserStore } from "@/stores/user";
+import { cloneDeep } from "@pureadmin/utils";
+import editApi from "@/api/user/editApi.js";
+import { clearObj } from "@/utils/common.js";
+import { ref, computed, onMounted } from "vue";
+
+const user = useCurrentUserStore();
+
+const userData = reactive({
+  localUserInfo: {
+    id: "",
+    music: {
+      title: "",
+      author: "",
+      url: "",
+      pic: "",
+      lrc: "",
+    },
+  },
+});
+
+userData.localUserInfo = cloneDeep(user.userInfo);
 
 // 响应式数据
 const musicInfoLoading = ref(false);
+const audioLoading = ref(false);
+const setMusicLoading = ref(false);
+
 const musicInfo = ref([]);
 const searchKeyword = ref("");
 const currentPage = ref(1);
@@ -12,6 +36,15 @@ const pageSize = ref(10);
 const preSearchPage = ref(1);
 // 实际用于搜索的关键词（点击搜索按钮后才生效）
 const activeSearchKeyword = ref("");
+
+// 音频播放相关
+const audioPlayer = ref(null);
+const isPlaying = ref(false);
+const currentPlayingIndex = ref(-1);
+const tableHeight = ref("500");
+const h1 = ref(null);
+const h2 = ref(null);
+const h3 = ref(null);
 
 const props = defineProps({
   // 音乐配置
@@ -59,6 +92,7 @@ const totalPages = computed(() => {
 
 onMounted(() => {
   fetchMusicInfo();
+  calTableHeight();
 });
 
 // 获取音乐信息
@@ -68,6 +102,7 @@ const fetchMusicInfo = async () => {
     console.log("开始请求音乐信息，配置:", props.musicConfig);
     const response = await fetch(
       `https://api.i-meto.com/meting/api?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
+      // `https://api.qijieya.cn/meting/?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
     );
     if (!response.ok) {
       throw new Error(`网络请求失败: ${response.status}`);
@@ -130,26 +165,103 @@ const handleResetSearch = async () => {
 };
 
 // 选择音乐
-const handleSelectMusic = (music) => {
-  console.log("选择音乐:", music);
-  // 这里可以添加选择音乐后的逻辑，比如触发事件等
-  // emit('select', music);
+const handleSelectMusic = async (music) => {
+  // 存储上次选择的音乐
+  userData.localUserInfo.music = music;
+  await saveMusic();
+  user.setUserInfo(userData.localUserInfo);
+};
+
+// 取消选择音乐
+const handleCancelSelect = async () => {
+  // 将已选择的音乐设置为空对象
+  userData.localUserInfo.music = clearObj(userData.localUserInfo.music);
+  await saveMusic();
+  user.setUserInfo(userData.localUserInfo);
+};
+
+// 检查是否为已选择的音乐
+const isSelected = (music) => {
+  return (
+    userData.localUserInfo.music &&
+    userData.localUserInfo.music.title === music.title &&
+    userData.localUserInfo.music.author === music.author
+  );
+};
+
+// 播放/暂停音乐
+const togglePlay = async (music, index) => {
+  if (!music.url) return;
+
+  if (currentPlayingIndex.value === index && isPlaying.value) {
+    // 暂停当前播放
+    audioPlayer.value.pause();
+    isPlaying.value = false;
+  } else {
+    // 显示加载状态
+    audioLoading.value = true;
+
+    // 停止之前的播放
+    if (audioPlayer.value) {
+      audioPlayer.value.pause();
+    }
+
+    // 创建新的音频元素
+    audioPlayer.value = new Audio(music.url);
+
+    // 设置事件监听
+    audioPlayer.value.addEventListener("ended", () => {
+      isPlaying.value = false;
+      currentPlayingIndex.value = -1;
+    });
+
+    audioPlayer.value.addEventListener("canplay", () => {
+      audioPlayer.value.play();
+      isPlaying.value = true;
+      currentPlayingIndex.value = index;
+      audioLoading.value = false;
+    });
+
+    audioPlayer.value.addEventListener("error", () => {
+      audioLoading.value = false;
+      console.error("音频加载失败");
+    });
+
+    // 开始播放
+    audioPlayer.value.load();
+  }
+};
+
+async function saveMusic() {
+  setMusicLoading.value = true;
+  await editApi.editUser(user.userInfo.id, {
+    music: userData.localUserInfo.music,
+  });
+  setMusicLoading.value = false;
+}
+
+const calTableHeight = async () => {
+  const h1Height = h1.value?.offsetHeight || 0;
+  const h2Height = h2.value?.offsetHeight || 0;
+  const h3Height = h3.value?.offsetHeight || 0;
+  tableHeight.value = `calc(100vh - ${h1Height}px - ${h2Height}px - ${h3Height}px - 95px - var(--el-main-padding) * 2)`;
 };
 </script>
 
 <template>
   <PageHeadBack>
     <!-- 搜索区域 -->
-    <div class="search-section">
+    <div class="search-section" ref="h1">
       <el-input
         v-model="searchKeyword"
         placeholder="请输入歌曲名或作者进行搜索"
         clearable
+        @keyup.enter="handleSearch"
         @clear="handleResetSearch"
         style="width: 300px; margin-right: 16px"
       >
         <template #prefix>
-          <el-icon><Search /></el-icon>
+          <el-icon><i-ep-Search /></el-icon>
         </template>
       </el-input>
 
@@ -159,25 +271,72 @@ const handleSelectMusic = (music) => {
           :disabled="!searchKeyword"
           @click="handleSearch"
         >
-          <el-icon><Search /></el-icon>
+          <el-icon><i-ep-Search /></el-icon>
           搜索
         </el-button>
 
         <el-button @click="handleResetSearch" :disabled="!searchKeyword">
-          <el-icon><Refresh /></el-icon>
-          重置
+          <el-icon><i-ep-Refresh /></el-icon>
+          清空
         </el-button>
       </div>
-      <span class="search-result-info">
-        共找到 {{ filteredMusicInfo.length }} 条结果
-      </span>
+    </div>
+
+    <!-- 上次已选择音乐提示 -->
+    <div
+      class="selected-music-section"
+      v-if="userData.localUserInfo.music && userData.localUserInfo.music.title"
+      ref="h2"
+    >
+      <div class="selected-music-header">
+        <el-icon><i-ep-Star /></el-icon>
+        <span>已选择的音乐</span>
+      </div>
+
+      <div class="selected-music-row">
+        <div class="music-cover">
+          <el-image
+            :src="userData.localUserInfo.music.pic"
+            style="width: 60px; height: 60px; border-radius: 4px"
+            fit="cover"
+            :preview-src-list="
+              userData.localUserInfo.music.pic
+                ? [userData.localUserInfo.music.pic]
+                : []
+            "
+            :preview-teleported="true"
+            :hide-on-click-modal="true"
+          >
+            <template #error>
+              <div class="image-error">
+                <el-icon><i-ep-Picture /></el-icon>
+              </div>
+            </template>
+          </el-image>
+        </div>
+
+        <div class="music-info">
+          <div class="music-title">
+            {{ userData.localUserInfo.music.title }}
+          </div>
+          <div class="music-author">
+            {{ userData.localUserInfo.music.author }}
+          </div>
+        </div>
+
+        <div class="music-actions">
+          <el-button type="danger" size="small" @click="handleCancelSelect">
+            取消选择
+          </el-button>
+        </div>
+      </div>
     </div>
 
     <!-- 音乐列表 -->
     <el-table
       :data="paginatedMusicInfo"
       v-loading="musicInfoLoading"
-      max-height="500"
+      :height="tableHeight"
       stripe
       border
       class="music-table"
@@ -194,7 +353,7 @@ const handleSelectMusic = (music) => {
           >
             <template #error>
               <div class="image-error">
-                <el-icon><Picture /></el-icon>
+                <el-icon><i-ep-Picture /></el-icon>
               </div>
             </template>
           </el-image>
@@ -205,28 +364,61 @@ const handleSelectMusic = (music) => {
 
       <el-table-column prop="author" label="作者" min-width="150" />
 
+      <el-table-column label="预览" width="80" align="center">
+        <template #default="scope">
+          <el-button
+            circle
+            size="small"
+            :type="
+              currentPlayingIndex === scope.$index && isPlaying
+                ? 'danger'
+                : 'primary'
+            "
+            @click="togglePlay(scope.row, scope.$index)"
+            :disabled="!scope.row.url || audioLoading"
+            :loading="audioLoading && currentPlayingIndex === scope.$index"
+          >
+            <el-icon v-if="currentPlayingIndex === scope.$index && isPlaying">
+              <i-ep-VideoPause />
+            </el-icon>
+            <el-icon
+              v-else-if="currentPlayingIndex !== scope.$index || !isPlaying"
+            >
+              <i-ep-VideoPlay />
+            </el-icon>
+          </el-button>
+        </template>
+      </el-table-column>
+
       <el-table-column label="操作" align="center" fixed="right">
         <template #default="scope">
           <el-button
-            type="primary"
+            :type="isSelected(scope.row) ? 'danger' : 'primary'"
             size="small"
-            @click="handleSelectMusic(scope.row)"
+            @click="
+              isSelected(scope.row)
+                ? handleCancelSelect()
+                : handleSelectMusic(scope.row)
+            "
+            :loading="setMusicLoading && isSelected(scope.row) === false"
             :disabled="!scope.row.url"
           >
-            选择
+            {{ isSelected(scope.row) ? "取消选择" : "选择" }}
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 分页区域 -->
-    <div class="pagination-section" v-if="filteredMusicInfo.length > 0">
+    <div class="pagination-section" ref="h3">
       <el-pagination
         v-model:current-page="currentPage"
         :page-size="pageSize"
         :total="filteredMusicInfo.length"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
+        layout="total, prev, pager, next"
+        :pager-count="5"
+        :hide-on-single-page="true"
+        size="small"
         background
         @size-change="
           (size) => {
@@ -267,6 +459,62 @@ const handleSelectMusic = (music) => {
   }
 }
 
+.selected-music-section {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 4px;
+
+  .selected-music-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #f57c00;
+    font-weight: 600;
+    font-size: 14px;
+
+    .el-icon {
+      margin-right: 8px;
+      font-size: 16px;
+    }
+  }
+
+  .selected-music-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #e8e8e8;
+
+    .music-cover {
+      flex-shrink: 0;
+    }
+
+    .music-info {
+      flex: 1;
+
+      .music-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+
+      .music-author {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+
+    .music-actions {
+      flex-shrink: 0;
+    }
+  }
+}
+
 .music-table {
   margin-bottom: 16px;
 
@@ -297,6 +545,18 @@ const handleSelectMusic = (music) => {
     .search-result-info {
       margin-left: 0;
       text-align: center;
+    }
+  }
+
+  .selected-music-section {
+    .selected-music-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+
+      .music-info {
+        width: 100%;
+      }
     }
   }
 }
