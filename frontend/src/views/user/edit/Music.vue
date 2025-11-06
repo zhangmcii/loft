@@ -4,7 +4,7 @@ import { useCurrentUserStore } from "@/stores/user";
 import { cloneDeep } from "@pureadmin/utils";
 import editApi from "@/api/user/editApi.js";
 import { clearObj } from "@/utils/common.js";
-import { ref, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 
 const user = useCurrentUserStore();
 
@@ -12,8 +12,8 @@ const userData = reactive({
   localUserInfo: {
     id: "",
     music: {
-      title: "",
-      author: "",
+      name: "",
+      artist: "",
       url: "",
       pic: "",
       lrc: "",
@@ -32,8 +32,6 @@ const musicInfo = ref([]);
 const searchKeyword = ref("");
 const currentPage = ref(1);
 const pageSize = ref(10);
-// 记录搜索前的页码，用于重置时恢复
-const preSearchPage = ref(1);
 // 实际用于搜索的关键词（点击搜索按钮后才生效）
 const activeSearchKeyword = ref("");
 
@@ -56,6 +54,7 @@ const props = defineProps({
         server: "netease",
         type: "playlist",
         id: "3778678",
+        // id: "434592911",
       };
     },
     validator: (value) => {
@@ -66,15 +65,15 @@ const props = defineProps({
 
 // 计算属性：过滤后的音乐数据
 const filteredMusicInfo = computed(() => {
-  if (!activeSearchKeyword.value.trim()) {
+  if (!activeSearchKeyword.value || !activeSearchKeyword.value.trim()) {
     return musicInfo.value;
   }
 
   const keyword = activeSearchKeyword.value.toLowerCase().trim();
   return musicInfo.value.filter(
     (item) =>
-      (item.title && item.title.toLowerCase().includes(keyword)) ||
-      (item.author && item.author.toLowerCase().includes(keyword))
+      (item?.name && item.name.toLowerCase().includes(keyword)) ||
+      (item?.artist && item.artist.toLowerCase().includes(keyword))
   );
 });
 
@@ -101,8 +100,8 @@ const fetchMusicInfo = async () => {
   try {
     console.log("开始请求音乐信息，配置:", props.musicConfig);
     const response = await fetch(
-      `https://api.i-meto.com/meting/api?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
-      // `https://api.qijieya.cn/meting/?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
+      // `https://api.i-meto.com/meting/api?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
+      `https://api.qijieya.cn/meting/?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
     );
     if (!response.ok) {
       throw new Error(`网络请求失败: ${response.status}`);
@@ -118,8 +117,8 @@ const fetchMusicInfo = async () => {
     // 设置默认音乐信息以防请求失败
     musicInfo.value = [
       {
-        title: "音乐加载失败",
-        author: "请检查网络连接",
+        name: "音乐加载失败",
+        artist: "请检查网络连接",
         url: "",
         pic: "",
       },
@@ -138,11 +137,6 @@ const handlePageChange = async (page) => {
 
 // 搜索处理
 const handleSearch = async () => {
-  // 记录搜索前的页码
-  if (!activeSearchKeyword.value.trim()) {
-    preSearchPage.value = currentPage.value;
-  }
-
   // 添加轻微延迟以模拟请求
   await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -160,8 +154,6 @@ const handleResetSearch = async () => {
   searchKeyword.value = "";
   // 清空实际搜索关键词
   activeSearchKeyword.value = "";
-  // 重置后回到搜索前的页码
-  currentPage.value = preSearchPage.value;
 };
 
 // 选择音乐
@@ -182,16 +174,17 @@ const handleCancelSelect = async () => {
 
 // 检查是否为已选择的音乐
 const isSelected = (music) => {
+  if (!music || !userData.localUserInfo?.music) return false;
+
   return (
-    userData.localUserInfo.music &&
-    userData.localUserInfo.music.title === music.title &&
-    userData.localUserInfo.music.author === music.author
+    userData.localUserInfo.music.name === music.name &&
+    userData.localUserInfo.music.artist === music.artist
   );
 };
 
 // 播放/暂停音乐
 const togglePlay = async (music, index) => {
-  if (!music.url) return;
+  if (!music?.url) return;
 
   if (currentPlayingIndex.value === index && isPlaying.value) {
     // 暂停当前播放
@@ -233,11 +226,22 @@ const togglePlay = async (music, index) => {
 };
 
 async function saveMusic() {
-  setMusicLoading.value = true;
-  await editApi.editUser(user.userInfo.id, {
-    music: userData.localUserInfo.music,
-  });
-  setMusicLoading.value = false;
+  try {
+    setMusicLoading.value = true;
+
+    if (!user?.userInfo?.id) {
+      throw new Error("用户信息不完整，无法保存音乐设置");
+    }
+
+    await editApi.editUser(user.userInfo.id, {
+      music: userData.localUserInfo.music,
+    });
+  } catch (error) {
+    console.error("保存音乐设置失败:", error);
+    // 可以在这里添加用户提示
+  } finally {
+    setMusicLoading.value = false;
+  }
 }
 
 const calTableHeight = async () => {
@@ -285,7 +289,7 @@ const calTableHeight = async () => {
     <!-- 上次已选择音乐提示 -->
     <div
       class="selected-music-section"
-      v-if="userData.localUserInfo.music && userData.localUserInfo.music.title"
+      v-if="userData.localUserInfo.music && userData.localUserInfo.music.name"
       ref="h2"
     >
       <div class="selected-music-header">
@@ -317,10 +321,10 @@ const calTableHeight = async () => {
 
         <div class="music-info">
           <div class="music-title">
-            {{ userData.localUserInfo.music.title }}
+            {{ userData.localUserInfo.music.name }}
           </div>
           <div class="music-author">
-            {{ userData.localUserInfo.music.author }}
+            {{ userData.localUserInfo.music.artist }}
           </div>
         </div>
 
@@ -360,11 +364,11 @@ const calTableHeight = async () => {
         </template>
       </el-table-column>
 
-      <el-table-column prop="title" label="歌曲名" min-width="150" />
+      <el-table-column prop="name" label="歌曲名" min-width="150" />
 
-      <el-table-column prop="author" label="作者" min-width="150" />
+      <el-table-column prop="artist" label="作者" min-width="80" />
 
-      <el-table-column label="预览" width="80" align="center">
+      <el-table-column label="预览" align="center">
         <template #default="scope">
           <el-button
             circle

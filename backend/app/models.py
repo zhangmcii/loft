@@ -179,8 +179,8 @@ class User(db.Model):
     music = db.Column(
         db.JSON,
         default=lambda: {
-            "title": None,
-            "author": None,
+            "name": None,
+            "aitist": None,
             "url": None,
             "pic": None,
             "lrc": None,

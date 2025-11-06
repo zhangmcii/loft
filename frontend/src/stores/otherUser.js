@@ -15,8 +15,8 @@ export const useOtherUserStore = defineStore("otherUser", {
         twitter: "",
       },
       music: {
-        title: "",
-        author: "",
+        name: "",
+        aitist: "",
         url: "",
         pic: "",
         lrc: "",

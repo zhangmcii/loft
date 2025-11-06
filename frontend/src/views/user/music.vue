@@ -30,9 +30,9 @@
 
           <div class="song-info">
             <span class="song-title">{{
-              currentSong?.title || "暂无音乐..."
+              currentSong?.name || "什么也没有..."
             }}</span>
-            <span class="song-author">{{ currentSong?.author || "" }}</span>
+            <span class="song-author">{{ currentSong?.artist || "" }}</span>
           </div>
 
           <audio
@@ -43,7 +43,7 @@
             style="display: none"
           ></audio>
 
-          <div class="player-controls" v-if="currentSong?.title">
+          <div class="player-controls" v-if="currentSong?.name">
             <el-button
               :size="playButtonSize"
               circle
@@ -71,19 +71,11 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  // 音乐配置
-  musicConfig: {
-    type: Object,
-    required: true,
-    validator: (value) => {
-      return value.server && value.type && value.id;
-    },
-  },
   musics: {
     type: Object,
     required: false,
     default: () => {
-      return { title: "", author: "", url: "" };
+      return { name: "", artist: "", url: "" };
     },
   },
 });

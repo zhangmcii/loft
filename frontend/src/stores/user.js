@@ -46,8 +46,8 @@ export const useCurrentUserStore = defineStore("currentUser", {
           twitter: "",
         },
         music: {
-          title: "",
-          author: "",
+          name: "",
+          aitist: "",
           url: "",
           pic: "",
           lrc: "",
