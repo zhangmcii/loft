@@ -180,7 +180,7 @@ class User(db.Model):
         db.JSON,
         default=lambda: {
             "name": None,
-            "aitist": None,
+            "artist": None,
             "url": None,
             "pic": None,
             "lrc": None,

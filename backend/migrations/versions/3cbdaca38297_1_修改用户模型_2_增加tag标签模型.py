@@ -48,7 +48,7 @@ def upgrade():
     # 补齐旧数据，让已注册的用户的social_account更新为默认值
     users = table('users', column('social_account', JSON))
     op.execute(
-        users.update().where(users.c.social_account == None).values(social_account=default_social)
+        users.update().where(users.c.social_account is None).values(social_account=default_social)
     )
     op.drop_column('users', 'avatar_hash')
     # ### end Alembic commands ###
