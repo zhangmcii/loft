@@ -1,10 +1,12 @@
 <script setup>
+import { ref, reactive, computed, onMounted, onUnmounted } from "vue";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 import { useCurrentUserStore } from "@/stores/user";
 import { cloneDeep } from "@pureadmin/utils";
 import editApi from "@/api/user/editApi.js";
 import { clearObj } from "@/utils/common.js";
-import { ref, reactive, computed, onMounted } from "vue";
+import "APlayer/dist/APlayer.min.css";
+import APlayer from "APlayer";
 
 const user = useCurrentUserStore();
 
@@ -25,7 +27,6 @@ userData.localUserInfo = cloneDeep(user.userInfo);
 
 // 响应式数据
 const musicInfoLoading = ref(false);
-const audioLoading = ref(false);
 const setMusicLoading = ref(false);
 
 const musicInfo = ref([]);
@@ -36,13 +37,17 @@ const pageSize = ref(10);
 const activeSearchKeyword = ref("");
 
 // 音频播放相关
-const audioPlayer = ref(null);
-const isPlaying = ref(false);
-const currentPlayingIndex = ref(-1);
 const tableHeight = ref("500");
 const h1 = ref(null);
 const h2 = ref(null);
 const h3 = ref(null);
+const aplayerInstance = ref(null);
+const currentPlayingMusic = ref(null);
+const isPlaying = ref(false);
+const isMobile = ref(window.innerWidth <= 768);
+
+// 抽屉显示控制
+const showSelectedDrawer = ref(false);
 
 const props = defineProps({
   // 音乐配置
@@ -84,15 +89,24 @@ const paginatedMusicInfo = computed(() => {
   return filteredMusicInfo.value.slice(startIndex, endIndex);
 });
 
-// 计算属性：总页数
-const totalPages = computed(() => {
-  return Math.ceil(filteredMusicInfo.value.length / pageSize.value);
-});
-
 onMounted(() => {
   fetchMusicInfo();
   calTableHeight();
+  initAPlayer();
+
+  // 监听窗口大小变化
+  window.addEventListener("resize", handleResize);
 });
+
+// 组件卸载时移除监听器
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
+// 处理窗口大小变化
+const handleResize = () => {
+  isMobile.value = window.innerWidth <= 768;
+};
 
 // 获取音乐信息
 const fetchMusicInfo = async () => {
@@ -182,49 +196,6 @@ const isSelected = (music) => {
   );
 };
 
-// 播放/暂停音乐
-const togglePlay = async (music, index) => {
-  if (!music?.url) return;
-
-  if (currentPlayingIndex.value === index && isPlaying.value) {
-    // 暂停当前播放
-    audioPlayer.value.pause();
-    isPlaying.value = false;
-  } else {
-    // 显示加载状态
-    audioLoading.value = true;
-
-    // 停止之前的播放
-    if (audioPlayer.value) {
-      audioPlayer.value.pause();
-    }
-
-    // 创建新的音频元素
-    audioPlayer.value = new Audio(music.url);
-
-    // 设置事件监听
-    audioPlayer.value.addEventListener("ended", () => {
-      isPlaying.value = false;
-      currentPlayingIndex.value = -1;
-    });
-
-    audioPlayer.value.addEventListener("canplay", () => {
-      audioPlayer.value.play();
-      isPlaying.value = true;
-      currentPlayingIndex.value = index;
-      audioLoading.value = false;
-    });
-
-    audioPlayer.value.addEventListener("error", () => {
-      audioLoading.value = false;
-      console.error("音频加载失败");
-    });
-
-    // 开始播放
-    audioPlayer.value.load();
-  }
-};
-
 async function saveMusic() {
   try {
     setMusicLoading.value = true;
@@ -244,64 +215,375 @@ async function saveMusic() {
   }
 }
 
+// 初始化 APlayer
+const initAPlayer = () => {
+  // 如果已有实例，先销毁
+  if (aplayerInstance.value) {
+    aplayerInstance.value.destroy();
+  }
+
+  // 创建新的 APlayer 实例
+  aplayerInstance.value = new APlayer({
+    container: document.getElementById("aplayer"),
+    fixed: false, // 不固定显示，集成在页面中
+    autoplay: false,
+    audio: [],
+    lrcType: 3,
+    mini: false,
+  });
+
+  // 监听播放器事件
+  aplayerInstance.value.on("play", () => {
+    isPlaying.value = true;
+  });
+
+  aplayerInstance.value.on("pause", () => {
+    isPlaying.value = false;
+  });
+
+  aplayerInstance.value.on("ended", () => {
+    isPlaying.value = false;
+    currentPlayingMusic.value = null;
+  });
+};
+
+// 播放音乐
+const playMusic = (music) => {
+  if (!music?.url) return;
+
+  // 如果点击的是当前正在播放的音乐
+  if (currentPlayingMusic.value?.name === music.name && aplayerInstance.value) {
+    if (isPlaying.value) {
+      // 如果是播放状态，则暂停
+      aplayerInstance.value.pause();
+      isPlaying.value = false;
+    } else {
+      // 如果是暂停状态，则继续播放
+      aplayerInstance.value.play();
+      isPlaying.value = true;
+    }
+    return;
+  }
+
+  // 如果不是当前播放的音乐，或者没有播放器实例
+  currentPlayingMusic.value = music;
+  isPlaying.value = true;
+
+  // 如果 APlayer 实例不存在，先初始化
+  if (!aplayerInstance.value) {
+    initAPlayer();
+  }
+
+  // 停止当前播放
+  aplayerInstance.value.pause();
+
+  // 更新音频源
+  aplayerInstance.value.list.clear();
+  aplayerInstance.value.list.add([
+    {
+      name: music.name,
+      artist: music.artist,
+      url: music.url,
+      cover: music.pic,
+      lrc: music.lrc || "",
+    },
+  ]);
+
+  // 开始播放
+  aplayerInstance.value.play();
+};
+
 const calTableHeight = async () => {
   const h1Height = h1.value?.offsetHeight || 0;
   const h2Height = h2.value?.offsetHeight || 0;
   const h3Height = h3.value?.offsetHeight || 0;
-  tableHeight.value = `calc(100vh - ${h1Height}px - ${h2Height}px - ${h3Height}px - 95px - var(--el-main-padding) * 2)`;
+  // 播放器现在集成在卡片内部，表格高度需要适应卡片内容
+  tableHeight.value = `calc(100vh - ${h1Height}px - ${h2Height}px - ${h3Height}px - 120px - 30px - var(--el-main-padding) * 2)`;
 };
 </script>
 
 <template>
   <PageHeadBack>
-    <!-- 搜索区域 -->
-    <div class="search-section" ref="h1">
-      <el-input
-        v-model="searchKeyword"
-        placeholder="请输入歌曲名或作者进行搜索"
-        clearable
-        @keyup.enter="handleSearch"
-        @clear="handleResetSearch"
-        style="width: 300px; margin-right: 16px"
+    <!-- 统一卡片容器 -->
+    <el-card class="music-container" shadow="hover">
+      <!-- 卡片头部：搜索和已选择区域 -->
+      <template #header>
+        <div class="card-header" ref="h1">
+          <div class="header-left">
+            <span class="card-title">
+              <el-icon><i-ep-Headset /></el-icon>
+              音乐库
+            </span>
+            <el-tag
+              v-if="
+                userData.localUserInfo.music &&
+                userData.localUserInfo.music.name
+              "
+              type="success"
+              size="small"
+              class="selected-tag"
+              @click="showSelectedDrawer = true"
+            >
+              <el-icon><i-ep-Star /></el-icon>
+              已选择
+            </el-tag>
+          </div>
+
+          <div class="header-right">
+            <el-input
+              v-model="searchKeyword"
+              placeholder="搜索歌曲名或作者"
+              clearable
+              @keyup.enter="handleSearch"
+              @clear="handleResetSearch"
+              style="width: 280px"
+              size="small"
+            >
+              <template #prefix>
+                <el-icon><i-ep-Search /></el-icon>
+              </template>
+              <template #append>
+                <el-button
+                  type="primary"
+                  @click="handleSearch"
+                  size="small"
+                  :loading="musicInfoLoading"
+                >
+                  搜索
+                </el-button>
+              </template>
+            </el-input>
+          </div>
+        </div>
+      </template>
+
+      <!-- 卡片内容：音乐列表 -->
+      <!-- 桌面端：表格布局 -->
+      <el-table
+        v-if="!isMobile"
+        :data="paginatedMusicInfo"
+        v-loading="musicInfoLoading"
+        :height="tableHeight"
+        stripe
+        border
+        class="music-table desktop-table"
+        ref="h2"
       >
-        <template #prefix>
-          <el-icon><i-ep-Search /></el-icon>
-        </template>
-      </el-input>
+        <el-table-column prop="pic" label="封面" width="60" align="center">
+          <template #default="scope">
+            <el-image
+              :src="scope.row.pic"
+              style="width: 40px; height: 40px; border-radius: 4px"
+              fit="cover"
+              :preview-src-list="scope.row.pic ? [scope.row.pic] : []"
+              :preview-teleported="true"
+              :hide-on-click-modal="true"
+            >
+              <template #error>
+                <div class="image-error">
+                  <el-icon><i-ep-Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
+          </template>
+        </el-table-column>
 
-      <div class="search-buttons">
-        <el-button
-          type="primary"
-          :disabled="!searchKeyword"
-          @click="handleSearch"
+        <el-table-column prop="name" label="歌曲名" min-width="100" />
+
+        <el-table-column prop="artist" label="作者" min-width="60" />
+
+        <el-table-column label="试听" width="55" align="center">
+          <template #default="scope">
+            <el-button
+              circle
+              size="small"
+              :type="
+                currentPlayingMusic?.name === scope.row.name
+                  ? 'success'
+                  : 'primary'
+              "
+              @click="playMusic(scope.row)"
+              :disabled="!scope.row.url"
+            >
+              <el-icon>
+                <i-ep-VideoPlay
+                  v-if="
+                    !(currentPlayingMusic?.name === scope.row.name && isPlaying)
+                  "
+                />
+                <i-ep-VideoPause v-else />
+              </el-icon>
+            </el-button>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="选择" width="100" align="center" fixed="right">
+          <template #default="scope">
+            <el-button
+              :type="isSelected(scope.row) ? 'danger' : 'primary'"
+              size="small"
+              @click="
+                isSelected(scope.row)
+                  ? handleCancelSelect()
+                  : handleSelectMusic(scope.row)
+              "
+              :loading="setMusicLoading && isSelected(scope.row) === false"
+              :disabled="!scope.row.url"
+            >
+              {{ isSelected(scope.row) ? "取消选择" : "选择" }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 移动端：紧凑卡片布局 -->
+      <div v-else class="mobile-music-list" ref="h2">
+        <div
+          v-for="(music, index) in paginatedMusicInfo"
+          :key="index"
+          class="mobile-music-card"
+          :class="{
+            selected: isSelected(music),
+            playing: currentPlayingMusic?.name === music.name,
+          }"
         >
-          <el-icon><i-ep-Search /></el-icon>
-          搜索
-        </el-button>
+          <div class="card-content">
+            <!-- 左侧：封面和基础信息 -->
+            <div class="music-cover-info">
+              <div class="music-cover">
+                <el-image
+                  :src="music.pic"
+                  fit="cover"
+                  :preview-src-list="music.pic ? [music.pic] : []"
+                  :preview-teleported="true"
+                >
+                  <template #error>
+                    <div class="cover-error">
+                      <el-icon><i-ep-Picture /></el-icon>
+                    </div>
+                  </template>
+                </el-image>
+              </div>
+              <div class="music-basic-info">
+                <div class="music-name" :title="music.name">
+                  {{ music.name }}
+                </div>
+                <div class="music-artist" :title="music.artist">
+                  {{ music.artist }}
+                </div>
+              </div>
+            </div>
 
-        <el-button @click="handleResetSearch" :disabled="!searchKeyword">
-          <el-icon><i-ep-Refresh /></el-icon>
-          清空
-        </el-button>
+            <!-- 右侧：操作按钮组 -->
+            <div class="music-actions-group">
+              <el-button
+                circle
+                size="small"
+                :type="
+                  currentPlayingMusic?.name === music.name
+                    ? 'success'
+                    : 'primary'
+                "
+                @click="playMusic(music)"
+                :disabled="!music.url"
+                class="play-btn"
+              >
+                <el-icon>
+                  <i-ep-VideoPlay
+                    v-if="
+                      !(currentPlayingMusic?.name === music.name && isPlaying)
+                    "
+                  />
+                  <i-ep-VideoPause v-else />
+                </el-icon>
+              </el-button>
+
+              <el-button
+                :type="isSelected(music) ? 'danger' : 'primary'"
+                size="small"
+                @click="
+                  isSelected(music)
+                    ? handleCancelSelect()
+                    : handleSelectMusic(music)
+                "
+                :loading="setMusicLoading && isSelected(music) === false"
+                :disabled="!music.url"
+                class="select-btn"
+              >
+                {{ isSelected(music) ? "取消" : "选择" }}
+              </el-button>
+            </div>
+          </div>
+
+          <!-- 状态指示器 -->
+          <div class="status-indicator">
+            <span v-if="isSelected(music)" class="selected-indicator">
+              <el-icon><i-ep-Star /></el-icon>已选择
+            </span>
+            <span
+              v-if="currentPlayingMusic?.name === music.name && isPlaying"
+              class="playing-indicator"
+            >
+              <el-icon><i-ep-Headset /></el-icon>播放中
+            </span>
+          </div>
+        </div>
+
+        <div
+          v-if="paginatedMusicInfo.length === 0 && !musicInfoLoading"
+          class="empty-state"
+        >
+          <el-empty description="暂无音乐数据" />
+        </div>
       </div>
-    </div>
 
-    <!-- 上次已选择音乐提示 -->
-    <div
-      class="selected-music-section"
-      v-if="userData.localUserInfo.music && userData.localUserInfo.music.name"
-      ref="h2"
+      <!-- 分页区域 -->
+      <div class="pagination-section" ref="h3">
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="filteredMusicInfo.length"
+          layout="total, prev, pager, next"
+          :pager-count="5"
+          :hide-on-single-page="true"
+          size="small"
+          background
+          @size-change="
+            (size) => {
+              pageSize = size;
+              currentPage = 1;
+            }
+          "
+          @current-change="handlePageChange"
+        />
+      </div>
+
+      <!-- 播放器区域 - 集成在卡片底部 -->
+      <div class="player-section">
+        <div id="aplayer"></div>
+      </div>
+    </el-card>
+
+    <!-- 已选择音乐抽屉 -->
+    <el-drawer
+      v-model="showSelectedDrawer"
+      title="已选择的音乐"
+      direction="rtl"
+      size="350px"
     >
-      <div class="selected-music-header">
-        <el-icon><i-ep-Star /></el-icon>
-        <span>已选择的音乐</span>
-      </div>
-
-      <div class="selected-music-row">
-        <div class="music-cover">
+      <div
+        class="selected-music-drawer"
+        v-if="userData.localUserInfo.music && userData.localUserInfo.music.name"
+      >
+        <div class="selected-music-content">
           <el-image
             :src="userData.localUserInfo.music.pic"
-            style="width: 60px; height: 60px; border-radius: 4px"
+            style="
+              width: 120px;
+              height: 120px;
+              border-radius: 8px;
+              margin-bottom: 16px;
+            "
             fit="cover"
             :preview-src-list="
               userData.localUserInfo.music.pic
@@ -312,219 +594,103 @@ const calTableHeight = async () => {
             :hide-on-click-modal="true"
           >
             <template #error>
-              <div class="image-error">
+              <div class="image-error-large">
                 <el-icon><i-ep-Picture /></el-icon>
+                <span>无封面</span>
               </div>
             </template>
           </el-image>
-        </div>
 
-        <div class="music-info">
-          <div class="music-title">
-            {{ userData.localUserInfo.music.name }}
+          <div class="music-info-drawer">
+            <h3 class="music-title">{{ userData.localUserInfo.music.name }}</h3>
+            <p class="music-author">
+              {{ userData.localUserInfo.music.artist }}
+            </p>
           </div>
-          <div class="music-author">
-            {{ userData.localUserInfo.music.artist }}
-          </div>
-        </div>
 
-        <div class="music-actions">
-          <el-button type="danger" size="small" @click="handleCancelSelect">
-            取消选择
-          </el-button>
+          <div class="drawer-actions">
+            <el-button
+              type="primary"
+              @click="playMusic(userData.localUserInfo.music)"
+              :disabled="!userData.localUserInfo.music.url"
+            >
+              <el-icon><i-ep-VideoPlay /></el-icon>
+              播放
+            </el-button>
+            <el-button type="danger" @click="handleCancelSelect">
+              <el-icon><i-ep-Delete /></el-icon>
+              取消选择
+            </el-button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 音乐列表 -->
-    <el-table
-      :data="paginatedMusicInfo"
-      v-loading="musicInfoLoading"
-      :height="tableHeight"
-      stripe
-      border
-      class="music-table"
-    >
-      <el-table-column prop="pic" label="封面" width="80" align="center">
-        <template #default="scope">
-          <el-image
-            :src="scope.row.pic"
-            style="width: 50px; height: 50px"
-            fit="cover"
-            :preview-src-list="scope.row.pic ? [scope.row.pic] : []"
-            :preview-teleported="true"
-            :hide-on-click-modal="true"
-          >
-            <template #error>
-              <div class="image-error">
-                <el-icon><i-ep-Picture /></el-icon>
-              </div>
-            </template>
-          </el-image>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="name" label="歌曲名" min-width="150" />
-
-      <el-table-column prop="artist" label="作者" min-width="80" />
-
-      <el-table-column label="预览" align="center">
-        <template #default="scope">
-          <el-button
-            circle
-            size="small"
-            :type="
-              currentPlayingIndex === scope.$index && isPlaying
-                ? 'danger'
-                : 'primary'
-            "
-            @click="togglePlay(scope.row, scope.$index)"
-            :disabled="!scope.row.url || audioLoading"
-            :loading="audioLoading && currentPlayingIndex === scope.$index"
-          >
-            <el-icon v-if="currentPlayingIndex === scope.$index && isPlaying">
-              <i-ep-VideoPause />
-            </el-icon>
-            <el-icon
-              v-else-if="currentPlayingIndex !== scope.$index || !isPlaying"
-            >
-              <i-ep-VideoPlay />
-            </el-icon>
-          </el-button>
-        </template>
-      </el-table-column>
-
-      <el-table-column label="操作" align="center" fixed="right">
-        <template #default="scope">
-          <el-button
-            :type="isSelected(scope.row) ? 'danger' : 'primary'"
-            size="small"
-            @click="
-              isSelected(scope.row)
-                ? handleCancelSelect()
-                : handleSelectMusic(scope.row)
-            "
-            :loading="setMusicLoading && isSelected(scope.row) === false"
-            :disabled="!scope.row.url"
-          >
-            {{ isSelected(scope.row) ? "取消选择" : "选择" }}
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 分页区域 -->
-    <div class="pagination-section" ref="h3">
-      <el-pagination
-        v-model:current-page="currentPage"
-        :page-size="pageSize"
-        :total="filteredMusicInfo.length"
-        layout="total, prev, pager, next"
-        :pager-count="5"
-        :hide-on-single-page="true"
-        size="small"
-        background
-        @size-change="
-          (size) => {
-            pageSize = size;
-            currentPage = 1;
-          }
-        "
-        @current-change="handlePageChange"
-      />
-    </div>
-
-    <!-- 空状态 -->
-    <el-empty
-      v-if="!musicInfoLoading && filteredMusicInfo.length === 0"
-      description="暂无数据"
-      :image-size="200"
-    />
+      <div v-else class="empty-selected">
+        <el-empty description="暂未选择音乐" />
+      </div>
+    </el-drawer>
   </PageHeadBack>
 </template>
 
 <style lang="scss" scoped>
-.search-section {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
+.music-container {
+  margin-bottom: 20px;
 
-  .el-button {
-    width: 30%;
+  :deep(.el-card__header) {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
   }
 
-  .search-result-info {
-    margin-left: auto;
-    color: #666;
-    font-size: 14px;
-  }
-}
-
-.selected-music-section {
-  margin-bottom: 16px;
-  padding: 16px;
-  background-color: #fff8e1;
-  border: 1px solid #ffe082;
-  border-radius: 4px;
-
-  .selected-music-header {
+  .card-header {
     display: flex;
     align-items: center;
-    margin-bottom: 16px;
-    color: #f57c00;
-    font-weight: 600;
-    font-size: 14px;
+    justify-content: space-between;
 
-    .el-icon {
-      margin-right: 8px;
-      font-size: 16px;
-    }
-  }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
 
-  .selected-music-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px;
-    background-color: #fff;
-    border-radius: 4px;
-    border: 1px solid #e8e8e8;
-
-    .music-cover {
-      flex-shrink: 0;
-    }
-
-    .music-info {
-      flex: 1;
-
-      .music-title {
+      .card-title {
         font-size: 16px;
         font-weight: 600;
-        color: #333;
-        margin-bottom: 4px;
+        color: #303133;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
-      .music-author {
-        font-size: 14px;
-        color: #666;
+      .selected-tag {
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: 0 2px 8px rgba(103, 194, 58, 0.2);
+        }
       }
     }
 
-    .music-actions {
-      flex-shrink: 0;
+    .header-right {
+      display: flex;
+      align-items: center;
+
+      :deep(.el-input-group__append) {
+        .el-button {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
     }
   }
 }
 
 .music-table {
-  margin-bottom: 16px;
+  margin-bottom: 0;
 
   .image-error {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -537,31 +703,302 @@ const calTableHeight = async () => {
 .pagination-section {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
+  padding: 16px 0 8px;
+  margin-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }
 
-@media (max-width: 768px) {
-  .search-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+.player-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 
-    .search-result-info {
-      margin-left: 0;
-      text-align: center;
+  #aplayer {
+    margin: 0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    :deep(.aplayer-info) {
+      background: #f8f9fa;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    :deep(.aplayer-controller) {
+      background: #fff;
+    }
+
+    :deep(.aplayer-list) {
+      border: none;
+      max-height: 200px;
+    }
+  }
+}
+
+.selected-music-drawer {
+  padding: 20px;
+
+  .selected-music-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .image-error-large {
+      width: 120px;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #f5f7fa;
+      border-radius: 8px;
+      color: #c0c4cc;
+      gap: 8px;
+
+      .el-icon {
+        font-size: 32px;
+      }
+
+      span {
+        font-size: 14px;
+        color: #909399;
+      }
+    }
+
+    .music-info-drawer {
+      margin-bottom: 24px;
+
+      .music-title {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .music-author {
+        margin: 0;
+        font-size: 14px;
+        color: #606266;
+      }
+    }
+
+    .drawer-actions {
+      display: flex;
+      gap: 12px;
+
+      .el-button {
+        min-width: 100px;
+      }
+    }
+  }
+}
+
+.empty-selected {
+  padding: 40px 20px;
+}
+
+// 移动端紧凑卡片布局
+.mobile-music-list {
+  margin-bottom: 0;
+
+  .mobile-music-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+
+    &:hover {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    &.selected {
+      border-color: #f56c6c;
+      background: linear-gradient(135deg, #fef0f0 0%, #fff 50%);
+      box-shadow: 0 2px 8px rgba(245, 108, 108, 0.15);
+    }
+
+    &.playing {
+      border-color: #67c23a;
+      background: linear-gradient(135deg, #f0f9eb 0%, #fff 50%);
+      box-shadow: 0 2px 8px rgba(103, 194, 58, 0.15);
+    }
+
+    .card-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+
+      .music-cover-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 0;
+
+        .music-cover {
+          flex-shrink: 0;
+
+          .el-image {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+            .cover-error {
+              width: 44px;
+              height: 44px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+              border-radius: 8px;
+              color: #c0c4cc;
+
+              .el-icon {
+                font-size: 20px;
+              }
+            }
+          }
+        }
+
+        .music-basic-info {
+          flex: 1;
+          min-width: 0;
+
+          .music-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+          }
+
+          .music-artist {
+            font-size: 13px;
+            color: #606266;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+          }
+        }
+      }
+
+      .music-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+
+        .play-btn {
+          width: 36px;
+          height: 36px;
+
+          .el-icon {
+            font-size: 16px;
+          }
+        }
+
+        .select-btn {
+          height: 36px;
+          padding: 0 12px;
+          font-size: 13px;
+          min-width: 50px;
+        }
+      }
+    }
+
+    .status-indicator {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .selected-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #f56c6c;
+        background: rgba(245, 108, 108, 0.1);
+        padding: 2px 8px;
+        border-radius: 12px;
+
+        .el-icon {
+          font-size: 12px;
+        }
+      }
+
+      .playing-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: #67c23a;
+        background: rgba(103, 194, 58, 0.1);
+        padding: 2px 8px;
+        border-radius: 12px;
+
+        .el-icon {
+          font-size: 12px;
+        }
+      }
     }
   }
 
-  .selected-music-section {
-    .selected-music-content {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
+  .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: #909399;
+  }
+}
 
-      .music-info {
-        width: 100%;
+// 响应式适配
+@media (max-width: 768px) {
+  .music-container {
+    .card-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+
+      .header-left {
+        justify-content: center;
+      }
+
+      .header-right {
+        justify-content: center;
+
+        .el-input {
+          width: 100% !important;
+          max-width: 280px;
+        }
       }
     }
+  }
+
+  // 桌面端表格在移动端隐藏
+  .desktop-table {
+    display: none;
+  }
+}
+
+// 桌面端适配
+@media (min-width: 769px) {
+  // 移动端卡片在桌面端隐藏
+  .mobile-music-list {
+    display: none;
+  }
+
+  .desktop-table {
+    display: table;
   }
 }
 </style>
