@@ -35,19 +35,13 @@
             <span class="song-author">{{ currentSong?.artist || "" }}</span>
           </div>
 
-          <audio
-            ref="audioPlayer"
-            :src="currentSong?.url"
-            @waiting="onWaiting"
-            @canplay="onCanPlay"
-            style="display: none"
-          ></audio>
+
 
           <div class="player-controls" v-if="currentSong?.name">
             <el-button
               :size="playButtonSize"
               circle
-              @click="togglePlay"
+              @click="handlePlayMusic"
               class="play-btn"
             >
               <el-icon v-if="isPlaying"><i-ep-VideoPause /></el-icon>
@@ -63,6 +57,7 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import { ElAvatar, ElButton, ElIcon } from "element-plus";
+import { useMusicStore } from "@/stores/music";
 
 // Props
 const props = defineProps({
@@ -80,11 +75,11 @@ const props = defineProps({
   },
 });
 
+const musicStore = useMusicStore();
+
 // Refs
 const showMusicPlayer = ref(false);
-const isPlaying = ref(false);
 const audioLoading = ref(false);
-const audioPlayer = ref(null);
 
 const isMobile = ref(/Mobi|Android|iPhone/i.test(navigator.userAgent));
 
@@ -93,35 +88,34 @@ const currentSong = computed(() => {
   return props.musics;
 });
 
+const isPlaying = computed(() => {
+  return musicStore.isPlaying && musicStore.currentMusic?.url === currentSong.value?.url;
+});
+
 const playButtonSize = computed(() => {
   return isMobile ? "default" : "large";
 });
 
-const togglePlay = () => {
-  if (!audioPlayer.value) return;
+const handlePlayMusic = () => {
+  if (!currentSong.value?.url) return;
+  
+  // 使用全局音乐播放器
+  musicStore.playMusic(currentSong.value);
+};
 
-  if (!isPlaying.value) {
-    audioPlayer.value.play();
-    isPlaying.value = true;
-  } else {
-    audioPlayer.value.pause();
-    isPlaying.value = false;
+// 监听全局播放状态变化 - 优化性能
+watch(() => musicStore.isPlaying, (playing) => {
+  if (playing && musicStore.currentMusic?.url === currentSong.value?.url) {
+    // 当前歌曲正在播放
   }
-};
+}, { immediate: true });
 
-const onWaiting = () => {
-  audioLoading.value = true;
-};
-
-const onCanPlay = () => {
-  audioLoading.value = false;
-};
-
-watch(audioLoading, (val) => {
-  if (!val && audioPlayer.value && audioPlayer.value.paused) {
-    isPlaying.value = false;
+// 监听当前音乐变化 - 优化性能
+watch(() => musicStore.currentMusic, (newMusic) => {
+  if (newMusic?.url === currentSong.value?.url) {
+    // 当前歌曲被选中播放
   }
-});
+}, { immediate: true });
 </script>
 
 <style scoped>

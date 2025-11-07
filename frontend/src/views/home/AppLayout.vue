@@ -1,5 +1,8 @@
 <script setup>
 import Header from "./components/Header.vue";
+import GlobalPlayer from "@/views/user/components/music/GlobalPlayer.vue";
+import MiniPlayer from "@/views/user/components/music/MiniPlayer.vue";
+import MobileFloatingPlayer from "@/views/user/components/music/MobileFloatingPlayer.vue";
 import { useRoute } from "vue-router";
 import { computed } from "vue";
 
@@ -32,6 +35,13 @@ const isUserPage = computed(() => route.name === "user");
         </router-view>
       </el-scrollbar>
     </el-main>
+    
+    <!-- 全局音乐播放器 -->
+    <GlobalPlayer />
+    <!-- PC端底部迷你播放器 -->
+    <MiniPlayer />
+    <!-- 移动端悬浮播放按钮 -->
+    <MobileFloatingPlayer />
   </el-container>
 </template>
 

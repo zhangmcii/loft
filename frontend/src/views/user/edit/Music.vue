@@ -98,9 +98,18 @@ onMounted(() => {
   window.addEventListener("resize", handleResize);
 });
 
-// 组件卸载时移除监听器
+// 组件卸载时移除监听器并销毁播放器
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
+  
+  // 销毁 APlayer 实例
+  if (aplayerInstance.value) {
+    aplayerInstance.value.pause();
+    aplayerInstance.value.destroy();
+    aplayerInstance.value = null;
+    isPlaying.value = false;
+    currentPlayingMusic.value = null;
+  }
 });
 
 // 处理窗口大小变化
