@@ -125,20 +125,22 @@ export default {
           :throttle="throttle"
           :useNew="true"
         >
-          <transition-group name="slide-in">
-            <PostPreview
-              v-for="item in posts"
-              :key="item.id"
-              :post="item"
-              :containerStyle="{ marginBottom: '20px' }"
-              @click="$router.push(`/postDetail/${item.id}`)"
-              v-slide-in
-            >
-              <template #image>
-                <PostImage :postImages="item.post_images" @click.stop="" />
-              </template>
-            </PostPreview>
-          </transition-group>
+          <div class="posts-list">
+            <transition-group name="slide-in">
+              <PostPreview
+                v-for="item in posts"
+                :key="item.id"
+                :post="item"
+                :containerStyle="{ marginBottom: '20px' }"
+                @click="$router.push(`/postDetail/${item.id}`)"
+                v-slide-in
+              >
+                <template #image>
+                  <PostImage :postImages="item.post_images" @click.stop="" />
+                </template>
+              </PostPreview>
+            </transition-group>
+          </div>
         </SkeletonUtil>
       </el-tab-pane>
       <el-tab-pane name="showFollowed" v-if="currentUser.isLogin">
@@ -157,20 +159,22 @@ export default {
           :throttle="throttle"
           :useNew="true"
         >
-          <transition-group name="slide-in">
-            <PostPreview
-              v-for="item in posts"
-              :key="item.id"
-              :post="item"
-              :containerStyle="{ marginBottom: '20px' }"
-              @click="$router.push(`/postDetail/${item.id}`)"
-              v-slide-in
-            >
-              <template #image>
-                <PostImage :postImages="item.post_images" @click.stop="" />
-              </template>
-            </PostPreview>
-          </transition-group>
+          <div class="posts-list">
+            <transition-group name="slide-in">
+              <PostPreview
+                v-for="item in posts"
+                :key="item.id"
+                :post="item"
+                :containerStyle="{ marginBottom: '20px' }"
+                @click="$router.push(`/postDetail/${item.id}`)"
+                v-slide-in
+              >
+                <template #image>
+                  <PostImage :postImages="item.post_images" @click.stop="" />
+                </template>
+              </PostPreview>
+            </transition-group>
+          </div>
         </SkeletonUtil>
       </el-tab-pane>
     </el-tabs>

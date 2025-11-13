@@ -5,71 +5,69 @@ import cityUtil from "@/utils/cityUtil.js";
 import { areaList } from "@vant/area-data";
 
 export const useCurrentUserStore = defineStore("currentUser", {
-  state() {
-    return {
-      socket: null,
-      activeChat: null,
-      heartbeatInterval: null,
-      token: "",
-      userInfo: {
-        id: "1",
-        username: "",
-        nickname: "",
-        roleId: 0,
-        confirmed: false,
-        bg_image: "",
-        image: "",
-        about_me: "",
-        location: "",
-        // token: '',
-        // 已点赞的评论id
-        likeIds: [],
-        // 关注的用户
-        followed: [
-          {
-            id: -1,
-            name: "",
-            uName: "",
-            avatar: "",
-          },
-        ],
-        interest: {
-          movies: [],
-          books: [],
-        },
-        social_account: {
-          github: "",
-          email: "",
-          qq: "",
-          wechat: "",
-          bilibili: "",
-          twitter: "",
-        },
-        music: {
+  state: () => ({
+    socket: null,
+    activeChat: null,
+    heartbeatInterval: null,
+    token: "",
+    userInfo: {
+      id: "1",
+      username: "",
+      nickname: "",
+      roleId: 0,
+      confirmed: false,
+      bg_image: "",
+      image: "",
+      about_me: "",
+      location: "",
+      // token: '',
+      // 已点赞的评论id
+      likeIds: [],
+      // 关注的用户
+      followed: [
+        {
+          id: -1,
           name: "",
-          aitist: "",
-          url: "",
-          pic: "",
-          lrc: "",
+          uName: "",
+          avatar: "",
         },
-        tags: [],
+      ],
+      interest: {
+        movies: [],
+        books: [],
       },
-      notice: {
-        Notification_data: [],
-        // NOTIFICATION_KEY: `user_notifications_${userInfo.id}`,
-        NOTIFICATION_KEY: `user_notifications_1}`,
-        MAX_ITEM: 50,
+      social_account: {
+        github: "",
+        email: "",
+        qq: "",
+        wechat: "",
+        bilibili: "",
+        twitter: "",
       },
-      devUploadBaseUrl: "dev/",
-      // 主页背景库地址
-      userBackgroundUrl: "userBackground/",
-      // 用户头像库地址
-      userAvatars: "userAvatars/",
-      defaultBackground: `${
-        import.meta.env.VITE_QINIU_DOMAIN
-      }/userBackground/static/image-pre3.webp-slim`,
-    };
-  },
+      music: {
+        name: "",
+        aitist: "",
+        url: "",
+        pic: "",
+        lrc: "",
+      },
+      tags: [],
+    },
+    notice: {
+      Notification_data: [],
+      // NOTIFICATION_KEY: `user_notifications_${userInfo.id}`,
+      NOTIFICATION_KEY: `user_notifications_1}`,
+      MAX_ITEM: 50,
+    },
+    devUploadBaseUrl: "dev/",
+    // 主页背景库地址
+    userBackgroundUrl: "userBackground/",
+    // 用户头像库地址
+    userAvatars: "userAvatars/",
+    defaultBackground: `${
+      import.meta.env.VITE_QINIU_DOMAIN
+    }/userBackground/static/image-pre3.webp-slim`,
+  }),
   getters: {
     isLogin: (state) => state.token != "",
     isCommentManage: (state) => state.userInfo.roleId >= 2,

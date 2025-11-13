@@ -146,9 +146,78 @@
   color: #eb2f96;
 }
 
-/* 文章列表容器样式 */
+/* 文章列表容器样式 - 响应式网格布局 */
 .posts-container {
   padding: 10px 0;
+  
+  /* 移动端优先：单列布局 */
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* PC端网格布局 - 改进为瀑布流 */
+  @media (min-width: 768px) {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    
+    .posts-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 24px;
+      align-items: start;
+      
+      /* 瀑布流布局配置 - 更优雅的错落布局 */
+      grid-auto-flow: row dense;
+    }
+  }
+  
+  /* 大屏幕优化 */
+  @media (min-width: 1024px) {
+    .posts-list {
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 28px;
+    }
+  }
+  
+  /* 超大屏幕优化 */
+  @media (min-width: 1440px) {
+    max-width: 1400px;
+    
+    .posts-list {
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 32px;
+    }
+  }
+}
+
+/* PC端文章卡片优化 */
+@media (min-width: 768px) {
+  .post-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0;
+    
+    &:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      border-color: rgba(9, 200, 206, 0.3);
+    }
+    
+    /* 图片容器优化 */
+    .container {
+      margin: 16px auto;
+    }
+    
+    /* 底部操作区优化 */
+    
+    /* 装饰线条增强 */
+    &::before {
+      width: 5px;
+      background: linear-gradient(to bottom, #09c8ce, #eb2f96, #f59e0b);
+    }
+  }
 }
 
 /* 标签页样式优化 */
@@ -183,14 +252,14 @@
   margin-top: 20px;
   padding: 10px 0;
   
-  .el-pager li {
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    
-    &.is-active {
-      background: linear-gradient(90deg, #09c8ce, #eb2f96);
-      color: white;
-    }
+  /* 移动端：左对齐 */
+  display: flex;
+  justify-content: flex-start;
+  
+  /* PC端：居中显示 */
+  @media (min-width: 768px) {
+    justify-content: center;
+    padding: 20px 0;
   }
 }
 
