@@ -27,6 +27,7 @@ export default {
         this.truncationTryCount = 0; // 重置
         this.$nextTick(() => {
           this.updateTruncation();
+          this.processCodeBlocks();
         });
       },
       immediate: true,
@@ -40,6 +41,7 @@ export default {
   mounted() {
     this.$nextTick(() => {
       this.updateTruncation();
+      this.processCodeBlocks();
       // 从本地存储加载字体大小设置
       const savedFontSize = localStorage.getItem("article-font-size");
       if (savedFontSize) {
@@ -146,6 +148,162 @@ export default {
           }, 300);
         }
       });
+    },
+
+    // 定义SVG图标变量
+    getSvgIcons() {
+      return {
+        copy: `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        `,
+        success: `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        `,
+        error: `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="copy-icon">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        `,
+      };
+    },
+
+    // 创建复制按钮HTML
+    createCopyButtonHtml(icon, text) {
+      const svgIcons = this.getSvgIcons();
+      return `${svgIcons[icon]}<span>${text}</span>`;
+    },
+
+    // 处理代码块，添加复制按钮
+    processCodeBlocks() {
+      this.$nextTick(() => {
+        const contentDom = this.$refs.md?.$el?.querySelector(".v-show-content");
+        if (!contentDom) return;
+
+        // 移除已存在的代码块包装器
+        const existingWrappers = contentDom.querySelectorAll(
+          ".code-block-wrapper"
+        );
+        existingWrappers.forEach((wrapper) => {
+          const pre = wrapper.querySelector("pre");
+          if (pre) {
+            wrapper.parentNode?.insertBefore(pre, wrapper);
+            wrapper.remove();
+          }
+        });
+
+        // 处理所有代码块
+        const preElements = contentDom.querySelectorAll("pre");
+        preElements.forEach((pre) => {
+          // 检查是否已经处理过
+          if (pre.parentNode?.classList?.contains("code-block-wrapper")) {
+            return;
+          }
+
+          // 创建包装器
+          const wrapper = document.createElement("div");
+          wrapper.className = "code-block-wrapper";
+
+          // 创建复制按钮
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "copy-btn";
+          copyBtn.type = "button";
+          copyBtn.innerHTML = this.createCopyButtonHtml("copy", "复制");
+
+          // 获取代码内容
+          const codeElement = pre.querySelector("code");
+          const codeText = codeElement ? codeElement.innerText : pre.innerText;
+
+          // 检查Clipboard API是否可用
+          const isClipboardApiAvailable = !!(
+            navigator.clipboard && navigator.clipboard.writeText
+          );
+
+          // 添加复制功能
+          const handleCopyClick = async () => {
+            // 如果已经是已复制状态，则阻止点击事件
+            if (copyBtn.classList.contains("copied")) {
+              return;
+            }
+
+            if (isClipboardApiAvailable) {
+              // 使用现代Clipboard API
+              try {
+                console.log("使用Clipboard API复制文本");
+                await navigator.clipboard.writeText(codeText);
+                this.handleCopySuccess(copyBtn);
+              } catch (err) {
+                console.error("Clipboard API失败，尝试降级方案：", err);
+                this.fallbackCopyText(codeText, copyBtn);
+              }
+            } else {
+              // 直接使用降级方案
+              console.log("使用降级方案复制文本");
+              this.fallbackCopyText(codeText, copyBtn);
+            }
+          };
+
+          copyBtn.addEventListener("click", handleCopyClick);
+
+          // 包装结构
+          wrapper.appendChild(copyBtn);
+
+          // 将 pre 元素移动到包装器中
+          pre.parentNode?.insertBefore(wrapper, pre);
+          wrapper.appendChild(pre);
+        });
+      });
+    },
+
+    // 处理复制成功
+    handleCopySuccess(copyBtn) {
+      copyBtn.innerHTML = this.createCopyButtonHtml("success", "已复制");
+      copyBtn.classList.add("copied");
+
+      setTimeout(() => {
+        copyBtn.innerHTML = this.createCopyButtonHtml("copy", "复制");
+        copyBtn.classList.remove("copied");
+      }, 3000);
+    },
+
+    // 处理复制失败
+    handleCopyError(copyBtn) {
+      copyBtn.innerHTML = this.createCopyButtonHtml("error", "复制失败");
+      copyBtn.classList.add("copied");
+
+      setTimeout(() => {
+        copyBtn.innerHTML = this.createCopyButtonHtml("copy", "复制");
+        copyBtn.classList.remove("copied");
+      }, 3000);
+    },
+
+    // 降级复制方案
+    fallbackCopyText(codeText, copyBtn) {
+      const textArea = document.createElement("textarea");
+      textArea.value = codeText;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+
+      try {
+        const successful = document.execCommand("copy");
+        if (successful) {
+          this.handleCopySuccess(copyBtn);
+        } else {
+          this.handleCopyError(copyBtn);
+        }
+      } catch (err) {
+        console.error("降级复制方案失败：", err);
+        this.handleCopyError(copyBtn);
+      } finally {
+        document.body.removeChild(textArea);
+      }
     },
   },
 };
@@ -326,6 +484,55 @@ export default {
   height: 100% !important;
 }
 
+// 代码块包装器样式
+:deep(.code-block-wrapper) {
+  position: relative;
+  margin: 1.5em 0;
+}
+
+:deep(.copy-btn) {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  z-index: 10;
+  padding: 0px 8px;
+  font-size: 12px;
+  background: #f8f9fa;
+  border: 1px solid #f6f8fa;
+  border-radius: 4px;
+  color: #24292e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &.copied {
+    color: #9bd7a2;
+    cursor: default !important;
+    pointer-events: none !important;
+  }
+
+  .copy-icon {
+    flex-shrink: 0;
+  }
+}
+
+// 代码块样式调整
+:deep(pre) {
+  position: relative;
+  margin: 0 !important;
+  border-radius: 6px;
+  background-color: #f6f8fa !important;
+  padding: 1em !important;
+  overflow: auto;
+
+  // 避免复制按钮挡住代码
+  padding-top: 2.5em !important;
+}
+
 // 适配移动端
 @media (max-width: 768px) {
   :deep(.v-show-content) {
@@ -338,6 +545,17 @@ export default {
     h2 {
       font-size: 1.4em;
     }
+  }
+
+  :deep(.copy-btn) {
+    padding: 0px 6px;
+    font-size: 11px;
+    top: 3px;
+    right: 6px;
+  }
+
+  :deep(pre) {
+    padding-top: 2em !important;
   }
 }
 </style>
