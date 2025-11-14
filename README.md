@@ -1,6 +1,6 @@
-# 🌟 The-Reverie-Loft(随想阁楼) - 移动端社交平台
+# 🌟 The-Reverie-Loft(随想阁楼)
 
-> 一个基于 Vue3 + Flask 的移动端优先的社交平台
+> 一个基于 Vue3 + Flask 的移动端优先的社交博客平台
 
 [![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)[![Vue.js](https://img.shields.io/badge/Vue-3.x-brightgreen)](https://vuejs.org/)[![Flask](https://img.shields.io/badge/Flask-3.x-blue)](https://flask.palletsprojects.com/)
 
@@ -289,7 +289,7 @@ pre-commit run --all-files
 
 ## 🙏 致谢
 
-在本项目的开发过程中，参考了以下开源项目和资料，特此致谢：
+在本项目的开发过程中，参考了以下项目和资料，特此致谢：
 
 - **用户资料设计灵感**  
   - [leleo-home-page](https://github.com/leleo886/leleo-home-page) 
@@ -300,11 +300,7 @@ pre-commit run --all-files
 - **设计思路**  
   - Miguel Grinberg 著，《Flask Web开发：基于 Python 的 Web 应用开发实战（第二版）》
 
-## 📞 联系我们
+## 📞 联系
 
 - 问题反馈: https://github.com/nizhensh-i/The-Reverie-Loft/issues
 - 邮箱: zmc_li@foxmail.com
-
----
-
-⭐ 如果这个项目对你有帮助，请给我们一个 Star！
