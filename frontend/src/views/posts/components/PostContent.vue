@@ -18,6 +18,10 @@ export default {
     return {
       pContent: "",
       truncationTryCount: 0, // 新增
+      // 图片预览相关状态
+      imageViewerVisible: false,
+      imageViewerUrls: [],
+      imageViewerIndex: 0,
     };
   },
   watch: {
@@ -257,7 +261,71 @@ export default {
           pre.parentNode?.insertBefore(wrapper, pre);
           wrapper.appendChild(pre);
         });
+
+        // 处理图片点击事件
+        this.processImages();
       });
+    },
+
+    // 处理图片点击事件，使用 Element Plus 的图片查看器
+    processImages() {
+      const contentDom = this.$refs.md?.$el?.querySelector(".v-show-content");
+      if (!contentDom) return;
+
+      const imgs = contentDom.querySelectorAll("img");
+
+      // 收集所有图片URL
+      const imageUrls = [];
+      imgs.forEach((img) => {
+        const src = img.src || img.getAttribute("data-src");
+        if (src) {
+          imageUrls.push(src);
+        }
+      });
+
+      this.imageViewerUrls = imageUrls;
+
+      // 为每个图片添加点击事件
+      imgs.forEach((img, index) => {
+        // 移除之前的点击事件监听器
+        img._imageClickHandler &&
+          img.removeEventListener("click", img._imageClickHandler);
+
+        // 添加新的点击事件
+        const handler = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // 禁用 mavon-editor 默认的图片预览
+          const parentLink = img.closest("a");
+          if (parentLink && parentLink.getAttribute("href") === img.src) {
+            parentLink.style.pointerEvents = "none";
+          }
+
+          // 显示 Element Plus 图片查看器
+          this.openImageViewer(index);
+        };
+
+        img._imageClickHandler = handler;
+        img.addEventListener("click", handler);
+
+        // 添加鼠标样式提示
+        img.style.cursor = "pointer";
+        img.title = "点击查看大图";
+      });
+    },
+
+    // 打开图片查看器
+    openImageViewer(index) {
+      if (this.imageViewerUrls.length === 0) return;
+
+      this.imageViewerIndex = index;
+      this.imageViewerVisible = true;
+    },
+
+    // 关闭图片查看器
+    closeImageViewer() {
+      this.imageViewerVisible = false;
     },
 
     // 处理复制成功
@@ -327,6 +395,14 @@ export default {
         highlight: false,
         bulletListMarker: '-',
       }"
+    />
+    <!-- Element Plus 图片查看器 -->
+    <el-image-viewer
+      v-if="imageViewerVisible"
+      :url-list="imageViewerUrls"
+      :initial-index="imageViewerIndex"
+      @close="closeImageViewer"
+      teleported
     />
   </div>
 </template>

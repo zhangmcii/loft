@@ -6,7 +6,6 @@ import dayjs from "./config/dayjsCfg";
 
 // 样式导入
 import "@wangeditor/editor/dist/css/style.css";
-import "vue3-photo-preview/dist/index.css";
 import "element-plus/dist/index.css";
 import "vant/lib/index.css";
 import "undraw-ui/dist/style.css";
@@ -15,7 +14,6 @@ import "mavon-editor/dist/css/index.css";
 // 插件导入
 import { ElMessage } from "element-plus";
 import { loadingFadeOut } from "virtual:app-loading";
-import vue3PhotoPreview from "vue3-photo-preview";
 import { useElementPlus } from "@/plugins/elementPlus";
 import { useVant } from "@/plugins/vant";
 import vSlideIn from "@/directives/vSlideIn.js";
@@ -41,7 +39,6 @@ app.use(pinia);
 app.use(router);
 app.use(useElementPlus);
 app.use(useVant);
-app.use(vue3PhotoPreview);
 app.use(mavonEditor);
 
 app.mount("#app");

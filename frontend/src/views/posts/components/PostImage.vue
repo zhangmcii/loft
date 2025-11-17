@@ -19,7 +19,7 @@ export default {
       const count = this.postImages.length;
       if (count === 1) return "220px";
       if (count === 2 || count === 4) return "320px";
-      return "370px";
+      return "330px";
     },
   },
 };
@@ -28,22 +28,23 @@ export default {
 <template>
   <div class="container" :style="{ width: containerWidth }">
     <div class="preview" :style="{ gridTemplateColumns }">
-      <photo-provider :photo-closable="true" :should-transition="true">
-        <photo-consumer
-          v-for="(url, index) in postImages"
-          :intro="url"
-          :key="url"
-          :src="url"
-        >
-          <el-image alt="文章图片" :src="url" lazy fit="cover">
-            <template #error>
-              <div class="image-slot">
-                <el-icon><i-ep-picture /></el-icon>
-              </div>
-            </template>
-          </el-image>
-        </photo-consumer>
-      </photo-provider>
+      <el-image
+        v-for="(url, index) in postImages"
+        :key="url"
+        :src="url"
+        :preview-src-list="postImages"
+        :initial-index="index"
+        alt="文章图片"
+        lazy
+        fit="cover"
+        preview-teleported
+      >
+        <template #error>
+          <div class="image-slot">
+            <el-icon><i-ep-picture /></el-icon>
+          </div>
+        </template>
+      </el-image>
     </div>
   </div>
 </template>

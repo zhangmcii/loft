@@ -4,13 +4,54 @@ export default {
     const provinceCode = code.substring(0, 2) + "0000";
     const cityCode = code.substring(0, 4) + "00";
     const countyCode = code;
-    // 获取省、市、区的名字
+
     const provinceName = areaList.province_list[provinceCode];
     const cityName = areaList.city_list[cityCode];
     const countyName = areaList.county_list[countyCode];
-    // 拼接省市区名字
-    return `${provinceName}/${cityName}/${countyName}`;
+
+    let [p1, p2, p3] = [provinceName, cityName, countyName];
+
+    // 去掉末尾的“省”、“市”、“区”等
+    const trimSuffix = (str) =>
+      str.replace(
+        /省|市|区|特别行政区|回族自治区|壮族自治区|维吾尔自治区|自治区/g,
+        ""
+      );
+
+    // 直辖市列表
+    const municipalities = ["北京市", "上海市", "天津市", "重庆市"];
+
+    // 自治区映射（只保留前两个字）
+    const autonomousMap = {
+      新疆维吾尔自治区: "新疆",
+      内蒙古自治区: "内蒙古",
+      广西壮族自治区: "广西",
+      宁夏回族自治区: "宁夏",
+      西藏自治区: "西藏",
+    };
+
+    // 港澳台
+    const specialRegions = ["台湾省", "香港特别行政区", "澳门特别行政区"];
+
+    // 1) 直辖市：取后两个部分
+    if (municipalities.includes(p1)) {
+      return `${trimSuffix(p2)} ${p3}`;
+    }
+
+    // 2) 港澳台：取前两个部分
+    if (specialRegions.includes(p1)) {
+      return `${trimSuffix(p1)} ${trimSuffix(p2)}`;
+    }
+
+    // 3) 自治区：使用缩写
+    if (autonomousMap[p1]) {
+      return `${autonomousMap[p1]} ${trimSuffix(p2)}`;
+    }
+
+    // 4) 普通省份：取前两部分
+    return `${trimSuffix(p1)} ${trimSuffix(p2)}`;
   },
+
   // 地区名称转为地区码
   getNameToCode(areaName, areaList) {
     const areaNames = areaName.split("/"); // 将地区名字按'/'分割为数组
