@@ -101,7 +101,7 @@ onMounted(() => {
 // 组件卸载时移除监听器并销毁播放器
 onUnmounted(() => {
   window.removeEventListener("resize", handleResize);
-  
+
   // 销毁 APlayer 实例
   if (aplayerInstance.value) {
     aplayerInstance.value.pause();
@@ -378,7 +378,7 @@ const calTableHeight = async () => {
         class="music-table desktop-table"
         ref="h2"
       >
-        <el-table-column prop="pic" label="封面" width="60" align="center">
+        <el-table-column prop="pic" label="封面" width="80" align="center">
           <template #default="scope">
             <el-image
               :src="scope.row.pic"

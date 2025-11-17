@@ -1,115 +1,125 @@
 <template>
-  <div class="burger-menu">
-    <div class="home" @click="goHomePage">
-      <homeIcon />
+  <header class="header-container">
+    <!-- 左侧区域 -->
+    <div class="header-left">
+      <div class="home-icon" @click="goHomePage">
+        <homeIcon />
+      </div>
+      <div class="daily-sentence">
+        <MarQuee :text="daySentence" :speed="0.7" />
+      </div>
     </div>
-    <div class="marQuee">
-      <MarQuee :text="daySentence" :speed="0.7" />
-    </div>
-    <BellCom class="notification" />
-    <div class="user-image">
-      <van-popover
-        v-model:show="showPopover"
-        :show-arrow="false"
-        placement="bottom-end"
-        :offset="[12, 8]"
-        :actions="actions"
-        @select="onSelect"
-      >
-        <template #reference>
-          <el-avatar
-            alt="用户图像"
-            :size="32"
-            :src="currentUser.avatarsUrl"
-            @error="errorImage"
-          />
-        </template>
-        <template #default v-if="currentUser.isLogin">
-          <van-cell
-            :title="currentUser.priorityName"
-            :label="currentUser.userInfo.username"
-            title-style="margin-left:10px"
-          >
-            <template #icon>
-              <el-avatar
-                alt="用户图像"
-                :src="currentUser.avatarsUrl"
-                :size="47"
+
+    <!-- 中间空白区域 -->
+    <div class="header-center"></div>
+
+    <!-- 右侧区域 -->
+    <div class="header-right">
+      <BellCom class="notification-icon" />
+      <div class="user-avatar">
+        <van-popover
+          v-model:show="showPopover"
+          :show-arrow="false"
+          placement="bottom-end"
+          :offset="[12, 8]"
+          :actions="actions"
+          @select="onSelect"
+        >
+          <template #reference>
+            <el-avatar
+              alt="用户图像"
+              :size="32"
+              :src="currentUser.avatarsUrl"
+              @error="errorImage"
+            />
+          </template>
+          <template #default v-if="currentUser.isLogin">
+            <van-cell
+              :title="currentUser.priorityName"
+              :label="currentUser.userInfo.username"
+              title-style="margin-left:10px"
+            >
+              <template #icon>
+                <el-avatar
+                  alt="用户图像"
+                  :src="currentUser.avatarsUrl"
+                  :size="47"
+                />
+              </template>
+            </van-cell>
+            <van-cell
+              title="个人资料"
+              icon="manager-o"
+              clickable
+              @click="handleCellClick(`/user/${currentUser.userInfo.username}`)"
+            />
+            <div v-if="currentUser.isCommentManage">
+              <van-cell
+                title="评论管理"
+                icon="chat-o"
+                clickable
+                @click="handleCellClick('/commentManagement')"
               />
-            </template>
-          </van-cell>
-          <van-cell
-            title="个人资料"
-            icon="manager-o"
-            clickable
-            @click="handleCellClick(`/user/${currentUser.userInfo.username}`)"
-          />
-          <div v-if="currentUser.isCommentManage">
+              <van-cell
+                title="标签管理"
+                icon="medal-o"
+                clickable
+                @click="handleCellClick('/tag')"
+              />
+              <van-cell
+                title="操作日志"
+                icon="shield-o"
+                clickable
+                @click="handleCellClick('/operateLog')"
+              />
+              <van-cell
+                title="找回其他用户密码"
+                icon="warning-o"
+                clickable
+                @click="handleCellClick('/PasswordChangeAdmin')"
+              ></van-cell>
+            </div>
             <van-cell
-              title="评论管理"
-              icon="chat-o"
-              clickable
-              @click="handleCellClick('/commentManagement')"
+              :title="accountLabel"
+              :icon="accountLabel == '账户' ? 'notes-o' : ''"
+              is-link
+              arrow-direction="down"
+              @click.prevent="toggleContactDropdown"
             />
+            <div v-if="isContactDropdownActive">
+              <van-cell
+                title="修改密码"
+                title-style="margin-left:10px"
+                clickable
+                @click="handleCellClick('/changePassword')"
+              ></van-cell>
+              <van-cell
+                title="修改邮箱"
+                title-style="margin-left:10px"
+                clickable
+                @click="handleCellClick('/changeEmail')"
+                v-if="currentUser.isConfirmed"
+              ></van-cell>
+              <van-cell
+                title="绑定邮箱"
+                title-style="margin-left:10px"
+                clickable
+                @click="handleCellClick('/bindEmail')"
+                v-else
+              ></van-cell>
+            </div>
             <van-cell
-              title="标签管理"
-              icon="medal-o"
+              title="退出登录"
+              icon="peer-pay"
               clickable
-              @click="handleCellClick('/tag')"
-            />
-            <van-cell
-              title="操作日志"
-              icon="shield-o"
-              clickable
-              @click="handleCellClick('/operateLog')"
-            />
-            <van-cell
-              title="找回其他用户密码"
-              icon="warning-o"
-              clickable
-              @click="handleCellClick('/PasswordChangeAdmin')"
+              @click="log_out"
+              href="/posts"
             ></van-cell>
-          </div>
-          <van-cell
-            :title="accountLabel"
-            :icon="accountLabel == '账户' ? 'notes-o' : ''"
-            is-link
-            arrow-direction="down"
-            @click.prevent="toggleContactDropdown"
-          />
-          <div v-if="isContactDropdownActive">
-            <van-cell
-              title="修改密码"
-              title-style="margin-left:10px"
-              clickable
-              @click="handleCellClick('/changePassword')"
-            ></van-cell>
-            <van-cell
-              title="修改邮箱"
-              title-style="margin-left:10px"
-              clickable
-              @click="handleCellClick('/changeEmail')"
-              v-if="currentUser.isConfirmed"
-            ></van-cell>
-            <van-cell
-              title="绑定邮箱"
-              title-style="margin-left:10px"
-              clickable
-              @click="handleCellClick('/bindEmail')"
-              v-else
-            ></van-cell>
-          </div>
-          <van-cell
-            title="退出登录"
-            icon="peer-pay"
-            clickable
-            @click="log_out"
-            href="/posts"
-          ></van-cell>
-        </template>
-      </van-popover>
+          </template>
+        </van-popover>
+      </div>
     </div>
-  </div>
+  </header>
 </template>
 
 <script>
@@ -229,30 +239,129 @@ export default {
 </script>
 
 <style scoped>
-.burger-menu {
+.header-container {
   width: 100%;
-  height: 6vh;
+  height: 48px;
   display: flex;
-  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
+  padding: 0 24px;
+  box-sizing: border-box;
 }
-.home {
-  margin: 8px 0px 0px 17px;
+
+/* 左侧区域 - 确保元素紧挨 */
+.header-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
-.marQuee {
-  margin: 3px 0px 0px 0px;
-  width: 70%;
+
+.home-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 0;
 }
-.notification {
-  margin: 11px 10px 0px 0px;
+
+.home-icon:hover {
+  transform: translateY(-1px);
 }
-.user-image {
-  margin: 8px 20px 0px 0px;
+
+.daily-sentence {
+  height: 40px;
+  min-width: 200px;
+  max-width: 300px;
+  font-size: 14px;
+  line-height: 40px;
+  padding: 0 12px;
+  border-radius: 0 8px 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
 }
+
+/* 中间空白区域 */
+.header-center {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 右侧区域 - 确保元素紧挨 */
+.header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px 0 0 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  margin-right: 0;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border-radius: 0 8px 8px 0;
+  padding: 0 8px;
+}
+
+.user-avatar .el-avatar {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-avatar .el-avatar:hover {
+  transform: scale(1.05);
+}
+
 .van-cell {
   width: 200px;
 }
+
 .van-divider {
   margin: 10px 0px 0px 0px;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 16px;
+    height: 48px;
+  }
+
+  .daily-sentence {
+    max-width: 200px;
+    font-size: 13px;
+    height: 36px;
+    line-height: 36px;
+    padding: 0 8px 0px 0px;
+  }
+
+  .header-right {
+    margin-top: 6px;
+  }
+
+  .home-icon,
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .user-avatar {
+    height: 36px;
+    padding: 0 6px;
+  }
 }
 </style>
