@@ -33,14 +33,10 @@ const eventListeners = {
 
 // 清理事件监听器
 const cleanupEventListeners = () => {
-  if (aplayerInstance.value) {
-    Object.keys(eventListeners).forEach((event) => {
-      if (eventListeners[event]) {
-        aplayerInstance.value.off(event, eventListeners[event]);
-        eventListeners[event] = null;
-      }
-    });
-  }
+  // APlayer 不支持单独移除事件监听器，直接清理引用即可
+  Object.keys(eventListeners).forEach((event) => {
+    eventListeners[event] = null;
+  });
 };
 
 // 初始化APlayer

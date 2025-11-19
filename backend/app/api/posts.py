@@ -39,7 +39,7 @@ class PostItemApi(DecoratedMethodView):
         # 删除文章，同时也要删除文章中的图片url
         is_contain_image, data = None, None
         try:
-            p = Post.query.filter_by(id=id, author_id=current_user.id).first()
+            p = Post.query.filter_by(id=id).first()
             if not p:
                 logging.warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
                 return error(404, "文章不存在")
@@ -62,6 +62,8 @@ class PostItemApi(DecoratedMethodView):
                 }
             db.session.delete(p)
             db.session.commit()
+            # 清除缓存
+            cache.delete_memoized(PostGroupApi.query_post)
         except Exception as e:
             logging.error(f"删除文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
@@ -225,6 +227,7 @@ class PostGroupApi(DecoratedMethodView):
         if current_user.can(Permission.WRITE):
             try:
                 PostGroupApi.posts_publish(request.json)
+                # 清除缓存
                 cache.delete_memoized(PostGroupApi.query_post)
             except Exception as e:
                 return error(500, f"{str(e)}")

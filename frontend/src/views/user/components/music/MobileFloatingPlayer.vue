@@ -159,9 +159,9 @@ onMounted(() => {
   // 添加触摸事件监听
   const playerElement = document.querySelector('.mobile-floating-player');
   if (playerElement) {
-    playerElement.addEventListener('touchstart', handleTouchStart);
-    playerElement.addEventListener('touchend', handleTouchEnd);
-    playerElement.addEventListener('touchcancel', handleTouchEnd);
+    playerElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+    playerElement.addEventListener('touchend', handleTouchEnd, { passive: true });
+    playerElement.addEventListener('touchcancel', handleTouchEnd, { passive: true });
   }
 });
 
@@ -177,9 +177,9 @@ onUnmounted(() => {
   // 移除事件监听
   const playerElement = document.querySelector('.mobile-floating-player');
   if (playerElement) {
-    playerElement.removeEventListener('touchstart', handleTouchStart);
-    playerElement.removeEventListener('touchend', handleTouchEnd);
-    playerElement.removeEventListener('touchcancel', handleTouchEnd);
+    playerElement.removeEventListener('touchstart', handleTouchStart, { passive: true });
+    playerElement.removeEventListener('touchend', handleTouchEnd, { passive: true });
+    playerElement.removeEventListener('touchcancel', handleTouchEnd, { passive: true });
   }
 });
 </script>

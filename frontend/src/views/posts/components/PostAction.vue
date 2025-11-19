@@ -5,6 +5,7 @@ import { showConfirmDialog } from "vant";
 import { copy } from "@/utils/common.js";
 import praise from "@/api/praise/praiseApi.js";
 import postApi from "@/api/posts/postApi.js";
+import emitter from "@/utils/emitter.js";
 
 export default {
   props: {
@@ -125,8 +126,10 @@ export default {
         return postApi.deletePost(this.post.id).then((res) => {
           if (res.code === 200) {
             this.$message.success("文章删除成功");
+            // 发送删除事件，通知文章列表页刷新
+            emitter.emit("postDeleted");
             // 跳转到首页或文章列表页
-            this.$router.push("/");
+            this.$router.push("/posts");
           } else {
             this.$message.error(res.message || "删除文章失败");
           }
@@ -139,7 +142,6 @@ export default {
 </script>
 
 <template>
-  {{ post.id }}
   <div class="post-action-container">
     <div class="action-left">
       <div

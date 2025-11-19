@@ -52,6 +52,10 @@ export default {
       this.followPost = [...newPost];
       console.log("newPost", this.followPost);
     });
+    // 监听文章删除事件，刷新页面
+    emitter.on("postDeleted", () => {
+      this.getPosts(this.currentPage, this.activeName);
+    });
   },
   methods: {
     changeTab(tabName) {
@@ -90,6 +94,11 @@ export default {
       this.currentPage = 1;
       this.loading.publishPost = false;
     },
+  },
+  beforeUnmount() {
+    // 清理事件监听
+    emitter.off("followPost");
+    emitter.off("postDeleted");
   },
 };
 </script>
