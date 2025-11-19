@@ -1,6 +1,8 @@
 <script>
 import editApi from "@/api/user/editApi.js";
 import userApi from "@/api/user/userApi.js";
+import imageApi from "@/api/user/imageApi.js";
+import { showConfirmDialog } from "vant";
 import ButtonClick from "@/utils/components/ButtonClick.vue";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 export default {
@@ -18,6 +20,7 @@ export default {
         name: "",
         location: "",
         about_me: "",
+        image: "",
       },
       user: {},
       userId: -1,
@@ -88,12 +91,73 @@ export default {
         }
       });
     },
+    resetToDefaultAvatar() {
+      showConfirmDialog({
+        title: "将用户图像设置为随机图像？",
+        width: 230,
+        beforeClose: this.beforeReset,
+      });
+    },
+
+    beforeReset(action) {
+      if (action !== "confirm") {
+        return Promise.resolve(true);
+      } else {
+        return imageApi
+          .saveImageUrl(this.formLabelAlign.id, {
+            image: "",
+          })
+          .then((res) => {
+            if (res.code === 200) {
+              this.formLabelAlign.image = res.data.image;
+              this.$message.success("已设置为随机头像");
+            } else {
+              this.$message.error(res.message || "操作失败");
+            }
+            return res;
+          });
+      }
+    },
   },
 };
 </script>
 
 <template>
   <PageHeadBack>
+    <div
+      style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px"
+    >
+      <div style="display: flex; align-items: center; gap: 16px">
+        <el-avatar
+          :src="formLabelAlign.image"
+          :size="80"
+          style="border: 2px solid #e4e7ed"
+        />
+        <div>
+          <div style="font-weight: bold; margin-bottom: 4px">用户头像</div>
+          <div style="font-size: 12px; color: #909399">
+            当前用户：{{ formLabelAlign.nickname || formLabelAlign.username }}
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <el-upload
+          ref="avatarUpload"
+          action=""
+          :show-file-list="false"
+          :before-upload="beforeAvatarUpload"
+          :http-request="uploadAvatar"
+          accept="image/*"
+        >
+          <!-- <el-button type="primary" size="small" :loading="avatarLoading">
+            上传头像
+          </el-button> -->
+        </el-upload>
+        <el-button type="danger" size="small" @click="resetToDefaultAvatar">
+          恢复默认图像
+        </el-button>
+      </div>
+    </div>
     <el-form
       :model="formLabelAlign"
       ref="formLabelAlign"

@@ -1,8 +1,10 @@
 <script>
 import { useCurrentUserStore } from "@/stores/user";
 import { loginReminder } from "@/utils/common.js";
+import { showConfirmDialog } from "vant";
 import { copy } from "@/utils/common.js";
 import praise from "@/api/praise/praiseApi.js";
+import postApi from "@/api/posts/postApi.js";
 
 export default {
   props: {
@@ -31,6 +33,10 @@ export default {
       default: false,
     },
     showEdit: {
+      type: Boolean,
+      default: false,
+    },
+    showDelete: {
       type: Boolean,
       default: false,
     },
@@ -103,16 +109,45 @@ export default {
       }
       this.show = false;
     },
+
+    deletePost() {
+      showConfirmDialog({
+        title: "确定删除这篇文章吗？",
+        width: 230,
+        beforeClose: this.beforeDelete,
+      });
+    },
+
+    beforeDelete(action) {
+      if (action !== "confirm") {
+        return Promise.resolve(true);
+      } else {
+        return postApi.deletePost(this.post.id).then((res) => {
+          if (res.code === 200) {
+            this.$message.success("文章删除成功");
+            // 跳转到首页或文章列表页
+            this.$router.push("/");
+          } else {
+            this.$message.error(res.message || "删除文章失败");
+          }
+          return res;
+        });
+      }
+    },
   },
 };
 </script>
 
 <template>
+  {{ post.id }}
   <div class="post-action-container">
     <div class="action-left">
       <div
         class="action-item"
-        v-if="showEdit && post.author == currentUser.userInfo.username"
+        v-if="
+          showEdit &&
+          (post.author == currentUser.userInfo.username || currentUser.isAdmin)
+        "
       >
         <van-icon
           name="edit"
@@ -121,16 +156,15 @@ export default {
           class="action-icon"
         />
       </div>
-      <div
-        class="action-item"
-        v-else-if="showEdit && currentUser.userInfo.isAdmin == 'true'"
-      >
+
+      <div class="action-item" v-if="showDelete && currentUser.isAdmin">
         <van-icon
-          name="edit"
-          @click.stop="edit"
+          name="delete-o"
+          @click.stop="deletePost"
           :size="iconSize"
-          color="red"
-          class="action-icon"
+          color="#f56c6c"
+          class="action-icon delete-icon"
+          title="删除文章"
         />
       </div>
       <div class="action-item" v-if="showShare && !isUserRoute">
@@ -218,6 +252,11 @@ export default {
 
   &:hover {
     transform: scale(1.1);
+  }
+
+  &.delete-icon:hover {
+    transform: scale(1.2);
+    filter: brightness(1.1);
   }
 
   // &.praised {

@@ -11,6 +11,7 @@ import PostSearch from "@/views/posts/components/PostSearch.vue";
 import PostToc from "@/views/posts/components/PostToc.vue";
 import postApi from "@/api/posts/postApi.js";
 import message from "@/utils/message";
+import { useCurrentUserStore } from "@/stores/user";
 
 export default {
   components: {
@@ -24,6 +25,12 @@ export default {
     FontSizeAdjuster,
     PostSearch,
     PostToc,
+  },
+  setup() {
+    const currentUser = useCurrentUserStore();
+    return {
+      currentUser,
+    };
   },
   data() {
     return {
@@ -238,7 +245,12 @@ export default {
       </div>
 
       <div class="post-actions">
-        <PostAction :post="post" :showShare="true" :showEdit="true" />
+        <PostAction
+          :post="post"
+          :showShare="true"
+          :showEdit="true"
+          :showDelete="true"
+        />
       </div>
 
       <div class="post-comments">

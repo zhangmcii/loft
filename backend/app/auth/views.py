@@ -1,17 +1,20 @@
 import logging
-import random
 
 from flask import request
 from flask_jwt_extended import create_access_token, current_user, jwt_required
 
 from .. import db
-from ..api.upload import dir_file_name
+from ..api.upload import get_random_user_avatars
 from ..decorators import admin_required
 from ..models import User
 from ..mycelery.tasks import send_email
-from ..schemas import (BindEmailRequest, ChangeEmailRequest,
-                       ChangePasswordRequest, ForgotPasswordRequest,
-                       RegisterRequest)
+from ..schemas import (
+    BindEmailRequest,
+    ChangeEmailRequest,
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
+    RegisterRequest,
+)
 from ..utils.response import error, success
 from ..utils.time_util import DateUtils
 from ..utils.validation import validate_json
@@ -37,15 +40,6 @@ def login():
         user.ping()
         return success(data=user.to_json(), token="Bearer " + token)
     return error(code=400, message="账号或密码错误")
-
-
-def get_random_user_avatars():
-    try:
-        avatars, total = dir_file_name("userAvatars/", 1, 10, False)
-        return avatars[random.randint(0, total - 1)]
-    except Exception as e:
-        logging.warning(f'注册时从七牛云随机指定图像失败，原因：{e}')
-        return ''
 
 
 @auth.route("/register", methods=["POST"])

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import time
+import random
 
 from flask import request
 from flask_jwt_extended import current_user, jwt_required
@@ -107,6 +108,16 @@ def dir_file_name(
         get_avatars_url(item.get("key")) if complete_url else item.get("key")
         for item in item_list[start + 1 : end + 1]
     ], len(item_list) - 1
+
+
+def get_random_user_avatars():
+    """获取随机图像"""
+    try:
+        avatars, total = dir_file_name("userAvatars/", 1, 10, False)
+        return avatars[random.randint(0, total - 1)]
+    except Exception as e:
+        logging.warning(f"注册时从七牛云随机指定图像失败，原因：{e}")
+        return ""
 
 
 @api.route("/dir_name")

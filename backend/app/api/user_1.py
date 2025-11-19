@@ -8,6 +8,7 @@ from ..decorators import DecoratedMethodView
 from ..models import User
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
+from .upload import get_random_user_avatars
 
 
 # --------------------------- 编辑资料 ---------------------------
@@ -56,9 +57,13 @@ class UserImageApi(DecoratedMethodView):
     def post(self, id):
         """存储用户图像地址"""
         logging.info(f"存储用户图像地址: user_id={id}")
-        if current_user and current_user.id == id:
+        if current_user and (current_user.is_administrator() or current_user.id == id):
             try:
-                image = request.get_json().get("image")
+                image = (
+                    request.get_json().get("image")
+                    if request.get_json().get("image")
+                    else get_random_user_avatars()
+                )
                 user = User.query.get_or_404(id)
                 user.image = image
                 db.session.add(user)

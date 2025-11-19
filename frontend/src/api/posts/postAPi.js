@@ -28,4 +28,9 @@ export default {
   editPost(id, post) {
     return $http.patch(`${url_prefix}/posts/${id}`, post);
   },
+
+  // 删除文章
+  deletePost(id) {
+    return $http.delete(`${url_prefix}/posts/${id}`);
+  },
 };
