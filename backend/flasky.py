@@ -30,8 +30,19 @@ import sys
 
 import click
 from app import create_app, db, socketio
-from app.models import (Comment, Follow, Log, Permission, Post, Praise, Role,
-                        User)
+from app.models import (
+    Comment,
+    Follow,
+    Log,
+    Permission,
+    Post,
+    Praise,
+    Role,
+    User,
+    Image,
+    PostType,
+    ImageType,
+)
 from flask_migrate import Migrate, upgrade
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
@@ -50,6 +61,9 @@ def make_shell_context():
         Comment=Comment,
         Praise=Praise,
         Log=Log,
+        Image=Image,
+        PostType=PostType,
+        ImageType=ImageType,
     )
 
 

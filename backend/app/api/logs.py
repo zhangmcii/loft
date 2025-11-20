@@ -50,7 +50,7 @@ class LogApi(DecoratedMethodView):
         logging.info(f"获取到 {len(logs)} 条日志记录")
         return success(data=[log.to_json() for log in logs], total=query.count())
 
-    def post(self):
+    def delete(self):
         """删除系统日志"""
         logging.info("删除系统日志")
         try:

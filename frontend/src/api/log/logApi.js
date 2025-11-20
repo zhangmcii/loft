@@ -10,6 +10,6 @@ export default {
   },
   // 删除系统日志
   deleteLog(ids) {
-    return $http.post(`${url_prefix}/logs`, ids);
+    return $http.delete(`${url_prefix}/logs`, { data: ids });
   },
 };

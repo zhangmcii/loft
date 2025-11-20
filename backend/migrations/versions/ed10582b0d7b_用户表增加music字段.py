@@ -30,7 +30,7 @@ def upgrade():
     # 补齐旧数据，让已注册的用户的music更新为默认值
     users = table('users', column('music', JSON))
     op.execute(
-        users.update().where(users.c.music is None).values(music=default_music)
+        users.update().where(users.c.music.is_(None)).values(music=default_music)
     )
     # ### end Alembic commands ###
 

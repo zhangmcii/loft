@@ -47,8 +47,14 @@ def get_post_by_user(username):
         return not_found("用户不存在")
 
     page = request.args.get("page", 1, type=int)
-    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=current_app.config["FLASKY_POSTS_PER_PAGE"], error_out=False
+    pagination = (
+        user.posts.filter_by(deleted=False)
+        .order_by(Post.timestamp.desc())
+        .paginate(
+            page=page,
+            per_page=current_app.config["FLASKY_POSTS_PER_PAGE"],
+            error_out=False,
+        )
     )
     posts = pagination.items
     return success(

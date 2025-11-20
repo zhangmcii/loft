@@ -486,6 +486,7 @@ class Post(db.Model):
     comments = db.relationship("Comment", backref="post", lazy="dynamic")
     praise = db.relationship("Praise", backref="post", lazy="dynamic")
     notifications = db.relationship("Notification", backref="post", lazy="dynamic")
+    deleted = db.Column(db.Boolean, default=False)
 
     def to_json(self):
         urls, pos = [], []

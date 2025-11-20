@@ -28,28 +28,24 @@ class PostItemApi(DecoratedMethodView):
         "patch": [jwt_required()],
     }
 
-    def get(self, id):
-        """获取单篇文章"""
-        logging.info(f"获取文章: id={id}")
-        post = Post.query.get_or_404(id)
-        return success(data=post.to_json())
+    @staticmethod
+    def soft_delete(post):
+        logging.info(f"逻辑删除文章: id={post.id}")
+        post.deleted = True
+        db.session.add(post)
+        db.session.commit()
 
-    def delete(self, id):
-        logging.info(f"删除文章: id={id}")
+    @staticmethod
+    def hard_delete(post):
         # 删除文章，同时也要删除文章中的图片url
         is_contain_image, data = None, None
         try:
-            p = Post.query.filter_by(id=id).first()
-            if not p:
-                logging.warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
-                return error(404, "文章不存在")
-
-            is_contain_image = p.type == PostType.IMAGE
+            is_contain_image = post.type == PostType.IMAGE
             to_del_urls = []
             if is_contain_image:
                 post_images = (
                     Image.query.filter(
-                        Image.type == ImageType.POST, Image.related_id == p.id
+                        Image.type == ImageType.POST, Image.related_id == post.id
                     )
                     .order_by(Image.id.asc())
                     .all()
@@ -60,10 +56,8 @@ class PostItemApi(DecoratedMethodView):
                     "bucket_name": os.getenv("QINIU_BUCKET_NAME", ""),
                     "keys": to_del_urls,
                 }
-            db.session.delete(p)
+            db.session.delete(post)
             db.session.commit()
-            # 清除缓存
-            cache.delete_memoized(PostGroupApi.query_post)
         except Exception as e:
             logging.error(f"删除文章失败: {str(e)}", exc_info=True)
             db.session.rollback()
@@ -72,6 +66,21 @@ class PostItemApi(DecoratedMethodView):
         if is_contain_image and to_del_urls:
             # 传递j,执行图片删除
             del_qiniu_image(**data)
+
+    def get(self, id):
+        """获取单篇文章"""
+        logging.info(f"获取文章: id={id}")
+        post = Post.query.filter_by(id=id, deleted=False).first_or_404()
+        return success(data=post.to_json())
+
+    def delete(self, id):
+        p = Post.query.filter_by(id=id, deleted=False).first()
+        if not p:
+            logging.warning(f"用户 {current_user.username} 尝试删除不存在的文章 {id}")
+            return error(404, "文章不存在")
+        PostItemApi.soft_delete(p)
+        # 移除文章缓存
+        cache.delete_memoized(PostGroupApi.query_post)
         return success(message="文章删除成功")
 
     def patch(self, id):
@@ -119,8 +128,10 @@ class PostGroupApi(DecoratedMethodView):
         else:
             query = Post.query
 
-        paginate = query.order_by(Post.timestamp.desc()).paginate(
-            page=page, per_page=per_page, error_out=False
+        paginate = (
+            query.filter_by(deleted=False)
+            .order_by(Post.timestamp.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
         )
         posts = paginate.items
         return [post.to_json() for post in posts], paginate.total
