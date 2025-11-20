@@ -55,7 +55,7 @@ class DevelopmentConfig(Config):
         os.environ.get("DEV_DATABASE_URL")
         or "mysql+pymysql://root:1234@"
         + os.getenv("FLASK_RUN_HOST", "127.0.0.1")
-        + ":3306/backend_flask?charset=utf8mb4"
+        + ":3306/backend_interest?charset=utf8mb4"
     )
     # redis  格式：redis://:<password>@<host>:<port>/<db>
     REDIS_URL = (
