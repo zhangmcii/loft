@@ -54,7 +54,7 @@ def index():
     if request.args.get("tabName") == "showFollowed":
         query = current_user.followed_posts
     else:
-        query = Post.query
+        query = Post.query.filter_by(deleted=False)
     paginate = query.order_by(Post.timestamp.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

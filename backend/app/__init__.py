@@ -100,17 +100,6 @@ def create_app(config_name):
 
     app.register_blueprint(api_blueprint, url_prefix="/api/v1")
 
-    @app.route("/test_proxy")
-    def test_proxy():
-        return {
-            "real_ip": request.remote_addr,  # 若生效，会返回客户端真实IP（而非Nginx IP）
-            "scheme": request.scheme,  # 若生效，会返回 https（若客户端用HTTPS访问Nginx）
-            "host": request.host,  # 若生效，会返回客户端访问的域名（如 example.com）
-            "prefix": request.environ.get(
-                "HTTP_X_FORWARDED_PREFIX"
-            ),  # 若配置，会返回 / 或 /api
-        }
-
     @app.errorhandler(Exception)
     def error_handler(e):
         logging.error(f"全局异常: {str(e)}", exc_info=True)

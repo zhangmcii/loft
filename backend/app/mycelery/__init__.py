@@ -1,5 +1,5 @@
 from celery import Celery, Task
-
+from datetime import timedelta
 
 def celery_init_app(app) -> Celery:
     """
@@ -10,6 +10,8 @@ def celery_init_app(app) -> Celery:
 
     启动beat调度器:
     celery -A app.make_celery beat --loglevel INFO
+
+    celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log
     """
 
     class FlaskTask(Task):
@@ -24,13 +26,9 @@ def celery_init_app(app) -> Celery:
 
     # 配置周期性任务
     celery_app.conf.beat_schedule = {
-        "hello_world_task": {
-            "task": "app.mycelery.tasks.hello_world",
-            "schedule": 30.0,
-        },
         "del_post_task": {
-            "task": "app.mycelery.tasks.hard_delete",
-            "schedule": 60.0 * 2,
+            "task": "app.mycelery.tasks.hard_delete_post",
+            "schedule": timedelta(days=30)
         },
     }
 

@@ -12,13 +12,6 @@ from ..main.uploads import del_qiniu_image
 
 
 @shared_task(ignore_result=False)
-def hello_world():
-    """每10秒打印hello world的定时任务"""
-    print("hello world")
-    logging.info("Celery定时任务: hello world")
-
-
-@shared_task(ignore_result=False)
 def send_email(to, subject, template, **kwargs):
     try:
         message = Message(subject=subject, recipients=[to])
@@ -30,7 +23,7 @@ def send_email(to, subject, template, **kwargs):
 
 
 @shared_task(ignore_result=False)
-def hard_delete():
+def hard_delete_post():
     try:
         # 直接获取需要删除的文章ID，避免加载完整的Post对象
         posts_query = Post.query.filter_by(deleted=True)
@@ -67,7 +60,6 @@ def hard_delete():
         notification_delete_result = Notification.query.filter(
             Notification.post_id.in_(post_ids)
         ).delete(synchronize_session=False)
-        logging.info(f"批量删除相关通知成功，共 {notification_delete_result} 条")
 
         # 批量删除相关点赞 - 包括直接对文章的点赞和对文章下评论的点赞
         # 1. 删除直接对文章的点赞
@@ -90,15 +82,27 @@ def hard_delete():
             ).delete(synchronize_session=False)
 
         praise_delete_result = direct_praise_result + comment_praise_result
-        logging.info(
-            f"批量删除相关点赞成功：文章点赞 {direct_praise_result} 条，评论点赞 {comment_praise_result} 条，总计 {praise_delete_result} 条"
-        )
 
-        # 批量删除相关评论
-        comment_delete_result = Comment.query.filter(
-            Comment.post_id.in_(post_ids)
-        ).delete(synchronize_session=False)
-        logging.info(f"批量删除相关评论成功，共 {comment_delete_result} 条")
+        # 批量删除相关评论（处理自引用外键约束）
+        # 临时禁用外键检查，直接删除所有相关评论
+        try:
+            # 禁用外键检查
+            db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 0"))
+            
+            # 直接删除所有相关评论
+            comment_delete_result = Comment.query.filter(
+                Comment.post_id.in_(post_ids)
+            ).delete(synchronize_session=False)
+            
+        except Exception as e:
+            logging.error(f"删除评论时出错: {str(e)}")
+            raise
+        finally:
+            # 重新启用外键检查
+            try:
+                db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 1"))
+            except Exception as e:
+                logging.warning(f"重新启用外键检查时出错: {str(e)}")
 
         # 批量删除文章
         # synchronize_session=False 告诉 SQLAlchemy 不要同步当前 session 中的对象状态
@@ -111,6 +115,23 @@ def hard_delete():
         )
 
     except Exception as e:
-        logging.error(f"批量删除文章失败: {str(e)}", exc_info=True)
+        error_msg = f"批量删除文章失败: {str(e)}"
+        logging.error(error_msg, exc_info=True)
         db.session.rollback()
-        return error(500, f"批量删除文章失败: {str(e)}")
+        
+        # 发送错误邮件给系统管理员
+        try:
+            from ..utils.time_util import DateUtils
+            
+            send_email.delay(
+                "1912592745@qq.com",
+                "Loft系统告警 - Celery批量删除文章失败",
+                "error_email.html",
+                username="admin",
+                error_message=error_msg,
+                year=DateUtils.get_year()
+            )
+        except Exception as email_error:
+            logging.error(f"发送错误邮件失败: {str(email_error)}", exc_info=True)
+        
+        return error(500, error_msg)

@@ -126,11 +126,10 @@ class PostGroupApi(DecoratedMethodView):
         if tab_name and tab_name == "showFollowed":
             query = current_user.followed_posts
         else:
-            query = Post.query
+            query = Post.query.filter_by(deleted=False)
 
         paginate = (
-            query.filter_by(deleted=False)
-            .order_by(Post.timestamp.desc())
+            query.order_by(Post.timestamp.desc())
             .paginate(page=page, per_page=per_page, error_out=False)
         )
         posts = paginate.items

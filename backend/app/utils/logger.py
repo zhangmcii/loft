@@ -36,38 +36,6 @@ class FlaskMailHandler(logging.Handler):
             self.handleError(record)
 
 
-def setup_celery_logging(app):
-    """
-    配置Celery日志，使其与Flask应用使用相同的日志处理器
-
-    Args:
-        app: Flask应用实例
-    """
-    # 获取Celery相关的日志记录器
-    celery_loggers = [
-        "celery",
-        "celery.worker",
-        "celery.task",
-        "celery.redirected",
-        "celery.job",
-        "celery.beat",
-        "celery.schedules",
-    ]
-
-    for logger_name in celery_loggers:
-        logger = logging.getLogger(logger_name)
-
-        # 设置日志级别
-        logger.setLevel(logging.INFO)
-
-        # 清除现有处理器，避免重复日志
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-
-        # 添加Flask应用的处理器（文件和控制台）
-        for handler in app.logger.handlers:
-            logger.addHandler(handler)
-
 
 def setup_logging(app=None):
     """
@@ -126,9 +94,6 @@ def setup_logging(app=None):
 
             logging.info("已配置邮件处理器")
         logging.info("flask应用日志系统初始化完成")
-
-        # 配置Celery日志
-        setup_celery_logging(app)
     else:
         root_logger.addHandler(file_handler)
         root_logger.addHandler(console_handler)

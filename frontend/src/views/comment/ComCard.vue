@@ -181,6 +181,12 @@ const like = (id, finish) => {
     loginReminder("快去登录再点赞吧");
     return;
   }
+  
+  // 确保 likeIds 是数组
+  if (!config.user.likeIds || !Array.isArray(config.user.likeIds)) {
+    config.user.likeIds = [];
+  }
+  
   if (config.user.likeIds.findIndex((item) => item == id) == -1) {
     // 点赞
     praiseApi

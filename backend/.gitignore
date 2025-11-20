@@ -68,4 +68,10 @@ logs/
 tmp/
 *.tar
 
+# Celery 相关文件
+celerybeat-schedule*
+celerybeat.pid
+worker*.log
+worker*.pid
+
 

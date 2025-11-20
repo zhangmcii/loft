@@ -9,5 +9,6 @@
 # Windows
 Thumbs.db
 
+# Python虚拟环境
 .venv
 venv/
