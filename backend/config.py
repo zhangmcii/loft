@@ -43,6 +43,13 @@ class Config:
 
     CACHE_TYPE = "SimpleCache"
 
+    # CELERY
+    CELERY = dict(
+        broker_url=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/1",
+        result_backend=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/2",
+        timezone="Asia/Shanghai",
+    )
+
     @staticmethod
     def init_app(app):
         pass

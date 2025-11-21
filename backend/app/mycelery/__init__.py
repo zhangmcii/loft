@@ -1,17 +1,16 @@
 from celery import Celery, Task
 from datetime import timedelta
 
+
 def celery_init_app(app) -> Celery:
     """
-    启动目录(mac环境)：  cd blog_backend
-    mac: celery -A app.make_celery worker --loglevel INFO
+    mac：
+        cd blog_backend
+        celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log
 
-    windows: celery -A app.make_celery worker --loglevel INFO -P eventlet
-
-    启动beat调度器:
-    celery -A app.make_celery beat --loglevel INFO
-
-    celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log
+    windows:
+        cd blog_backend
+        celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log -P eventlet
     """
 
     class FlaskTask(Task):
@@ -28,7 +27,7 @@ def celery_init_app(app) -> Celery:
     celery_app.conf.beat_schedule = {
         "del_post_task": {
             "task": "app.mycelery.tasks.hard_delete_post",
-            "schedule": timedelta(days=30)
+            "schedule": timedelta(days=30),
         },
     }
 

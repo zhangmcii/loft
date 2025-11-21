@@ -3,7 +3,7 @@ import os
 
 from config import config
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, current_user
 from flask_limiter import Limiter
@@ -69,15 +69,6 @@ def create_app(config_name):
 
     # 配置日志系统
     setup_logging(app)
-    logging.info(f"应用启动，环境: {config_name}")
-
-    host = os.getenv("REDIS_HOST") or os.getenv("FLASK_RUN_HOST")
-    app.config.from_mapping(
-        CELERY=dict(
-            broker_url=f"redis://:1234@{host}:6379/1",
-            result_backend=f"redis://:1234@{host}:6379/2",
-        ),
-    )
 
     db.init_app(app)
     jwt.init_app(app)
