@@ -56,12 +56,6 @@ def hard_delete_post():
             del_qiniu_image(**data)
             logging.info(f"七牛云批量删除图片成功，共 {len(all_image_urls)} 张")
 
-        # 批量删除相关通知
-        notification_delete_result = Notification.query.filter(
-            Notification.post_id.in_(post_ids)
-        ).delete(synchronize_session=False)
-
-        # 批量删除相关点赞 - 包括直接对文章的点赞和对文章下评论的点赞
         # 1. 删除直接对文章的点赞
         direct_praise_result = Praise.query.filter(Praise.post_id.in_(post_ids)).delete(
             synchronize_session=False
@@ -83,7 +77,6 @@ def hard_delete_post():
 
         praise_delete_result = direct_praise_result + comment_praise_result
 
-        # 批量删除相关评论（处理自引用外键约束）
         # 临时禁用外键检查，直接删除所有相关评论
         try:
             # 禁用外键检查
@@ -110,7 +103,7 @@ def hard_delete_post():
 
         db.session.commit()
         logging.info(
-            f"批量删除完成：删除文章 {post_delete_result} 篇，通知 {notification_delete_result} 条，"
+            f"批量删除完成：删除文章 {post_delete_result} 篇，保留通知记录，"
             f"评论 {comment_delete_result} 条，点赞 {praise_delete_result} 条，图片 {len(all_image_urls)} 张"
         )
 

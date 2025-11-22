@@ -208,8 +208,14 @@ export default {
         })
         .catch((error) => {
           console.error("获取文章详情失败", error);
-          // this.$message.error('获取文章详情失败，请稍后重试')
-          message.error("获取文章详情失败，请稍后重试");
+          
+          // 检查是否是404错误（文章不存在或已删除）
+          if (error.response && error.response.status === 404) {
+            // 跳转到友好提示页面
+            this.$router.push('/content-not-found');
+          } else {
+            message.error("获取文章详情失败，请稍后重试");
+          }
         });
     },
     updateFontSize(size) {

@@ -76,6 +76,11 @@ const error = [
     name: "networkError",
     component: () => import("../views/error/NetError.vue"),
   },
+  {
+    path: "/content-not-found",
+    name: "contentNotFound",
+    component: () => import("../views/error/ContentNotFound.vue"),
+  },
 ];
 const admin = [
   {
