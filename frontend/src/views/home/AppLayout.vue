@@ -5,6 +5,7 @@ import MiniPlayer from "@/views/user/components/music/MiniPlayer.vue";
 import MobileFloatingPlayer from "@/views/user/components/music/MobileFloatingPlayer.vue";
 import { useRoute } from "vue-router";
 import { computed } from "vue";
+import zhCn from "element-plus/es/locale/lang/zh-cn";
 
 const route = useRoute();
 // 判断是否为 用户资料页面
@@ -12,37 +13,39 @@ const isUserPage = computed(() => route.name === "user");
 </script>
 
 <template>
-  <el-container>
-    <el-header>
-      <Header />
-    </el-header>
-    <el-divider />
-    <el-main :class="{ 'no-padding': isUserPage }">
-      <el-scrollbar ref="scrollbar" class="Scrollbar">
-        <router-view v-slot="{ Component, route }">
-          <keep-alive>
+  <el-config-provider :locale="zhCn">
+    <el-container>
+      <el-header>
+        <Header />
+      </el-header>
+      <el-divider />
+      <el-main :class="{ 'no-padding': isUserPage }">
+        <el-scrollbar ref="scrollbar" class="Scrollbar">
+          <router-view v-slot="{ Component, route }">
+            <keep-alive>
+              <component
+                v-if="route.meta.keepAlive"
+                :is="Component"
+                :key="route.name"
+              />
+            </keep-alive>
             <component
-              v-if="route.meta.keepAlive"
+              v-if="!route.meta.keepAlive"
               :is="Component"
               :key="route.name"
             />
-          </keep-alive>
-          <component
-            v-if="!route.meta.keepAlive"
-            :is="Component"
-            :key="route.name"
-          />
-        </router-view>
-      </el-scrollbar>
-    </el-main>
-    
-    <!-- 全局音乐播放器 -->
-    <GlobalPlayer />
-    <!-- PC端底部迷你播放器 -->
-    <MiniPlayer />
-    <!-- 移动端悬浮播放按钮 -->
-    <MobileFloatingPlayer />
-  </el-container>
+          </router-view>
+        </el-scrollbar>
+      </el-main>
+
+      <!-- 全局音乐播放器 -->
+      <GlobalPlayer />
+      <!-- PC端底部迷你播放器 -->
+      <MiniPlayer />
+      <!-- 移动端悬浮播放按钮 -->
+      <MobileFloatingPlayer />
+    </el-container>
+  </el-config-provider>
 </template>
 
 <style scoped>

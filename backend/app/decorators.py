@@ -1,4 +1,6 @@
 import os
+import time
+import logging
 from functools import wraps
 
 import requests
@@ -6,6 +8,7 @@ from flask import abort, request
 from flask.views import MethodView
 from flask_jwt_extended import current_user
 from user_agents import parse
+from flask_sqlalchemy import record_queries
 
 from . import db
 from .models import Log, Permission
@@ -125,5 +128,40 @@ def get_client_info():
     }
     if os.environ.get("FLASK_DEBUG", None):
         pass
-        # print('44', user_info)
     return user_info
+
+
+def sql_profile(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 记录开始时间
+        start_time = time.time()
+
+        # 执行函数
+        result = func(*args, **kwargs)
+
+        # 拿到 SQL 执行记录
+        queries = record_queries.get_recorded_queries()
+
+        total_sql = len(queries)
+        total_sql_time = sum(q.duration for q in queries)  # 秒
+
+        # 函数名称
+        func_name = func.__name__
+
+        logging.info("\n===== SQL STATISTICS =====")
+        logging.info(f"Function     : {func_name}")
+        logging.info(f"Total SQL    : {total_sql}")
+        logging.info(f"SQL Time     : {total_sql_time:.2f} sec")
+        logging.info(f"Total Time   : {time.time() - start_time:.2f} sec\n")
+
+        for idx, q in enumerate(queries, start=1):
+            logging.info(f"[{idx}] ({q.duration:.6f}s)")
+            logging.info(q.statement)
+            logging.info(f"Params: {q.parameters}")
+            logging.info("-" * 60)
+        logging.info("==========================\n")
+
+        return result
+
+    return wrapper
