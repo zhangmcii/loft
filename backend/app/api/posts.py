@@ -3,13 +3,11 @@ import os
 
 from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
-from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 from .. import db, limiter, socketio
 from ..decorators import DecoratedMethodView
 from ..main.uploads import del_qiniu_image
 from ..models import (
-    Comment,
     Follow,
     Image,
     ImageType,
@@ -18,21 +16,18 @@ from ..models import (
     Permission,
     Post,
     PostType,
-    Praise,
     User,
 )
 from ..utils.response import error, success
-from ..utils.time_util import DateUtils
-from ..utils.common import get_avatars_url
 from .. import cache
 from ..decorators import sql_profile
 
 
 class PostItemApi(DecoratedMethodView):
     method_decorators = {
-        "get": [],
+        "get": [sql_profile],
         "delete": [jwt_required()],
-        "patch": [jwt_required()],
+        "patch": [jwt_required(), sql_profile],
     }
 
     @staticmethod
@@ -77,8 +72,20 @@ class PostItemApi(DecoratedMethodView):
     def get(self, id):
         """获取单篇文章"""
         logging.info(f"获取文章: id={id}")
-        post = Post.query.filter_by(id=id, deleted=False).first_or_404()
-        return success(data=post.to_json())
+        # 预加载post.author
+        post = (
+            Post.query.options(
+                joinedload(Post.author).load_only(
+                    User.id, User.username, User.nickname, User.image
+                )
+            )
+            .filter_by(id=id, deleted=False)
+            .first_or_404()
+        )
+
+        posts_json = Post.batch_query_with_data([post])
+
+        return success(data=posts_json[0])
 
     def delete(self, id):
         p = Post.query.filter_by(id=id, deleted=False).first()
@@ -92,7 +99,12 @@ class PostItemApi(DecoratedMethodView):
 
     def patch(self, id):
         logging.info(f"编辑文章: id={id}")
-        post = Post.query.get_or_404(id)
+        # 预加载post.author
+        post = Post.query.options(
+            joinedload(Post.author).load_only(
+                User.id, User.username, User.nickname, User.image
+            )
+        ).get_or_404(id)
         if current_user.username != post.author.username and not current_user.can(
             Permission.ADMIN
         ):
@@ -118,7 +130,10 @@ class PostItemApi(DecoratedMethodView):
             ]
             db.session.add_all(images)
         db.session.commit()
-        return success(data=post.to_json())
+
+        posts_json = Post.batch_query_with_data([post])
+
+        return success(data=posts_json[0])
 
 
 class PostGroupApi(DecoratedMethodView):
@@ -137,6 +152,7 @@ class PostGroupApi(DecoratedMethodView):
             base_query = Post.query.filter_by(deleted=False)
 
         # 主查询：预加载作者信息
+        # joinedload() 的行为是自动创建 join
         query = base_query.options(
             joinedload(Post.author).load_only(
                 User.id, User.username, User.nickname, User.image
@@ -150,101 +166,7 @@ class PostGroupApi(DecoratedMethodView):
         if not posts:
             return [], paginate.total
 
-        # 获取文章ID列表
-        post_ids = [post.id for post in posts]
-
-        # 子查询1：获取所有文章图片
-        images_query = (
-            db.session.query(Image.related_id, Image.url, Image.describe, Image.id)
-            .filter(Image.type == ImageType.POST, Image.related_id.in_(post_ids))
-            .order_by(Image.related_id.asc(), Image.id.asc())
-            .all()
-        )
-
-        # 子查询2：获取评论数量
-        comments_count_query = (
-            db.session.query(
-                Comment.post_id, func.count(Comment.id).label("comment_count")
-            )
-            .filter(Comment.post_id.in_(post_ids))
-            .group_by(Comment.post_id)
-            .all()
-        )
-
-        # 子查询3：获取点赞数量
-        praise_count_query = (
-            db.session.query(
-                Praise.post_id, func.count(Praise.id).label("praise_count")
-            )
-            .filter(Praise.post_id.in_(post_ids))
-            .group_by(Praise.post_id)
-            .all()
-        )
-
-        # 子查询4：获取当前用户的点赞状态（如果用户已登录）
-        user_praised_dict = {}
-        if current_user:
-            user_praised_query = (
-                db.session.query(Praise.post_id)
-                .filter(
-                    Praise.post_id.in_(post_ids), Praise.author_id == current_user.id
-                )
-                .all()
-            )
-            user_praised_dict = {post_id: True for post_id, in user_praised_query}
-
-        # 整理数据为字典格式便于查找
-        images_dict = {}
-        for image in images_query:
-            if image.related_id not in images_dict:
-                images_dict[image.related_id] = []
-            images_dict[image.related_id].append(
-                {
-                    "url": get_avatars_url(image.url),
-                    "describe": image.describe,
-                    "id": image.id,
-                }
-            )
-
-        comments_count_dict = {
-            post_id: count for post_id, count in comments_count_query
-        }
-        praise_count_dict = {post_id: count for post_id, count in praise_count_query}
-
-        # 构建返回数据
-        result = []
-        for post in posts:
-            images_data = images_dict.get(post.id, [])
-            urls = [img["url"] for img in images_data]
-            pos = [img["describe"] for img in images_data]
-
-            body = post.body
-            body_html = post.body_html
-
-            if post.type == PostType.IMAGE:
-                if post.body_html:
-                    body = Post.replace_body(post.body, pos, urls)
-                    body_html = Post.replace_body_html(post.body_html, pos, urls)
-
-            json_post = {
-                "id": post.id,
-                "body": body,
-                "body_html": body_html,
-                "post_images": urls if not post.body_html else [],
-                "pos": pos,
-                "post_type": post.type.value,
-                "timestamp": post.timestamp
-                if isinstance(post.timestamp, str)
-                else DateUtils.datetime_to_str(post.timestamp),
-                "author": post.author.username,
-                "nick_name": post.author.nickname,
-                "user_id": post.author.id,
-                "comment_count": comments_count_dict.get(post.id, 0),
-                "image": get_avatars_url(post.author.image),
-                "praise_num": praise_count_dict.get(post.id, 0),
-                "has_praised": user_praised_dict.get(post.id, False),
-            }
-            result.append(json_post)
+        result = Post.batch_query_with_data(posts)
 
         return result, paginate.total
 

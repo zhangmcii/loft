@@ -5,7 +5,7 @@ from enum import Enum
 
 from flask import current_app
 from flask_jwt_extended import create_access_token, current_user
-from sqlalchemy import and_, event
+from sqlalchemy import and_, event, func
 from sqlalchemy.orm.attributes import flag_modified
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -247,7 +247,7 @@ class User(db.Model):
     @property
     def followed_posts(self):
         return Post.query.join(Follow, Follow.followed_id == Post.author_id).filter(
-            Follow.follower_id == self.id, Post.deleted == False
+            Follow.follower_id == self.id, Post.deleted
         )
 
     def __init__(self, **kwargs):
@@ -488,50 +488,192 @@ class Post(db.Model):
     notifications = db.relationship("Notification", backref="post", lazy="dynamic")
     deleted = db.Column(db.Boolean, default=False)
 
-    def to_json(self):
-        urls, pos = [], []
+    def to_json(self, extra_data):
+        """
+        纯序列化函数，不包含任何数据库查询
+        必须传入 extra_data 参数包含所有需要的外部数据：
+        {
+            'author_data': {'username': str, 'nickname': str, 'image': str, 'id': int},
+            'images': [{'url': str, 'describe': str}],
+            'comment_count': int,
+            'praise_num': int,
+            'has_praised': bool
+        }
+        """
+        if not extra_data:
+            raise ValueError("to_json() 需要额外的参数")
+
+        author_data = extra_data.get("author_data", {})
+        images = extra_data.get("images", [])
+        comment_count = extra_data.get("comment_count", 0)
+        praise_num = extra_data.get("praise_num", 0)
+        has_praised = extra_data.get("has_praised", False)
+
+        # 从预填充数据构建图片URL和位置
+        urls = [img["url"] for img in images]
+        pos = [img["describe"] for img in images]
+
         body = self.body
         body_html = self.body_html
-        if self.type == PostType.IMAGE:
-            # 查询图文或者markdown类型的文章图像
-            post_images = (
-                Image.query.filter(
-                    Image.type == ImageType.POST, Image.related_id == self.id
-                )
-                .order_by(Image.id.asc())
-                .all()
-            )
-            urls = [get_avatars_url(image.url) for image in post_images]
-            if self.body_html:
-                # 图片对应的位置信息
-                pos = [image.describe for image in post_images]
-                # 正则替换html中的<img>标签
-                body = Post.replace_body(self.body, pos, urls)
-                body_html = Post.replace_body_html(self.body_html, pos, urls)
 
-        # 提取url和pos字段
-        json_post = {
-            # 'url': url_for('api.get_post', id=self.id),
+        if self.type == PostType.IMAGE and self.body_html:
+            body = Post.replace_body(self.body, pos, urls)
+            body_html = Post.replace_body_html(self.body_html, pos, urls)
+
+        return {
             "id": self.id,
             "body": body,
             "body_html": body_html,
-            # 非markdown类型，才会给post_images赋值
             "post_images": urls if not self.body_html else [],
-            # markdown图片的位置
             "pos": pos,
             "post_type": self.type.value,
             "timestamp": self.timestamp
             if isinstance(self.timestamp, str)
             else DateUtils.datetime_to_str(self.timestamp),
-            "author": self.author.username,
-            "nick_name": self.author.nickname,
-            "user_id": self.author.id,
-            "comment_count": self.comments.count(),
-            "image": get_avatars_url(self.author.image),
-            "praise_num": self.praise.count(),
-            "has_praised": Praise.has_praised(self.id),
+            "author": author_data.get("username", ""),
+            "nick_name": author_data.get("nickname", ""),
+            "user_id": author_data.get("id", 0),
+            "comment_count": comment_count,
+            "image": author_data.get("image", ""),
+            "praise_num": praise_num,
+            "has_praised": has_praised,
         }
-        return json_post
+
+    @staticmethod
+    def _query_post_images(post_ids):
+        """
+        批量查询文章图片数据
+        返回按文章ID分组的图片数据字典
+        """
+        images_query = (
+            db.session.query(Image.related_id, Image.url, Image.describe, Image.id)
+            .filter(Image.type == ImageType.POST, Image.related_id.in_(post_ids))
+            .order_by(Image.related_id.asc(), Image.id.asc())
+            .all()
+        )
+
+        images_dict = {}
+        for image in images_query:
+            if image.related_id not in images_dict:
+                images_dict[image.related_id] = []
+            images_dict[image.related_id].append(
+                {
+                    "url": get_avatars_url(image.url),
+                    "describe": image.describe,
+                    "id": image.id,
+                }
+            )
+
+        return images_dict
+
+    @staticmethod
+    def _query_comment_counts(post_ids):
+        """
+        批量查询文章评论数量
+        返回文章ID到评论数的映射字典
+        """
+        comments_count_query = (
+            db.session.query(
+                Comment.post_id, func.count(Comment.id).label("comment_count")
+            )
+            .filter(Comment.post_id.in_(post_ids))
+            .group_by(Comment.post_id)
+            .all()
+        )
+
+        return {post_id: count for post_id, count in comments_count_query}
+
+    @staticmethod
+    def _query_praise_counts(post_ids):
+        """
+        批量查询文章点赞数量
+        返回文章ID到点赞数的映射字典
+        """
+        praise_count_query = (
+            db.session.query(
+                Praise.post_id, func.count(Praise.id).label("praise_count")
+            )
+            .filter(Praise.post_id.in_(post_ids))
+            .group_by(Praise.post_id)
+            .all()
+        )
+
+        return {post_id: count for post_id, count in praise_count_query}
+
+    @staticmethod
+    def _query_user_praised(post_ids):
+        """
+        批量查询用户对文章的点赞状态
+        返回文章ID到是否点赞的映射字典
+        """
+        current_user_id = current_user.id if current_user else None
+        if not current_user_id:
+            return {}
+
+        user_praised_query = (
+            db.session.query(Praise.post_id)
+            .filter(Praise.post_id.in_(post_ids), Praise.author_id == current_user_id)
+            .all()
+        )
+
+        return {post_id: True for post_id, in user_praised_query}
+
+    @staticmethod
+    def _build_extra_data(
+        posts, images_dict, comment_counts, praise_counts, user_praised
+    ):
+        """
+        为每篇文章构建预填充的extra_data
+        返回文章ID到extra_data的映射字典
+        """
+        extra_data_map = {}
+        for post in posts:
+            extra_data_map[post.id] = {
+                "author_data": {
+                    "username": post.author.username,
+                    "nickname": post.author.nickname,
+                    "image": get_avatars_url(post.author.image),
+                    "id": post.author.id,
+                },
+                "images": images_dict.get(post.id, []),
+                "comment_count": comment_counts.get(post.id, 0),
+                "praise_num": praise_counts.get(post.id, 0),
+                "has_praised": user_praised.get(post.id, False),
+            }
+
+        return extra_data_map
+
+    @staticmethod
+    def batch_query_with_data(posts):
+        """
+        为一组文章批量查询并预填充所有相关数据
+        返回预填充了数据后的文章列表
+        """
+
+        if not posts:
+            return []
+
+        post_ids = [post.id for post in posts]
+
+        # 1. 批量查询图片数据
+        images_dict = Post._query_post_images(post_ids)
+
+        # 2. 批量查询评论数量
+        comment_counts = Post._query_comment_counts(post_ids)
+
+        # 3. 批量查询点赞数量
+        praise_counts = Post._query_praise_counts(post_ids)
+
+        # 4. 批量查询用户点赞状态
+        user_praised = Post._query_user_praised(post_ids)
+
+        # 5. 构建extra_data映射
+        extra_data_map = Post._build_extra_data(
+            posts, images_dict, comment_counts, praise_counts, user_praised
+        )
+
+        # 6. 批量转换为JSON
+        return [post.to_json(extra_data=extra_data_map[post.id]) for post in posts]
 
     @staticmethod
     def from_json(json_post):

@@ -3,9 +3,10 @@ import logging
 
 from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
+from sqlalchemy.orm import joinedload
 
 from .. import db
-from ..decorators import admin_required
+from ..decorators import admin_required, sql_profile
 from ..models import Post, Role, User
 from ..utils.response import error, not_found, success
 from . import api
@@ -39,6 +40,7 @@ def get_user_by_username(username):
 
 
 @api.route("/users/<string:username>/posts")
+@sql_profile
 def get_post_by_user(username):
     """根据用户名获取文章的资料页面路由"""
     logging.info(f"获取用户文章: username={username}")
@@ -49,6 +51,11 @@ def get_post_by_user(username):
     page = request.args.get("page", 1, type=int)
     pagination = (
         user.posts.filter_by(deleted=False)
+        .options(
+            joinedload(Post.author).load_only(
+                User.id, User.username, User.nickname, User.image
+            )
+        )
         .order_by(Post.timestamp.desc())
         .paginate(
             page=page,
@@ -57,9 +64,10 @@ def get_post_by_user(username):
         )
     )
     posts = pagination.items
-    return success(
-        data={"posts": [post.to_json() for post in posts]}, total=pagination.total
-    )
+
+    posts_json = Post.batch_query_with_data(posts)
+
+    return success(data={"posts": posts_json}, total=pagination.total)
 
 
 @api.route("/users/generate_posts")

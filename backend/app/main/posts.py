@@ -3,6 +3,7 @@ import logging
 
 from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
+from sqlalchemy.orm import joinedload
 
 from .. import db, limiter
 from ..models import Image, ImageType, Permission, Post, PostType, User
@@ -55,11 +56,22 @@ def index():
         query = current_user.followed_posts
     else:
         query = Post.query.filter_by(deleted=False)
-    paginate = query.order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
+
+    # 预加载作者信息
+    paginate = (
+        query.options(
+            joinedload(Post.author).load_only(
+                User.id, User.username, User.nickname, User.image
+            )
+        )
+        .order_by(Post.timestamp.desc())
+        .paginate(page=page, per_page=per_page, error_out=False)
     )
     posts = paginate.items
-    return success(data=[post.to_json() for post in posts], total=query.count())
+
+    posts_json = Post.batch_query_with_data(posts)
+
+    return success(data=posts_json, total=query.count())
 
 
 @main.route("/user/<username>")
@@ -72,12 +84,26 @@ def user(username):
         return not_found("用户不存在")
 
     page = request.args.get("page", 1, type=int)
-    pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=current_app.config["FLASKY_POSTS_PER_PAGE"], error_out=False
+    pagination = (
+        user.posts.filter_by(deleted=False)
+        .options(
+            joinedload(Post.author).load_only(
+                User.id, User.username, User.nickname, User.image
+            )
+        )
+        .order_by(Post.timestamp.desc())
+        .paginate(
+            page=page,
+            per_page=current_app.config["FLASKY_POSTS_PER_PAGE"],
+            error_out=False,
+        )
     )
     posts = pagination.items
+
+    posts_json = Post.batch_query_with_data(posts)
+
     return success(
-        data={"posts": [post.to_json() for post in posts]}, total=user.posts.count()
+        data={"posts": posts_json}, total=user.posts.filter_by(deleted=False).count()
     )
 
 
@@ -123,4 +149,7 @@ def create_post():
     ]
     db.session.add_all(images)
     db.session.commit()
-    return success(data=[p.to_json()])
+
+    posts_json = Post.batch_query_with_data([p])
+
+    return success(data=posts_json)
