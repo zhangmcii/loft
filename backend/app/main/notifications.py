@@ -48,12 +48,21 @@ def new_post_notification(post_id):
 def get_currentUsernotification():
     """获取当前用户的所有通知"""
     logging.info(f"获取用户通知: user_id={current_user.id}")
-    d = (
-        Notification.query.filter_by(receiver_id=current_user.id)
+    # 预加载触发用户数据避免N+1查询
+    from sqlalchemy.orm import joinedload
+    from ..models import User
+
+    notifications = (
+        Notification.query.options(
+            joinedload(Notification.trigger_user).load_only(
+                User.id, User.username, User.nickname, User.image
+            )
+        )
+        .filter_by(receiver_id=current_user.id)
         .order_by(Notification.created_at.desc())
         .all()
     )
-    return success(data=[item.to_json() for item in d])
+    return success(data=[item.to_json() for item in notifications])
 
 
 @main.route("/notification/read", methods=["POST"])
