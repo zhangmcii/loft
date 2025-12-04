@@ -130,7 +130,14 @@ const routes = [
       {
         path: "/uploadBg",
         name: "uploadBg",
-        component: () => import("../views/user/admin/BackgoundImage.vue"),
+        component: () => import("../views/user/admin/BgShare.vue"),
+        meta: { requireAuth: true },
+      },
+      // 上传公共图像库图片
+      {
+        path: "/uploadAva",
+        name: "uploadAva",
+        component: () => import("../views/user/admin/AvatarsShare.vue"),
         meta: { requireAuth: true },
       },
       {

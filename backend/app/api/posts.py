@@ -20,14 +20,14 @@ from ..models import (
 )
 from ..utils.response import error, success
 from .. import cache
-from ..decorators import sql_profile
+from ..decorators import log_operate
 
 
 class PostItemApi(DecoratedMethodView):
     method_decorators = {
-        "get": [sql_profile],
+        "get": [],
         "delete": [jwt_required()],
-        "patch": [jwt_required(), sql_profile],
+        "patch": [jwt_required()],
     }
 
     @staticmethod
@@ -138,8 +138,8 @@ class PostItemApi(DecoratedMethodView):
 
 class PostGroupApi(DecoratedMethodView):
     method_decorators = {
-        # "get": [log_operate],
-        "get": [sql_profile],
+        "get": [log_operate],
+        # "get": [sql_profile],
         "post": [jwt_required()],
     }
 
