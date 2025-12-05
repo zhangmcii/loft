@@ -39,7 +39,14 @@ function front_to_remote(){
 
     # 压缩本地dist目录
     echo "压缩本地dist目录..."
-    tar -czf dist.tar.gz -C $LOCAL_BUILD_DIR .
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macos明确指定不包含扩展属性
+        echo "macos系统打包，去除扩展属性..."
+        tar --no-xattrs --no-mac-metadata -czf dist.tar.gz -C $LOCAL_BUILD_DIR .
+    else
+        echo "非macos系统打包..."
+        tar -czf dist.tar.gz -C $LOCAL_BUILD_DIR .
+    fi
 
     ssh $ROMOTE_USER@$ROMOTE_HOST "echo '删除远程目录旧文件...'; rm -rf $SERVER_DIR/*;"
 
