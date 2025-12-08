@@ -368,8 +368,7 @@ class User(db.Model):
         for user in User.query.all():
             if not user.is_following(user):
                 user.follow(user)
-                db.session.add(user)
-                db.session.commit()
+        db.session.commit()
 
     def send_msg(self, user, content):
         m = Message(sender=self, receiver=user, content=content)

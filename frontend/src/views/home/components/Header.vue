@@ -274,8 +274,7 @@ export default {
 
 .daily-sentence {
   height: 40px;
-  min-width: 200px;
-  max-width: 300px;
+  min-width: 250px;
   font-size: 14px;
   line-height: 40px;
   padding: 0 12px;

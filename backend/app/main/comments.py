@@ -2,8 +2,7 @@
 import logging
 
 from flask import current_app, request
-from flask_jwt_extended import (current_user, jwt_required,
-                                verify_jwt_in_request)
+from flask_jwt_extended import current_user, jwt_required, verify_jwt_in_request
 from werkzeug.exceptions import TooManyRequests
 
 from .. import db, limiter, socketio
@@ -180,7 +179,6 @@ def moderate_enable(id):
     try:
         comment = Comment.query.get_or_404(id)
         comment.disabled = False
-        db.session.add(comment)
         db.session.commit()
         comments, total = all_comments(1)
         return success(message="评论已恢复", data=comments, total=total)
@@ -199,7 +197,6 @@ def moderate_disable(id):
     try:
         comment = Comment.query.get_or_404(id)
         comment.disabled = True
-        db.session.add(comment)
         db.session.commit()
         comments, total = all_comments(1)
         return success(message="评论已禁用", data=comments, total=total)

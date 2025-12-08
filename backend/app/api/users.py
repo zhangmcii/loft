@@ -110,13 +110,12 @@ def edit_profile_admin(id):
         user.email = user_info.get("email")
         user.username = user_info.get("username")
         user.confirmed = user_info.get("confirmed")
-        user.role = Role.query.get(int(user_info.get("role")))
+        user.role = Role.query.get(int(user_info.get("roleId")))
 
         user.nickname = user_info.get("nickname")
         user.location = user_info.get("location")
         user.about_me = user_info.get("about_me")
 
-        db.session.add(user)
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:

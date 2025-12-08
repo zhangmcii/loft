@@ -34,7 +34,6 @@ class PostItemApi(DecoratedMethodView):
     def soft_delete(post):
         logging.info(f"逻辑删除文章: id={post.id}")
         post.deleted = True
-        db.session.add(post)
         db.session.commit()
 
     @staticmethod
@@ -115,7 +114,6 @@ class PostItemApi(DecoratedMethodView):
         j = request.get_json()
         post.body = j.get("body", post.body)
         post.body_html = j.get("bodyHtml") if j.get("bodyHtml") else None
-        db.session.add(post)
         # 编辑markdown文章时新增图片
         images = j.get("images")
         if images:

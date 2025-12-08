@@ -143,7 +143,6 @@ def change_email(validated_data):
 def change_password(validated_data):
     if current_user.verify_password(validated_data.old_password):
         current_user.password = validated_data.new_password
-        db.session.add(current_user)
         db.session.commit()
         return success()
     return error(message="原密码错误")
@@ -162,7 +161,6 @@ def reset_password(validated_data):
         if not user:
             return error(message="此邮箱尚未绑定")
         user.password = password
-        db.session.add(user)
         db.session.commit()
         return success()
     return error(message="验证码错误")
@@ -177,7 +175,6 @@ def change_password_admin():
     user = User.query.filter_by(username=username).first()
     if user:
         user.password = new_password
-        db.session.add(user)
         db.session.commit()
         return success()
     return error(message="用户不存在")

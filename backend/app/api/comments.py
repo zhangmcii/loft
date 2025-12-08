@@ -260,8 +260,10 @@ class CommentManageApi(DecoratedMethodView):
 
     def patch(self, comment_id):
         """禁用/恢复评论"""
-        logging.info(f"{current_user.username}恢复评论: id={comment_id}")
         status = request.json.get("action")
+        logging.info(
+            f"{current_user.username}{'开启' if status == 'enable' else '禁用'}评论: id={comment_id}"
+        )
         try:
             comment = Comment.query.get_or_404(comment_id)
             if status == "enable":
@@ -270,7 +272,6 @@ class CommentManageApi(DecoratedMethodView):
                 comment.disabled = True
             else:
                 return error(400, f"传递参数错误, status{status}")
-            db.session.add(comment)
             db.session.commit()
             comments, total = CommentManageApi.all_comments(1)
             return success(message="操作成功", data=comments, total=total)

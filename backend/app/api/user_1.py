@@ -66,7 +66,6 @@ class UserImageApi(DecoratedMethodView):
                 )
                 user = User.query.get_or_404(id)
                 user.image = image
-                db.session.add(user)
                 db.session.commit()
                 return success(data={"image": get_avatars_url(image)})
             except Exception as e:
@@ -95,7 +94,6 @@ class UserImageApi(DecoratedMethodView):
 #             user.location = user_info.get("location")
 #             user.about_me = user_info.get("about_me")
 #
-#             db.session.add(user)
 #             db.session.commit()
 #             return success(message="用户资料更新成功")
 #         except Exception as e:

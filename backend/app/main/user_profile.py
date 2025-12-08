@@ -25,7 +25,6 @@ def edit_profile():
         current_user.nickname = user_info.get("nickname")
         current_user.location = user_info.get("location")
         current_user.about_me = user_info.get("about_me")
-        db.session.add(current_user)
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
@@ -52,7 +51,6 @@ def edit_profile_admin(id):
         user.location = user_info.get("location")
         user.about_me = user_info.get("about_me")
 
-        db.session.add(user)
         db.session.commit()
         return success(message="用户资料更新成功")
     except Exception as e:
@@ -69,7 +67,6 @@ def add_user_image():
     try:
         image = request.get_json().get("image")
         current_user.image = image
-        db.session.add(current_user)
         db.session.commit()
         return success(data={"image": get_avatars_url(image)})
     except Exception as e:

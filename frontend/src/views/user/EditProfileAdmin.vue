@@ -197,7 +197,7 @@ export default {
       </el-form-item>
       <el-form-item label="角色">
         <el-select
-          v-model="formLabelAlign.role"
+          v-model="formLabelAlign.roleId"
           placeholder="Select"
           style="width: 240px"
         >

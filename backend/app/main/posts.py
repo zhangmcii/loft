@@ -124,7 +124,6 @@ def edit(id):
         j = request.get_json()
         post.body = j.get("body")
         post.body_html = j.get("bodyHtml") if j.get("bodyHtml") else None
-        db.session.add(post)
         db.session.commit()
         return success(message="文章编辑成功")
     except Exception as e:
@@ -142,7 +141,6 @@ def create_post():
     content = data.get("content", "")
     image_urls = data.get("imageUrls", [])
     p = Post(body=content, body_html=None, type=PostType.IMAGE, author=current_user)
-    db.session.add(p)
     db.session.flush()
     images = [
         Image(url=url, type=ImageType.POST, related_id=p.id) for url in image_urls
