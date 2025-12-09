@@ -5,9 +5,10 @@ from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required, verify_jwt_in_request
 from werkzeug.exceptions import TooManyRequests
 
-from .. import db, limiter, socketio
+from .. import db, limiter
 from ..decorators import permission_required
-from ..models import Comment, Notification, NotificationType, Permission, Post
+from ..models import Comment, NotificationType, Permission, Post
+from ..mycelery.notification_task import create_comment_notifications
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
 from ..utils.text_filter import DFAFilter
@@ -53,20 +54,11 @@ def post(id):
             root_comment=root_comment,
         )
         db.session.add(comment)
-        db.session.flush()
-        # 通知
-        notifications = notice_by_comment_type(
-            direct_parent, root_comment, post, comment, at
-        )
-        db.session.add_all(notifications)
         db.session.commit()
-        # 实时推送
-        for notification in notifications:
-            socketio.emit(
-                "new_notification",
-                notification.to_json(),
-                to=str(notification.receiver_id),
-            )
+        # 异步通知
+        create_comment_notification(
+            post.id, comment.id, direct_parent, root_comment, post, at
+        )
         current_comment = {
             "id": comment.id,
             "parentId": comment.root_comment_id,
@@ -92,49 +84,30 @@ def post(id):
         return error(500, f"发布评论失败: {str(e)}")
 
 
-def notice_by_comment_type(direct_parent, root_comment, post, comment, at_list):
-    """
-    根评论: 通知文章作者
-    一级回复或其他回复: 不通知文章作者，仅通知被直接回复的用户
-    """
-    notifications = []
-    # 根评论
+def create_comment_notification(
+    post_id, comment_id, direct_parent, root_comment, post, at_list
+):
+    """异步创建评论通知"""
+    notifications_data = []
+
+    # 根评论：通知文章作者
     if not direct_parent and not root_comment:
         if current_user.id != post.author_id:
-            notifications.append(
-                Notification(
-                    receiver_id=post.author_id,
-                    trigger_user_id=current_user.id,
-                    post_id=post.id,
-                    comment_id=comment.id,
-                    type=NotificationType.COMMENT,
-                )
-            )
-    # 一级回复或其他回复
-    else:
+            notifications_data.append((post.author_id, NotificationType.COMMENT))
+    # 回复：通知被直接回复的用户
+    elif direct_parent:
         if current_user.id != direct_parent.author_id:
-            notifications.append(
-                Notification(
-                    receiver_id=direct_parent.author_id,
-                    trigger_user_id=current_user.id,
-                    post_id=post.id,
-                    comment_id=comment.id,
-                    type=NotificationType.REPLY,
-                )
-            )
+            notifications_data.append((direct_parent.author_id, NotificationType.REPLY))
 
-    # @的通知
-    for receiver_id in at_list:
-        notifications.append(
-            Notification(
-                receiver_id=receiver_id,
-                trigger_user_id=current_user.id,
-                post_id=post.id,
-                comment_id=comment.id,
-                type=NotificationType.AT,
-            )
+    # @通知
+    if at_list:
+        notifications_data.extend(
+            [(receiver_id, NotificationType.AT) for receiver_id in at_list]
         )
-    return notifications
+
+    create_comment_notifications.delay(
+        post_id, comment_id, current_user.id, notifications_data
+    )
 
 
 def all_comments(page):

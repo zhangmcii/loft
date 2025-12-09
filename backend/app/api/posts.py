@@ -4,20 +4,19 @@ import os
 from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy.orm import joinedload
-from .. import db, limiter, socketio
+from .. import db, limiter
 from ..decorators import DecoratedMethodView
 from ..main.uploads import del_qiniu_image
 from ..models import (
     Follow,
     Image,
     ImageType,
-    Notification,
-    NotificationType,
     Permission,
     Post,
     PostType,
     User,
 )
+from ..mycelery.notification_task import create_new_post_notifications
 from ..utils.response import error, success
 from .. import cache
 from ..decorators import log_operate
@@ -170,7 +169,7 @@ class PostGroupApi(DecoratedMethodView):
 
     @staticmethod
     def new_post_notification(post_id):
-        """创建新文章通知并推送给粉丝"""
+        """异步创建新文章通知并推送给粉丝"""
         # 批量查询当前用户的所有粉丝（排除自己）
         followers = (
             Follow.query.filter_by(followed_id=current_user.id)
@@ -178,29 +177,8 @@ class PostGroupApi(DecoratedMethodView):
             .all()
         )
 
-        if not followers:
-            return
-
-        # 批量创建通知
-        notifications = [
-            Notification(
-                receiver_id=follow.follower_id,
-                trigger_user_id=current_user.id,
-                post_id=post_id,
-                type=NotificationType.NewPost,
-            )
-            for follow in followers
-        ]
-        db.session.add_all(notifications)
-        db.session.commit()
-
-        # 批量推送通知
-        for notification in notifications:
-            socketio.emit(
-                "new_notification",
-                notification.to_json(),
-                to=str(notification.receiver_id),
-            )
+        follower_ids = [follow.follower_id for follow in followers]
+        create_new_post_notifications.delay(post_id, current_user.id, follower_ids)
 
     @staticmethod
     def submit_to_db(post_type, body, body_html, images=None):

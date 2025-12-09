@@ -1,6 +1,10 @@
-# -*- coding: utf-8 -*-
-import logging
+import eventlet
+
+# 打补丁
+eventlet.monkey_patch()
+
 import os
+import logging
 
 from app.event import *
 from app.utils.common import get_local_ip
@@ -27,7 +31,6 @@ if os.environ.get("FLASK_COVERAGE"):
     COV.start()
 
 import sys
-
 import click
 from app import create_app, db, socketio
 from app.models import (
@@ -44,6 +47,7 @@ from app.models import (
     ImageType,
 )
 from flask_migrate import Migrate, upgrade
+
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate(app, db)

@@ -75,7 +75,14 @@ def create_app(config_name):
     mail.init_app(app)
     redis.init_app(app, decode_responses=True)
     celery_init_app(app)
-    socketio.init_app(app, cors_allowed_origins="*", ping_timeout=30, ping_interval=60)
+    socketio.init_app(
+        app,
+        cors_allowed_origins="*",
+        ping_timeout=30,
+        ping_interval=60,
+        message_queue=app.config["SOCKETIO_MESSAGE_QUEUE"],
+    )
+
     limiter.init_app(app)
     cache.init_app(app)
 

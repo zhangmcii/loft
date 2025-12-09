@@ -2,11 +2,11 @@
 import logging
 
 from flask import request
-from flask_jwt_extended import (current_user, jwt_required,
-                                verify_jwt_in_request)
+from flask_jwt_extended import current_user, jwt_required, verify_jwt_in_request
 
-from .. import db, socketio
-from ..models import Comment, Notification, NotificationType, Post, Praise
+from .. import db
+from ..models import Comment, Post, Praise
+from ..mycelery.notification_task import create_like_notifications
 from ..utils.response import error, success
 from . import main
 
@@ -29,24 +29,13 @@ def praise(id):
         try:
             praise = Praise(post=post, author=current_user)
             db.session.add(praise)
-
-            # 将挂起的更改发送到数据库，但不会提交事务
-            if current_user.id != post.author_id:
-                db.session.flush()
-                notification = Notification(
-                    receiver_id=post.author_id,
-                    trigger_user_id=praise.author_id,
-                    post_id=post.id,
-                    comment_id=None,
-                    type=NotificationType.LIKE,
-                )
-                db.session.add(notification)
             db.session.commit()
 
+            # 异步创建点赞通知
             if current_user.id != post.author_id:
-                socketio.emit(
-                    "new_notification", notification.to_json(), to=str(post.author_id)
-                )  # 发送到作者的房间
+                create_like_notifications.delay(
+                    post.id, None, current_user.id, post.author_id
+                )
 
             return success(
                 data={"praise_total": post.praise.count(), "has_praised": True}
@@ -72,26 +61,13 @@ def praise_comment(id):
         try:
             praise = Praise(comment=comment, author=current_user)
             db.session.add(praise)
-
-            # 将挂起的更改发送到数据库，但不会提交事务
-            if current_user.id != comment.author_id:
-                db.session.flush()
-                notification = Notification(
-                    receiver_id=comment.author_id,
-                    trigger_user_id=praise.author_id,
-                    post_id=comment.post_id,
-                    comment_id=comment.id,
-                    type=NotificationType.LIKE,
-                )
-                db.session.add(notification)
             db.session.commit()
 
+            # 异步创建点赞通知
             if current_user.id != comment.author_id:
-                socketio.emit(
-                    "new_notification",
-                    notification.to_json(),
-                    to=str(comment.author_id),
-                )  # 发送到作者的房间
+                create_like_notifications.delay(
+                    comment.post_id, comment.id, current_user.id, comment.author_id
+                )
 
             return success(data={"praise_total": comment.praise.count()})
         except Exception as e:

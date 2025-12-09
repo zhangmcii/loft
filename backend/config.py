@@ -48,6 +48,14 @@ class Config:
         broker_url=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/1",
         result_backend=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/2",
         timezone="Asia/Shanghai",
+        task_serializer="pickle",
+        result_serializer="pickle",
+        accept_content=["pickle", "json"],
+    )
+
+    # 存储socketio的消息队列
+    SOCKETIO_MESSAGE_QUEUE = (
+        f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/4"
     )
 
     @staticmethod

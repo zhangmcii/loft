@@ -8,8 +8,8 @@ from sqlalchemy.orm import joinedload
 from .. import db, limiter
 from ..models import Image, ImageType, Permission, Post, PostType, User
 from ..utils.response import error, forbidden, not_found, success
+from ..mycelery.notification_task import create_new_post_notifications
 from . import main
-from .notifications import new_post_notification
 
 
 # --------------------------- 博客文章 ---------------------------
@@ -41,7 +41,18 @@ def index():
                 ]
                 db.session.add_all(images)
             db.session.commit()
-            new_post_notification(post.id)
+
+            # 异步创建新文章通知
+            from ..models import Follow
+
+            followers = (
+                Follow.query.filter_by(followed_id=current_user.id)
+                .filter(Follow.follower_id != current_user.id)
+                .all()
+            )
+            follower_ids = [follow.follower_id for follow in followers]
+            create_new_post_notifications.delay(post.id, current_user.id, follower_ids)
+
             logging.info(f"创建新文章: user_id={current_user.id}, post_id={post.id}")
         except Exception as e:
             logging.error(f"创建文章失败: {str(e)}", exc_info=True)

@@ -4,45 +4,13 @@ import logging
 from flask import request
 from flask_jwt_extended import current_user, jwt_required
 
-from .. import db, socketio
-from ..models import Follow, Notification, NotificationType
+from .. import db
+from ..models import Notification
 from ..utils.response import success
 from . import main
 
 
 # --------------------------- 通知功能 ---------------------------
-def new_post_notification(post_id):
-    """创建新文章通知并推送给粉丝"""
-    # 查询当前用户的所有粉丝（排除自己）
-    followers = Follow.query.filter_by(followed_id=current_user.id).all()
-
-    # 为每个粉丝创建通知并推送
-    for follow in followers:
-        # 跳过作者自己（虽然逻辑上自己不会关注自己，但以防万一）
-        if follow.follower_id == current_user.id:
-            continue
-
-        # 创建通知
-        notification = Notification(
-            receiver_id=follow.follower_id,  # 粉丝ID
-            trigger_user_id=current_user.id,  # 触发用户（作者）
-            post_id=post_id,  # 关联文章ID
-            type=NotificationType.NewPost,  # 通知类型：新文章
-        )
-        db.session.add(notification)
-        db.session.flush()  # 刷新以获取通知ID
-
-        # 实时推送给粉丝
-        socketio.emit(
-            "new_notification",
-            notification.to_json(),
-            to=str(follow.follower_id),  # 发送到粉丝的房间
-        )
-
-    # 提交所有通知
-    db.session.commit()
-
-
 @main.route("/notifications")
 @jwt_required()
 def get_currentUsernotification():

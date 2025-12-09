@@ -8,6 +8,8 @@ from . import db, socketio
 from .models import Message, Notification, NotificationType, User
 from .utils.socket_util import ManageSocket
 from .utils.status import UserStatus
+from .mycelery.notification_task import create_chat_notifications
+
 
 status_manager = UserStatus()
 socket_manager = ManageSocket()
@@ -102,20 +104,12 @@ def handle_send_message(data):
             msg.is_read = True
             socketio.emit("new_message", msg.to_json(), to=str(receiver_id))
         else:
-            # 接收者离线或者不在聊天页面，都生成通知
-            notification = Notification(
-                receiver_id=receiver_id,
-                trigger_user_id=sender_id,
-                type=NotificationType.CHAT,
-            )
-            db.session.add(notification)
-            db.session.flush()
+            # 接收者离线或者不在聊天页面，异步生成通知
+
+            create_chat_notifications.delay(receiver_id, sender_id, msg.id)
 
             if receiver_status is not None and receiver_status.get("online") == "1":
-                logging.info(f"用户 {receiver_id} 在线但不在聊天页面，发送通知")
-                socketio.emit(
-                    "new_notification", notification.to_json(), to=str(receiver_id)
-                )
+                logging.info(f"用户 {receiver_id} 在线但不在聊天页面，消息已保存")
             else:
                 logging.info(f"用户 {receiver_id} 离线，消息已保存，下次上线可查看通知")
 

@@ -4,9 +4,10 @@ import logging
 from flask import request
 from flask_jwt_extended import current_user, jwt_required
 
-from .. import db, socketio
+from .. import db
 from ..decorators import DecoratedMethodView
-from ..models import Comment, Notification, NotificationType, Post, Praise
+from ..models import Comment, Post, Praise
+from ..mycelery.notification_task import create_like_notifications
 from ..utils.response import error, success
 from . import api
 
@@ -48,7 +49,6 @@ class PraisePostApi(DecoratedMethodView):
         """文章点赞"""
         logging.info(f"{current_user.username}文章点赞: id={post_id}")
         post = Post.query.get_or_404(post_id)
-
         # 防止用户重复点赞
         p = Praise.query.filter_by(author_id=current_user.id, post_id=post_id).first()
         if p:
@@ -58,27 +58,13 @@ class PraisePostApi(DecoratedMethodView):
             praise = Praise(post=post, author=current_user)
             db.session.add(praise)
 
-            notifications = []
+            # 异步创建点赞通知
             if current_user.id != post.author_id:
-                notifications.append(
-                    Notification(
-                        receiver_id=post.author_id,
-                        trigger_user_id=current_user.id,
-                        post_id=post.id,
-                        comment_id=None,
-                        type=NotificationType.LIKE,
-                    )
+                create_like_notifications.delay(
+                    post.id, None, current_user.id, post.author_id
                 )
-                db.session.add_all(notifications)
 
             db.session.commit()
-
-            if notifications:
-                socketio.emit(
-                    "new_notification",
-                    notifications[0].to_json(),
-                    to=str(post.author_id),
-                )
             # 使用relationship的len()替代count()查询
             return success(
                 data={"praise_total": post.praise.count(), "has_praised": True}
@@ -121,27 +107,13 @@ class PraiseCommentApi(DecoratedMethodView):
             praise = Praise(comment=comment, author=current_user)
             db.session.add(praise)
 
-            notifications = []
+            # 异步创建点赞通知
             if current_user.id != comment.author_id:
-                notifications.append(
-                    Notification(
-                        receiver_id=comment.author_id,
-                        trigger_user_id=current_user.id,
-                        post_id=comment.post_id,
-                        comment_id=comment.id,
-                        type=NotificationType.LIKE,
-                    )
+                create_like_notifications.delay(
+                    comment.post_id, comment.id, current_user.id, comment.author_id
                 )
-                db.session.add_all(notifications)
 
             db.session.commit()
-
-            if notifications:
-                socketio.emit(
-                    "new_notification",
-                    notifications[0].to_json(),
-                    to=str(comment.author_id),
-                )
 
             # 使用relationship的len()替代count()查询
             return success(data={"praise_total": comment.praise.count()})
