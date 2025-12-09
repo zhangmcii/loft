@@ -1,10 +1,40 @@
 #!/bin/bash
 
+function detect_platform(){
+    if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+        echo "操作系统: Windows"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        if sysctl -n machdep.cpu.brand_string | grep -q "Apple"; then
+            echo "操作系统 mac_arm"
+        else
+            echo "操作系统 mac_intel"
+        fi
+    else
+       echo "操作系统: 未知 ($OSTYPE)"
+    fi
+}
+
+# ...前面代码不变...
+
 # 启动后端服务
 echo "启动后端服务..."
 cd backend
 python flasky.py &
 BACKEND_PID=$!
+
+echo "启动Celery服务..."
+platform=$(detect_platform)
+case $platform in
+    "windows")
+        celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log -P eventlet &
+        ;;
+    "mac_arm"|"mac_intel")
+        celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log &
+        ;;
+    *)
+        ;;
+esac
+CELERY_PID=$!
 
 # 启动前端服务
 echo "启动前端服务..."
@@ -12,12 +42,7 @@ cd ../frontend
 npm run dev &
 FRONTEND_PID=$!
 
-# 捕获CTRL+C信号，关闭所有进程
-trap "kill $BACKEND_PID $FRONTEND_PID; exit" INT
+trap "kill $BACKEND_PID $CELERY_PID $FRONTEND_PID 2>/dev/null; exit" INT
 
-# 等待所有进程完成
 wait
 
-# echo "服务已启动:"
-# echo "- 后端API: http://localhost:5000"
-# echo "- 前端应用: http://localhost:8080"
