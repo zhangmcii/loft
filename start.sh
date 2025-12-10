@@ -2,19 +2,17 @@
 
 function detect_platform(){
     if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-        echo "操作系统: Windows"
+        echo "windows"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         if sysctl -n machdep.cpu.brand_string | grep -q "Apple"; then
-            echo "操作系统 mac_arm"
+            echo "mac_arm"
         else
-            echo "操作系统 mac_intel"
+            echo "mac_intel"
         fi
     else
-       echo "操作系统: 未知 ($OSTYPE)"
+       echo "unknown"
     fi
 }
-
-# ...前面代码不变...
 
 # 启动后端服务
 echo "启动后端服务..."
@@ -26,12 +24,15 @@ echo "启动Celery服务..."
 platform=$(detect_platform)
 case $platform in
     "windows")
+        echo "操作系统: Windows"
         celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log -P eventlet &
         ;;
     "mac_arm"|"mac_intel")
+        echo "操作系统: macOS"
         celery -A app.make_celery worker -B --loglevel INFO --logfile=logs/celery.log &
         ;;
     *)
+        echo "操作系统: 未知 ($OSTYPE)"
         ;;
 esac
 CELERY_PID=$!
@@ -45,4 +46,3 @@ FRONTEND_PID=$!
 trap "kill $BACKEND_PID $CELERY_PID $FRONTEND_PID 2>/dev/null; exit" INT
 
 wait
-

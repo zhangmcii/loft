@@ -471,13 +471,21 @@ export default {
     margin: 0.8em 0;
   }
 
+  // 无序列表
   ul {
     list-style-type: disc;
     padding-left: 2em;
   }
 
+  // 有序列表
+  ol {
+    list-style-type: decimal;
+    padding-left: 2em;
+  }
+
   li {
     margin: 0.4em 0;
+    line-height: 1.6;
   }
 
   // 引用样式
@@ -499,7 +507,20 @@ export default {
     overflow: auto;
   }
 
-  code {
+  // 代码块内的 code 元素样式
+  pre code {
+    font-family: Consolas, Monaco, "Andale Mono", monospace;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 0.9em;
+    color: inherit;
+    display: block;
+    line-height: 1.5;
+  }
+
+  // 行内代码样式
+  :not(pre) > code {
     font-family: Consolas, Monaco, "Andale Mono", monospace;
     background-color: #f6f8fa;
     padding: 0.2em 0.4em;
@@ -607,6 +628,55 @@ export default {
 
   // 避免复制按钮挡住代码
   padding-top: 2.5em !important;
+
+  // 确保语法高亮背景色统一
+  code {
+    background: none !important;
+
+    // 处理语法高亮的各类元素
+    .hljs-keyword,
+    .hljs-selector-tag,
+    .hljs-built_in,
+    .hljs-name,
+    .hljs-tag {
+      color: #d73a49;
+    }
+
+    .hljs-string,
+    .hljs-title,
+    .hljs-section,
+    .hljs-attribute,
+    .hljs-literal,
+    .hljs-template-tag,
+    .hljs-template-variable,
+    .hljs-type,
+    .hljs-addition {
+      color: #032f62;
+    }
+
+    .hljs-comment,
+    .hljs-quote,
+    .hljs-deletion,
+    .hljs-meta {
+      color: #6a737d;
+    }
+
+    .hljs-number,
+    .hljs-regexp,
+    .hljs-literal,
+    .hljs-built_in,
+    .hljs-builtin-name {
+      color: #005cc5;
+    }
+
+    .hljs-class .hljs-title {
+      color: #6f42c1;
+    }
+
+    .hljs-function .hljs-title {
+      color: #6f42c1;
+    }
+  }
 }
 
 // 适配移动端
