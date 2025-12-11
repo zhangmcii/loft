@@ -140,8 +140,8 @@ class PostGroupApi(DecoratedMethodView):
         "post": [jwt_required()],
     }
 
-    # @cache.memoize(timeout=60)
     @staticmethod
+    @cache.memoize(timeout=60)
     def query_post(page, per_page, tab_name=None):
         if tab_name and tab_name == "showFollowed":
             base_query = current_user.followed_posts
