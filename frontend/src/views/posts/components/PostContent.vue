@@ -414,17 +414,13 @@ export default {
   padding: 0;
 }
 
-.base {
+.v-note-wrapper {
+  min-height: 25px;
+  border: none !important;
   font-size: 16px;
   line-height: 1.8;
   letter-spacing: 0.02em;
   color: #333;
-}
-
-.v-note-wrapper {
-  min-height: 25px;
-  border: none !important;
-  @extend .base;
 }
 
 // 优化 markdown 内容样式
@@ -432,7 +428,7 @@ export default {
   padding: 0 !important;
   background-color: transparent !important;
 
-  // 标题样式优化
+  // 标题样式
   h1,
   h2,
   h3,
@@ -458,29 +454,24 @@ export default {
     padding-bottom: 0.2em;
   }
 
-  // 段落样式
+  // 段落和列表样式
   p {
     margin: 0.8em 0 1.2em;
     line-height: 1.8;
   }
 
-  // 列表样式
   ul,
   ol {
-    padding-left: 1.5em;
+    padding-left: 2em;
     margin: 0.8em 0;
   }
 
-  // 无序列表
   ul {
     list-style-type: disc;
-    padding-left: 2em;
   }
 
-  // 有序列表
   ol {
     list-style-type: decimal;
-    padding-left: 2em;
   }
 
   li {
@@ -505,21 +496,19 @@ export default {
     background-color: #f6f8fa !important;
     padding: 1em;
     overflow: auto;
+
+    code {
+      font-family: Consolas, Monaco, "Andale Mono", monospace;
+      background-color: transparent !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      font-size: 0.9em;
+      color: inherit;
+      display: block;
+      line-height: 1.5;
+    }
   }
 
-  // 代码块内的 code 元素样式
-  pre code {
-    font-family: Consolas, Monaco, "Andale Mono", monospace;
-    background-color: transparent !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    font-size: 0.9em;
-    color: inherit;
-    display: block;
-    line-height: 1.5;
-  }
-
-  // 行内代码样式
   :not(pre) > code {
     font-family: Consolas, Monaco, "Andale Mono", monospace;
     background-color: #f6f8fa;
@@ -529,7 +518,7 @@ export default {
     color: #e83e8c;
   }
 
-  // 图片样式
+  // 图片和表格样式
   img {
     max-width: 100%;
     border-radius: 6px;
@@ -538,27 +527,26 @@ export default {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
-  // 表格样式
   table {
     border-collapse: collapse;
     width: 100%;
     margin: 1em 0;
     overflow-x: auto;
     display: block;
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+    }
+
+    th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+    }
   }
 
-  th,
-  td {
-    border: 1px solid #ddd;
-    padding: 8px 12px;
-  }
-
-  th {
-    background-color: #f6f8fa;
-    font-weight: 600;
-  }
-
-  // 水平线
+  // 其他元素
   hr {
     height: 1px;
     background-color: #eee;
@@ -566,7 +554,6 @@ export default {
     margin: 1.5em 0;
   }
 
-  // 链接样式
   a {
     color: #0366d6;
     text-decoration: none;
@@ -625,15 +612,12 @@ export default {
   background-color: #f6f8fa !important;
   padding: 1em !important;
   overflow: auto;
-
-  // 避免复制按钮挡住代码
   padding-top: 2.5em !important;
 
-  // 确保语法高亮背景色统一
   code {
     background: none !important;
 
-    // 处理语法高亮的各类元素
+    // 语法高亮颜色
     .hljs-keyword,
     .hljs-selector-tag,
     .hljs-built_in,
@@ -663,23 +647,19 @@ export default {
 
     .hljs-number,
     .hljs-regexp,
-    .hljs-literal,
     .hljs-built_in,
     .hljs-builtin-name {
       color: #005cc5;
     }
 
-    .hljs-class .hljs-title {
-      color: #6f42c1;
-    }
-
+    .hljs-class .hljs-title,
     .hljs-function .hljs-title {
       color: #6f42c1;
     }
   }
 }
 
-// 适配移动端
+// 移动端适配
 @media (max-width: 768px) {
   :deep(.v-show-content) {
     font-size: 14px;

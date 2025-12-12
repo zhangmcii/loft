@@ -8,6 +8,7 @@ from .. import db, limiter
 from ..decorators import DecoratedMethodView, permission_required
 from ..models import Comment, NotificationType, Permission, Post
 from ..mycelery.notification_task import create_comment_notifications
+from ..mycelery.email_task import message_email
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
 from ..utils.text_filter import DFAFilter
@@ -175,6 +176,20 @@ class CommentApi(DecoratedMethodView):
             CommentApi.create_comment_notification(
                 post.id, comment.id, direct_parent, root_comment, post, at
             )
+
+            # 发送邮件
+            # u = User.query.filter_by(id = receiver_id).first()
+            if post.author.email:
+                message_email.delay(
+                    post.author.email,
+                    "您有新的站内通知",
+                    "message_email.html",
+                    user_a=current_user.username,
+                    target="你",
+                    action="私信",
+                    detail_link=f"http://yourwebsite.com/details/{post.id}",
+                    unsubscribe_link="http://yourwebsite.com/unsubscribe",
+                )
             current_comment = {
                 "id": comment.id,
                 "parentId": comment.root_comment_id,
