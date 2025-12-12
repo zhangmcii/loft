@@ -49,25 +49,6 @@ const isMobile = ref(window.innerWidth <= 768);
 // 抽屉显示控制
 const showSelectedDrawer = ref(false);
 
-const props = defineProps({
-  // 音乐配置
-  musicConfig: {
-    type: Object,
-    required: true,
-    default: () => {
-      return {
-        server: "netease",
-        type: "playlist",
-        id: "17450250258",
-        // id: "434592911",
-      };
-    },
-    validator: (value) => {
-      return value.server && value.type && value.id;
-    },
-  },
-});
-
 // 计算属性：过滤后的音乐数据
 const filteredMusicInfo = computed(() => {
   if (!activeSearchKeyword.value || !activeSearchKeyword.value.trim()) {
@@ -121,10 +102,14 @@ const handleResize = () => {
 const fetchMusicInfo = async () => {
   musicInfoLoading.value = true;
   try {
-    console.log("开始请求音乐信息，配置:", props.musicConfig);
+    console.log("开始请求音乐信息，配置:", import.meta.env.musicConfig);
     const response = await fetch(
       // `https://api.i-meto.com/meting/api?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
-      `https://api.qijieya.cn/meting/?server=${props.musicConfig.server}&type=${props.musicConfig.type}&id=${props.musicConfig.id}`
+      `https://api.qijieya.cn/meting/?server=${
+        import.meta.env.musicConfig.server
+      }&type=${import.meta.env.musicConfig.type}&id=${
+        import.meta.env.musicConfig.id
+      }`
     );
     if (!response.ok) {
       throw new Error(`网络请求失败: ${response.status}`);
