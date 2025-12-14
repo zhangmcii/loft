@@ -13,9 +13,6 @@ const include = [
   "@pureadmin/utils",
   "@vant/area-data",
   "element-plus/es/locale/lang/zh-cn",
-  "@wangeditor/plugin-md",
-  "@wangeditor/editor",
-  "@wangeditor/editor-for-vue",
   "@vueuse/core",
 ];
 

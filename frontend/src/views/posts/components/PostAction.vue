@@ -85,6 +85,56 @@ export default {
     comment() {
       this.$router.push(`/postDetail/${this.post.id}`);
     },
+    
+    handlePraiseClick(event) {
+      // 阻止事件冒泡和默认行为
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      
+      // 如果已经点赞，可以选择取消点赞或什么都不做
+      if (this.hasPraised) {
+        // 这里可以添加取消点赞的逻辑，或者什么都不做
+        // 暂时保持已点赞状态，不做任何操作
+        return;
+      }
+      
+      this.praise();
+    },
+    
+    handleEditClick(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.edit();
+    },
+    
+    handleDeleteClick(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.deletePost();
+    },
+    
+    handleShareClick(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.show = !this.show;
+    },
+    
+    handleCommentClick(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.comment();
+    },
+    
     praise() {
       if (!this.currentUser.isLogin) {
         loginReminder("快去登录再点赞吧");
@@ -99,6 +149,7 @@ export default {
         }
       });
     },
+    
     edit() {
       this.$router.push(`/editPost/${this.post.id}`);
     },
@@ -153,7 +204,7 @@ export default {
       >
         <van-icon
           name="edit"
-          @click.stop="edit"
+          @click="handleEditClick"
           :size="iconSize"
           class="action-icon"
         />
@@ -162,7 +213,7 @@ export default {
       <div class="action-item" v-if="showDelete && currentUser.isAdmin">
         <van-icon
           name="delete-o"
-          @click.stop="deletePost"
+          @click="handleDeleteClick"
           :size="iconSize"
           color="#f56c6c"
           class="action-icon delete-icon"
@@ -172,7 +223,7 @@ export default {
       <div class="action-item" v-if="showShare && !isUserRoute">
         <van-icon
           name="share-o"
-          @click.stop="show = !show"
+          @click="handleShareClick"
           :size="iconSize"
           class="action-icon"
         />
@@ -180,21 +231,20 @@ export default {
     </div>
 
     <div class="action-right">
-      <div class="action-item comment">
+      <div class="action-item comment" @click.stop>
         <van-icon
           name="notes-o"
-          @click.stop="comment"
+          @click="handleCommentClick"
           :size="iconSize"
           class="action-icon"
         />
         <span class="action-count">{{ post.comment_count }}</span>
       </div>
 
-      <div class="action-item like">
+      <div class="action-item like" @click.stop="handlePraiseClick">
         <transition :name="hasPraised ? 'praise' : ''" mode="out-in">
           <van-icon
             name="good-job"
-            @click.stop=""
             :size="iconSize"
             v-if="hasPraised"
             key="praised"
@@ -202,7 +252,6 @@ export default {
           />
           <van-icon
             name="good-job-o"
-            @click.stop="praise"
             :size="iconSize"
             v-else
             key="unPraise"

@@ -1,4 +1,6 @@
 <script>
+import { mavonEditor } from 'mavon-editor'
+import "mavon-editor/dist/css/index.css";
 export default {
   props: {
     postContent: {
@@ -13,6 +15,9 @@ export default {
       type: Number,
       default: 16,
     },
+  },
+  components: {
+    mavonEditor
   },
   data() {
     return {
@@ -38,7 +43,7 @@ export default {
     },
     fontSize: {
       handler(newVal) {
-        this.updateFontSize(newVal);
+          this.updateFontSize(newVal);
       },
     },
   },
@@ -79,78 +84,78 @@ export default {
       if (!this.preview) return;
 
       this.$nextTick(() => {
-        const contentDom = this.$refs.md?.$el?.querySelector(".v-show-content");
+      const contentDom = this.$refs.md?.$el?.querySelector(".v-show-content");
         if (!contentDom) return;
 
-        // 监听图片加载
-        const imgs = contentDom.querySelectorAll("img");
-        let loadedCount = 0;
-        const totalImgs = imgs.length;
+      // 监听图片加载
+      const imgs = contentDom.querySelectorAll("img");
+      let loadedCount = 0;
+      const totalImgs = imgs.length;
 
-        const checkAllLoaded = () => {
-          loadedCount++;
-          if (loadedCount === totalImgs && this.truncationTryCount < 10) {
-            this.truncationTryCount++;
-            setTimeout(() => {
-              this.updateTruncation();
-            }, 50);
-          }
-        };
-
-        if (totalImgs > 0) {
-          imgs.forEach((img) => {
-            if (!img._truncationLoaded) {
-              img._truncationLoaded = true;
-              img.addEventListener("load", checkAllLoaded);
-              img.addEventListener("error", checkAllLoaded);
-            }
-          });
+      const checkAllLoaded = () => {
+        loadedCount++;
+        if (loadedCount === totalImgs && this.truncationTryCount < 10) {
+          this.truncationTryCount++;
+          setTimeout(() => {
+            this.updateTruncation();
+          }, 50);
         }
+      };
 
-        // 先移除旧的遮罩
-        const oldMask = contentDom.querySelector(".truncation-mask");
-        if (oldMask) oldMask.remove();
+      if (totalImgs > 0) {
+        imgs.forEach((img) => {
+          if (!img._truncationLoaded) {
+            img._truncationLoaded = true;
+            img.addEventListener("load", checkAllLoaded);
+            img.addEventListener("error", checkAllLoaded);
+          }
+        });
+      }
 
-        // 判断是否超出最大高度
-        const maxHeight = 300;
-        if (contentDom.scrollHeight > maxHeight) {
-          contentDom.style.maxHeight = maxHeight + "px";
-          contentDom.style.overflow = "hidden";
-          contentDom.style.position = "relative";
+      // 先移除旧的遮罩
+      const oldMask = contentDom.querySelector(".truncation-mask");
+      if (oldMask) oldMask.remove();
 
-          // 添加遮罩和省略号
-          const mask = document.createElement("div");
-          mask.className = "truncation-mask";
-          mask.style.position = "absolute";
-          mask.style.left = 0;
-          mask.style.right = 0;
-          mask.style.bottom = 0;
-          mask.style.height = "40px";
-          mask.style.background =
-            "linear-gradient(rgba(255,255,255,0), #fff 80%)";
+      // 判断是否超出最大高度
+      const maxHeight = 300;
+      if (contentDom.scrollHeight > maxHeight) {
+        contentDom.style.maxHeight = maxHeight + "px";
+        contentDom.style.overflow = "hidden";
+        contentDom.style.position = "relative";
+
+        // 添加遮罩和省略号
+        const mask = document.createElement("div");
+        mask.className = "truncation-mask";
+        mask.style.position = "absolute";
+        mask.style.left = 0;
+        mask.style.right = 0;
+        mask.style.bottom = 0;
+        mask.style.height = "40px";
+        mask.style.background =
+          "linear-gradient(rgba(255,255,255,0), #fff 80%)";
           // mask.style.display = 'flex'
           // mask.style.alignItems = 'flex-end'
           // mask.style.justifyContent = 'flex-end'
           // mask.style.pointerEvents = 'none'
           // mask.innerHTML =
           //   '<div style="color:#888;font-size:18px;padding:20px 10px 10px 10px;">...</div>'
-          contentDom.appendChild(mask);
-        } else {
-          contentDom.style.maxHeight = "none";
-          contentDom.style.overflow = "auto";
-          contentDom.style.position = "static";
-        }
+        contentDom.appendChild(mask);
+      } else {
+        contentDom.style.maxHeight = "none";
+        contentDom.style.overflow = "auto";
+        contentDom.style.position = "static";
+      }
 
-        // 延迟再触发一次，兜底
-        if (this.truncationTryCount < 10) {
-          this.truncationTryCount++;
-          setTimeout(() => {
-            const dom = this.$refs.md?.$el?.querySelector(".v-show-content");
-            if (dom && dom.scrollHeight > maxHeight) {
-              this.updateTruncation();
-            }
-          }, 300);
-        }
+      // 延迟再触发一次，兜底
+      if (this.truncationTryCount < 10) {
+        this.truncationTryCount++;
+        setTimeout(() => {
+          const dom = this.$refs.md?.$el?.querySelector(".v-show-content");
+          if (dom && dom.scrollHeight > maxHeight) {
+            this.updateTruncation();
+          }
+        }, 300);
+      }
       });
     },
 
@@ -186,84 +191,84 @@ export default {
     // 处理代码块，添加复制按钮
     processCodeBlocks() {
       this.$nextTick(() => {
-        const contentDom = this.$refs.md?.$el?.querySelector(".v-show-content");
+      const contentDom = this.$refs.md?.$el?.querySelector(".v-show-content");
         if (!contentDom) return;
 
-        // 移除已存在的代码块包装器
-        const existingWrappers = contentDom.querySelectorAll(
-          ".code-block-wrapper"
-        );
-        existingWrappers.forEach((wrapper) => {
-          const pre = wrapper.querySelector("pre");
-          if (pre) {
-            wrapper.parentNode?.insertBefore(pre, wrapper);
-            wrapper.remove();
-          }
-        });
+      // 移除已存在的代码块包装器
+      const existingWrappers = contentDom.querySelectorAll(
+        ".code-block-wrapper"
+      );
+      existingWrappers.forEach((wrapper) => {
+        const pre = wrapper.querySelector("pre");
+        if (pre) {
+          wrapper.parentNode?.insertBefore(pre, wrapper);
+          wrapper.remove();
+        }
+      });
 
-        // 处理所有代码块
-        const preElements = contentDom.querySelectorAll("pre");
-        preElements.forEach((pre) => {
-          // 检查是否已经处理过
-          if (pre.parentNode?.classList?.contains("code-block-wrapper")) {
+      // 处理所有代码块
+      const preElements = contentDom.querySelectorAll("pre");
+      preElements.forEach((pre) => {
+        // 检查是否已经处理过
+        if (pre.parentNode?.classList?.contains("code-block-wrapper")) {
+          return;
+        }
+
+        // 创建包装器
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block-wrapper";
+
+        // 创建复制按钮
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "copy-btn";
+        copyBtn.type = "button";
+        copyBtn.innerHTML = this.createCopyButtonHtml("copy", "复制");
+
+        // 获取代码内容
+        const codeElement = pre.querySelector("code");
+        const codeText = codeElement ? codeElement.innerText : pre.innerText;
+
+        // 检查Clipboard API是否可用
+        const isClipboardApiAvailable = !!(
+          navigator.clipboard && navigator.clipboard.writeText
+        );
+
+        // 添加复制功能
+          const handleCopyClick = async () => {
+          // 如果已经是已复制状态，则阻止点击事件
+          if (copyBtn.classList.contains("copied")) {
             return;
           }
 
-          // 创建包装器
-          const wrapper = document.createElement("div");
-          wrapper.className = "code-block-wrapper";
-
-          // 创建复制按钮
-          const copyBtn = document.createElement("button");
-          copyBtn.className = "copy-btn";
-          copyBtn.type = "button";
-          copyBtn.innerHTML = this.createCopyButtonHtml("copy", "复制");
-
-          // 获取代码内容
-          const codeElement = pre.querySelector("code");
-          const codeText = codeElement ? codeElement.innerText : pre.innerText;
-
-          // 检查Clipboard API是否可用
-          const isClipboardApiAvailable = !!(
-            navigator.clipboard && navigator.clipboard.writeText
-          );
-
-          // 添加复制功能
-          const handleCopyClick = async () => {
-            // 如果已经是已复制状态，则阻止点击事件
-            if (copyBtn.classList.contains("copied")) {
-              return;
-            }
-
-            if (isClipboardApiAvailable) {
-              // 使用现代Clipboard API
-              try {
-                console.log("使用Clipboard API复制文本");
-                await navigator.clipboard.writeText(codeText);
-                this.handleCopySuccess(copyBtn);
-              } catch (err) {
-                console.error("Clipboard API失败，尝试降级方案：", err);
-                this.fallbackCopyText(codeText, copyBtn);
-              }
-            } else {
-              // 直接使用降级方案
-              console.log("使用降级方案复制文本");
+          if (isClipboardApiAvailable) {
+            // 使用现代Clipboard API
+            try {
+              console.log("使用Clipboard API复制文本");
+              await navigator.clipboard.writeText(codeText);
+              this.handleCopySuccess(copyBtn);
+            } catch (err) {
+              console.error("Clipboard API失败，尝试降级方案：", err);
               this.fallbackCopyText(codeText, copyBtn);
             }
-          };
+          } else {
+            // 直接使用降级方案
+            console.log("使用降级方案复制文本");
+            this.fallbackCopyText(codeText, copyBtn);
+          }
+        };
 
-          copyBtn.addEventListener("click", handleCopyClick);
+        copyBtn.addEventListener("click", handleCopyClick);
 
-          // 包装结构
-          wrapper.appendChild(copyBtn);
+        // 包装结构
+        wrapper.appendChild(copyBtn);
 
-          // 将 pre 元素移动到包装器中
-          pre.parentNode?.insertBefore(wrapper, pre);
-          wrapper.appendChild(pre);
-        });
+        // 将 pre 元素移动到包装器中
+        pre.parentNode?.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+      });
 
-        // 处理图片点击事件
-        this.processImages();
+      // 处理图片点击事件
+      this.processImages();
       });
     },
 

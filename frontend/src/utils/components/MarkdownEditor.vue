@@ -19,6 +19,8 @@ import {
 } from "@/utils/common.js";
 import uploadApi from "@/api/upload/uploadApi.js";
 import { v4 as uuidv4 } from "uuid";
+import { mavonEditor } from 'mavon-editor';
+import "mavon-editor/dist/css/index.css";
 
 export default {
   name: "MarkdownEditor",
@@ -31,6 +33,9 @@ export default {
       type: String,
       default: () => "",
     },
+  },
+  components:{
+    mavonEditor
   },
   data() {
     return {

@@ -10,7 +10,7 @@ export default ({ mode }) => {
 
   const backendAddr = `http://${getLocalIP()}:8082`;
   return {
-    plugins: getPluginsList(VITE_COMPRESSION),
+    plugins: getPluginsList(VITE_COMPRESSION, mode),
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

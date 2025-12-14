@@ -2,8 +2,6 @@
  prop只接受文章的json
 -->
 <script>
-import praise from "@/api/praise/praiseApi.js";
-import { loginReminder } from "@/utils/common.js";
 import PostAction from "@/views/posts/components/PostAction.vue";
 import PostHeader from "@/views/posts/components/PostHeader.vue";
 import PostContent from "@/views/posts/components/PostContent.vue";
@@ -66,23 +64,6 @@ export default {
   },
   computed: {},
   methods: {
-    comment() {
-      this.$router.push(`/postDetail/${this.post.id}`);
-    },
-    praise() {
-      if (!this.currentUser.isLogin) {
-        loginReminder("快去登录再点赞吧");
-        return;
-      }
-      praise.submitPraise(this.post.id).then((res) => {
-        if (res.code == 200) {
-          this.praiseNum = res.data.praise_total;
-          this.hasPraised = res.data.has_praised;
-        } else {
-          this.$message.error("点赞失败");
-        }
-      });
-    },
   },
 };
 </script>
