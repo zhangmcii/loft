@@ -2,7 +2,6 @@
 import editApi from "@/api/user/editApi.js";
 import userApi from "@/api/user/userApi.js";
 import imageApi from "@/api/user/imageApi.js";
-import { showConfirmDialog } from "vant";
 import ButtonClick from "@/utils/components/ButtonClick.vue";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 export default {
@@ -51,6 +50,7 @@ export default {
       originalForm: {},
       loading: false,
       isChange: false,
+      dialogShow: false,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -92,11 +92,7 @@ export default {
       });
     },
     resetToDefaultAvatar() {
-      showConfirmDialog({
-        title: "将用户图像设置为随机图像？",
-        width: 230,
-        beforeClose: this.beforeReset,
-      });
+      this.dialogShow = true;
     },
 
     beforeReset(action) {
@@ -233,6 +229,14 @@ export default {
         />
       </el-form-item>
     </el-form>
+
+    <van-dialog
+      v-model:show="dialogShow"
+      title="将用户图像设置为随机图像？"
+      width="230"
+      show-cancel-button
+      :beforeClose="beforeReset"
+    />
   </PageHeadBack>
 </template>
 <style scoped></style>

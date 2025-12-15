@@ -9,7 +9,6 @@ const include = [
   "dayjs",
   "axios",
   "canvas-confetti",
-  "vue3-photo-preview",
   "@pureadmin/utils",
   "@vant/area-data",
   "element-plus/es/locale/lang/zh-cn",

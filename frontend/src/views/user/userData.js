@@ -12,7 +12,6 @@ import PostPreview from "@/views/posts/components/PostPreview.vue";
 import userApi from "@/api/user/userApi.js";
 import date from "@/utils/date.js";
 import dayjs from "dayjs";
-import { showConfirmDialog } from "vant";
 import { loginReminder, waitImage } from "@/utils/common.js";
 import { ElLoading } from "element-plus";
 import musicPlayer from "./music.vue";
@@ -81,6 +80,7 @@ export default {
       originalFiles: [],
       // 压缩后的文件
       compressedImages: [],
+      dialogShow: false,
     };
   },
   setup() {
@@ -336,11 +336,7 @@ export default {
       });
     },
     unFollowUser() {
-      showConfirmDialog({
-        title: "取消对该用户的关注",
-        width: 230,
-        beforeClose: this.beforeClose,
-      });
+      this.dialogShow = true;
     },
 
     beforeClose(action) {

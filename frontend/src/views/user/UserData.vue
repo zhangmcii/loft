@@ -248,6 +248,13 @@
       </div>
     </div>
   </div>
+  <van-dialog
+    v-model:show="dialogShow"
+    title="取消对该用户的关注"
+    width="230"
+    show-cancel-button
+    :beforeClose="beforeClose"
+  />
 </template>
 
 <script src="./userData.js"></script>

@@ -1,9 +1,7 @@
 <script>
 import ButtonClick from "@/utils/components/ButtonClick.vue";
-import date from "@/utils/date.js";
 import logApi from "@/api/log/logApi.js";
 import ButtonReload from "@/utils/components/ButtonReload.vue";
-import { showConfirmDialog } from "vant";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 import notificationApi from "@/api/notification/notificationApi.js";
 
@@ -37,6 +35,11 @@ export default {
       online: {
         user: [],
         total: 0,
+      },
+      dialogShow: false,
+      dialogData: {
+        title: "",
+        beforeClose: null,
       },
     };
   },
@@ -127,18 +130,14 @@ export default {
     sDel(index, row) {
       this.currentRow.index = index;
       this.currentRow.row = row;
-      showConfirmDialog({
-        title: "删除该条记录？",
-        width: 230,
-        beforeClose: this.deleteLog,
-      });
+      this.dialogData.title = "删除该条记录？";
+      this.dialogData.beforeClose = this.deleteLog;
+      this.dialogShow = true;
     },
     bDel() {
-      showConfirmDialog({
-        title: `批量删除${this.table.multipleSelection.length}条记录？`,
-        width: 230,
-        beforeClose: this.batchDelete,
-      });
+      this.dialogData.title = `批量删除${this.table.multipleSelection.length}条记录？`;
+      this.dialogData.beforeClose = this.batchDelete;
+      this.dialogShow = true;
     },
     handleCurrentChange() {
       this.getLogs(this.table.currentPage);
@@ -320,6 +319,14 @@ export default {
         </el-tab-pane>
       </el-tabs>
     </el-skeleton>
+
+    <van-dialog
+      v-model:show="dialogShow"
+      :title="dialogData.title"
+      width="230"
+      show-cancel-button
+      :beforeClose="dialogData.beforeClose"
+    />
   </PageHeadBack>
 </template>
 

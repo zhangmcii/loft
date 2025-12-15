@@ -35,11 +35,19 @@
       />
     </template>
   </van-cell>
+
+  <van-dialog
+    v-model:show="dialogShow"
+    title="取消对该用户的关注"
+    width="230"
+    show-cancel-button
+    :beforeClose="beforeClose"
+    teleport="html"
+  />
 </template>
 
 <script>
 import userApi from "@/api/user/userApi.js";
-import { showConfirmDialog } from "vant";
 import { useCurrentUserStore } from "@/stores/user";
 
 export default {
@@ -69,6 +77,7 @@ export default {
     return {
       isFollowed: this.tabAction == "fan" ? this.follows.is_following : true,
       isMutualFollow: false,
+      dialogShow: false,
     };
   },
   setup() {
@@ -104,11 +113,7 @@ export default {
       });
     },
     unFollowUser() {
-      showConfirmDialog({
-        title: "取消对该用户的关注",
-        width: 230,
-        beforeClose: this.beforeClose,
-      });
+      this.dialogShow = true;
     },
     beforeClose(action) {
       if (action !== "confirm") {

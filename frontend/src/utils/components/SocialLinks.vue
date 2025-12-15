@@ -24,12 +24,24 @@
     </div>
     <span class="tip">{{ socialTip }}</span>
   </div>
+
+  <van-dialog
+    v-model:show="dialogShow"
+    :title="dialogData.title"
+    :message="dialogData.url"
+    confirm-button-text="复制链接"
+    cancel-button-text="取消"
+    width="230"
+    show-cancel-button
+    :beforeClose="beforeClose"
+    close-on-click-overlay
+    teleport="html"
+  />
 </template>
 
 <script setup>
 import socialLinks from "@/config/socialLinks.json";
 import { ref, computed } from "vue";
-import { showConfirmDialog } from "vant";
 import { copy } from "@/utils/common.js";
 
 const props = defineProps({
@@ -54,23 +66,29 @@ const value = computed(() => {
     url: props.links[item.name.toLowerCase()],
   }));
 });
+const dialogShow = ref(false);
+const dialogData = ref({
+  title: "",
+  url: "",
+});
+
 // 社交链接提示
 const socialTip = ref("通过这里联系我吧");
 
 function openDialog(item) {
-  showConfirmDialog({
+  dialogData.value = {
     title: ` ${item.name} 地址`,
-    message: item.url,
-    confirmButtonText: "复制链接",
-    cancelButtonText: "取消",
-    closeOnClickOverlay: true,
-  })
-    .then(() => {
-      copy(item.url);
-    })
-    .catch(() => {
-      // on cancel
-    });
+    url: item.url,
+  };
+  dialogShow.value = true;
+}
+function beforeClose(action) {
+  if (action !== "confirm") {
+    return Promise.resolve(true);
+  } else {
+    copy(dialogData.value.url);
+    return Promise.resolve(true);
+  }
 }
 </script>
 

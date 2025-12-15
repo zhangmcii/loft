@@ -2,7 +2,6 @@
 import authApi from "@/api/auth/authApi.js";
 import ButtonClick from "@/utils/components/ButtonClick.vue";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
-import { showConfirmDialog } from "vant";
 
 export default {
   components: {
@@ -45,6 +44,7 @@ export default {
       },
       loading: false,
       isChange: false,
+      dialogShow: false,
     };
   },
   watch: {
@@ -59,12 +59,7 @@ export default {
     submitForm() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          showConfirmDialog({
-            title: "修改用户的密码？",
-            width: 230,
-            confirmButtonColor: "red",
-            beforeClose: this.beforeClose,
-          });
+          this.dialogShow = true;
         } else {
           this.$message.error("请修正表单中的错误");
         }
@@ -123,6 +118,15 @@ export default {
         />
       </el-form-item>
     </el-form>
+
+    <van-dialog
+      v-model:show="dialogShow"
+      title="修改用户的密码？"
+      width="230"
+      show-cancel-button
+      confirm-button-color="red"
+      :beforeClose="beforeClose"
+    />
   </PageHeadBack>
 </template>
 <style scoped></style>

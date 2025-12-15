@@ -49,6 +49,15 @@
         >保存</el-button
       >
     </div>
+
+    <van-dialog
+      v-model:show="dialogShow"
+      :title="dialogData.title"
+      :message="dialogData.message"
+      width="230"
+      show-cancel-button
+      :beforeClose="beforeClose"
+    />
   </PageHeadBack>
 </template>
 
@@ -56,8 +65,7 @@
 import { nextTick, ref, computed } from "vue";
 import editApi from "@/api/user/editApi.js";
 import userApi from "@/api/user/userApi.js";
-import { ElMessage } from "element-plus";
-import { showConfirmDialog } from "vant";
+import { ElMessage, messageConfig } from "element-plus";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 
 // 原始tag数组
@@ -69,6 +77,12 @@ const inputValue = ref("");
 const InputRef = ref("");
 const exitsColor = "primary";
 const newColor = "success";
+
+const dialogShow = ref(false);
+const dialogData = ref({
+  title: "",
+  message: "",
+});
 
 const handleClose = (tag) => {
   dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
@@ -157,13 +171,13 @@ const save = () => {
     ElMessage.warning("请修改后再提交");
     return;
   }
-  showConfirmDialog({
+  dialogData.value = {
     title: tagRemove.value.length
       ? `确认要移除 [${tagRemove.value}]?`
       : `新增标签 [${tagAdd.value}]`,
     message: tagRemove.value.length ? "已设置该标签的用户将受到影响" : "",
-    beforeClose: beforeClose,
-  });
+  };
+  dialogShow.value = true;
 };
 const beforeClose = (action) => {
   if (action !== "confirm") {

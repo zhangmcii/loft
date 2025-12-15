@@ -1,5 +1,6 @@
 import random
 import re
+import logging
 from datetime import timedelta
 from enum import Enum
 
@@ -316,8 +317,9 @@ class User(db.Model):
         if User.compare_code(email, code):
             self.confirmed = True
             # 角色设置管理员
-            if self.email == current_app.config["FLASKY_ADMIN"] and self.confirmed:
+            if self.email == current_app.config["FLASKY_ADMIN"]:
                 self.role = Role.query.filter_by(name="Administrator").first()
+                logging.info(f"设置用户 {self.username} 为管理员")
             db.session.add(self)
             redis.delete(email)
             return True

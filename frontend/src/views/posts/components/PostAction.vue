@@ -1,7 +1,6 @@
 <script>
 import { useCurrentUserStore } from "@/stores/user";
 import { loginReminder } from "@/utils/common.js";
-import { showConfirmDialog } from "vant";
 import { copy } from "@/utils/common.js";
 import praise from "@/api/praise/praiseApi.js";
 import postApi from "@/api/posts/postApi.js";
@@ -48,6 +47,7 @@ export default {
       praiseNum: 0,
       hasPraised: false,
       show: false,
+      dialogShow: false,
       shareOptions: [
         { name: "微信", icon: "wechat" },
         { name: "朋友圈", icon: "wechat-moments" },
@@ -85,24 +85,24 @@ export default {
     comment() {
       this.$router.push(`/postDetail/${this.post.id}`);
     },
-    
+
     handlePraiseClick(event) {
       // 阻止事件冒泡和默认行为
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
-      
+
       // 如果已经点赞，可以选择取消点赞或什么都不做
       if (this.hasPraised) {
         // 这里可以添加取消点赞的逻辑，或者什么都不做
         // 暂时保持已点赞状态，不做任何操作
         return;
       }
-      
+
       this.praise();
     },
-    
+
     handleEditClick(event) {
       if (event) {
         event.preventDefault();
@@ -110,15 +110,15 @@ export default {
       }
       this.edit();
     },
-    
+
     handleDeleteClick(event) {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
-      this.deletePost();
+      this.dialogShow = true;
     },
-    
+
     handleShareClick(event) {
       if (event) {
         event.preventDefault();
@@ -126,7 +126,7 @@ export default {
       }
       this.show = !this.show;
     },
-    
+
     handleCommentClick(event) {
       if (event) {
         event.preventDefault();
@@ -134,7 +134,7 @@ export default {
       }
       this.comment();
     },
-    
+
     praise() {
       if (!this.currentUser.isLogin) {
         loginReminder("快去登录再点赞吧");
@@ -149,7 +149,7 @@ export default {
         }
       });
     },
-    
+
     edit() {
       this.$router.push(`/editPost/${this.post.id}`);
     },
@@ -160,14 +160,6 @@ export default {
         this.$message.info(option.name);
       }
       this.show = false;
-    },
-
-    deletePost() {
-      showConfirmDialog({
-        title: "确定删除这篇文章吗？",
-        width: 230,
-        beforeClose: this.beforeDelete,
-      });
     },
 
     beforeDelete(action) {
@@ -268,6 +260,13 @@ export default {
     title="立即分享给好友"
     :options="shareOptions"
     @select="shareSelect"
+  />
+  <van-dialog
+    v-model:show="dialogShow"
+    title="确定删除这篇文章吗？"
+    width="230"
+    show-cancel-button
+    :beforeClose="beforeDelete"
   />
 </template>
 
