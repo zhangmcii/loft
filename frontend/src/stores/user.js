@@ -56,7 +56,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
     notice: {
       Notification_data: [],
       // NOTIFICATION_KEY: `user_notifications_${userInfo.id}`,
-      NOTIFICATION_KEY: `user_notifications_1}`,
+      NOTIFICATION_KEY: `user_notifications_1`,
       MAX_ITEM: 50,
     },
     devUploadBaseUrl: "dev/",
@@ -125,7 +125,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
     },
     // 保存通知
     saveNotifications(notifications) {
-      const trimmed = notifications.slice(0, this.MAX_ITEM);
+      const trimmed = notifications.slice(0, this.notice.MAX_ITEM);
       this.notice.Notification_data = trimmed;
     },
     // 读取通知
@@ -135,6 +135,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
     // 清空通知（可选）
     clearNotifications() {},
     logOut() {
+      this.disconnectSocket();
       this.$reset();
       localStorage.removeItem("blog");
       localStorage.removeItem("blogOtherUser");
