@@ -13,7 +13,6 @@ import userApi from "@/api/user/userApi.js";
 import date from "@/utils/date.js";
 import dayjs from "dayjs";
 import { loginReminder, waitImage } from "@/utils/common.js";
-import { ElLoading } from "element-plus";
 import musicPlayer from "./music.vue";
 
 export default {
@@ -62,6 +61,7 @@ export default {
         follow: false,
         skeleton: true,
         switch: false,
+        fullScreen: false,
       },
       uploadToken: "",
       imageUrls: [],
@@ -81,6 +81,16 @@ export default {
       // 压缩后的文件
       compressedImages: [],
       dialogShow: false,
+      svg: `
+        <path class="path" d="
+          M 30 15
+          L 28 17
+          M 25.61 25.61
+          A 15 15, 0, 0, 1, 15 30
+          A 15 15, 0, 1, 1, 27.99 7.5
+          L 15 15
+        " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
+      `,
     };
   },
   setup() {
@@ -215,11 +225,7 @@ export default {
       return true;
     },
     getUser() {
-      const loading = ElLoading.service({
-        lock: true,
-        text: "加载中...",
-        background: "rgba(0, 0, 0, 0.7)",
-      });
+      this.loading.fullScreen = true;
       this.loading.userData = true;
 
       // 检查是否是查看当前登录用户的资料
@@ -272,14 +278,14 @@ export default {
             this.setMainProperty();
             // 背景图片加载时显示loading
             waitImage([this.bgImage]).then(() => {
-              loading.close();
+              this.loading.fullScreen = false;
             });
           }, this.skeletonThrottle.trailing);
         })
         .catch((err) => {
           this.loading.userData = false;
           this.loading.skeleton = false;
-          loading.close();
+          this.loading.fullScreen = false;
           this.$message.error("获取用户数据失败");
           console.error(err);
         });

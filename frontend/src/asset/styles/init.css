@@ -1,0 +1,13 @@
+/* 默认浏览器样式：HTML 和 body 元素有默认的 margin（通常是 8px） */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}

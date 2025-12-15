@@ -36,7 +36,9 @@ function randomSlogan() {
   const slogans = GLOBAL_CONFIG.SLOGANS;
   slogan.value = slogans[randomNum(0, slogans.length - 1)];
 }
-
+function goHome() {
+  window.location.href = "/posts";
+}
 onMounted(() => {
   randomSlogan();
   loadBackground();
@@ -49,7 +51,7 @@ onMounted(() => {
     :style="{ background: `url(${GLOBAL_CONFIG.BACKGROUND_IMG_URL})` }"
   >
     <div :class="['img-shadow', { 'img-shadow-show': bgLoaded }]"></div>
-    <div class="inner" style="cursor: pointer" @click="$router.push('/posts')">
+    <div class="inner" style="cursor: pointer" @click="goHome">
       <!-- <LocalLogo :class="['main-logo', { 'main-logo-top': touchable }]" /> -->
       <div :class="['hello', { hello_bottom: touchable }]">
         <div>{{ slogan }}</div>

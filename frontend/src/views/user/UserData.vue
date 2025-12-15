@@ -1,5 +1,12 @@
 <template>
-  <div class="vapp-fullscreen-background">
+  <div
+    class="vapp-fullscreen-background"
+    v-loading="loading.fullScreen"
+    element-loading-text="加载中..."
+    :element-loading-spinner="svg"
+    element-loading-svg-view-box="-10, -10, 50, 50"
+    element-loading-background="rgba(122, 122, 122, 0.8)"
+  >
     <el-page-header
       :style="{ color: backColor }"
       @back="$router.back()"
