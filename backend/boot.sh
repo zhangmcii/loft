@@ -23,12 +23,13 @@ celery -A app.make_celery beat --loglevel INFO --logfile=logs/celery_beat.log --
 CELERY_BEAT_PID=$!
 
 # 主应用服务
-exec gunicorn -b :5000 -w 8 --access-logfile - --error-logfile - flasky:app &
+gunicorn -b :5000 -w 8 --access-logfile - --error-logfile - flasky:app &
 MAIN_APP_PID=$!
 
 # WebSocket 服务
-exec gunicorn -b :5001 -w 1 --worker-class eventlet --access-logfile - --error-logfile - flasky_socketio:app &
+gunicorn -b :5001 -w 1 --worker-class eventlet --access-logfile - --error-logfile - flasky_socketio:app
 WEBSOCKET_PID=$!
 
 # 等待所有后台进程
 wait $CELERY_WORKER_PID $CELERY_BEAT_PID $MAIN_APP_PID $WEBSOCKET_PID
+# wait $CELERY_WORKER_PID $CELERY_BEAT_PID $WEBSOCKET_PID

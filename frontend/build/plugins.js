@@ -33,6 +33,6 @@ export function getPluginsList(VITE_COMPRESSION, MODE) {
     AppLoading(),
     configCompressPlugin(VITE_COMPRESSION),
     svgLoader(),
-    removeConsole(),
+    // removeConsole(),
   ];
 }
