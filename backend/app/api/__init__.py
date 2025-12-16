@@ -16,7 +16,10 @@ from .user_1 import register_user_api
 register_post_api(api, post_item_url="/posts/<int:id>", post_group_url="/posts")
 register_notification_api(api, notification_url="/notifications")
 register_user_api(
-    api, user_url="/users/<int:id>", user_image_url="/users/<int:id>/image"
+    api,
+    user_by_id_url="/users/<int:id>",
+    user_by_username_url="/users/u/<string:username>",
+    user_image_url="/users/<int:id>/image",
 )
 register_follow_api(api, follow_url="/users/<string:username>/follow")
 register_praise_api(

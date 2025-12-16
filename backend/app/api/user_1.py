@@ -12,7 +12,7 @@ from .upload import get_random_user_avatars
 
 
 # --------------------------- 编辑资料 ---------------------------
-class UsersApi(DecoratedMethodView):
+class UsersByIdApi(DecoratedMethodView):
     method_decorators = {
         "get": [],
         "patch": [jwt_required()],
@@ -42,6 +42,13 @@ class UsersApi(DecoratedMethodView):
                 setattr(current_user, key, value)
         db.session.commit()
         return success(data="", message="用户资料更新成功")
+
+
+class UsersByUsernameApi(DecoratedMethodView):
+    def get(self, username):
+        logging.info(f"按 username 获取用户信息: username={username}")
+        user = User.query.filter_by(username=username).first_or_404()
+        return success(data=user.to_json())
 
 
 class UserImageApi(DecoratedMethodView):
@@ -102,9 +109,11 @@ class UserImageApi(DecoratedMethodView):
 #             return error(500, f"编辑用户资料失败: {str(e)}")
 
 
-def register_user_api(bp, *, user_url, user_image_url):
-    users = UsersApi.as_view("users")
+def register_user_api(bp, *, user_by_id_url, user_by_username_url, user_image_url):
+    users = UsersByIdApi.as_view("users_by_id")
+    users_by_username = UsersByUsernameApi.as_view("users_by_username")
     user_image = UserImageApi.as_view("users_image")
     # admin = UserAdminApi.as_view(f'{name}_admin')
-    bp.add_url_rule(user_url, view_func=users)
+    bp.add_url_rule(user_by_id_url, view_func=users)
+    bp.add_url_rule(user_by_username_url, view_func=users_by_username)
     bp.add_url_rule(user_image_url, view_func=user_image)

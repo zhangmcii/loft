@@ -10,7 +10,6 @@ from ..utils.common import get_avatars_url
 from ..utils.response import error, not_found, success
 from ..utils.time_util import DateUtils
 from . import api
-from .users import get_user_data
 
 
 # --------------------------- 关注 ---------------------------
@@ -161,23 +160,22 @@ class UserFollowApi(DecoratedMethodView):
         "share": [jwt_required(), permission_required(Permission.FOLLOW)],
     }
 
-    def follow_or_unfollow(self, username, action="follow"):
-        logging.info(f"关注用户: {current_user.username} -> {username}")
-        user = User.query.filter_by(username=username).first()
-        if user is None:
-            return not_found("用户名不存在")
-        if current_user.is_following(user):
-            return error(400, "你已经关注了该用户")
+    # def follow_or_unfollow(self, username, action="follow"):
+    #     logging.info(f"关注用户: {current_user.username} -> {username}")
+    #     user = User.query.filter_by(username=username).first()
+    #     if user is None:
+    #         return not_found("用户名不存在")
+    #     if current_user.is_following(user):
+    #         return error(400, "你已经关注了该用户")
 
-        try:
-            current_user.follow(user)
-            db.session.commit()
-            data = get_user_data(username)
-            return success(data=data)
-        except Exception as e:
-            logging.error(f"关注用户失败: {str(e)}", exc_info=True)
-            db.session.rollback()
-            return error(500, f"关注用户失败: {str(e)}")
+    #     try:
+    #         current_user.follow(user)
+    #         db.session.commit()
+    #         return success(data=user.to_json())
+    #     except Exception as e:
+    #         logging.error(f"关注用户失败: {str(e)}", exc_info=True)
+    #         db.session.rollback()
+    #         return error(500, f"关注用户失败: {str(e)}")
 
     def post(self, username):
         """关注用户"""
@@ -191,8 +189,7 @@ class UserFollowApi(DecoratedMethodView):
         try:
             current_user.follow(user)
             db.session.commit()
-            data = get_user_data(username)
-            return success(data=data)
+            return success(data=user.to_json())
         except Exception as e:
             logging.error(f"关注用户失败: {str(e)}", exc_info=True)
             db.session.rollback()
@@ -210,8 +207,7 @@ class UserFollowApi(DecoratedMethodView):
         try:
             current_user.unfollow(user)
             db.session.commit()
-            data = get_user_data(username)
-            return success(data=data)
+            return success(data=user.to_json())
         except Exception as e:
             logging.error(f"取消关注用户失败: {str(e)}", exc_info=True)
             db.session.rollback()

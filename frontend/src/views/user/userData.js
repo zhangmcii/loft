@@ -158,7 +158,8 @@ export default {
   created() {
     // 首次加载时获取用户数据
     this.getUser();
-    // 监听路由参数变化
+    console.log("111", this.$route.params.userName);
+    // 从A用户主页跳转到B用户主页触发
     this.$watch(
       () => this.$route.params.userName,
       (newUserName, oldUserName) => {
@@ -234,11 +235,11 @@ export default {
         this.$route.params.userName === this.currentUser.userInfo.username;
 
       let param = isViewingSelf
-        ? this.currentUser.userInfo.id
-        : this.otherUser.userInfo.id;
+        ? this.currentUser.userInfo.username
+        : this.$route.params.userName;
 
       userApi
-        .getUser(param)
+        .getUserByUsername(param)
         .then((res) => {
           this.loading.userData = false;
 

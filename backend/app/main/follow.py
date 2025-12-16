@@ -5,7 +5,6 @@ from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
 
 from .. import db
-from ..api.users import get_user_data
 from ..decorators import permission_required
 from ..models import Follow, Permission, User
 from ..utils.common import get_avatars_url
@@ -30,8 +29,7 @@ def follow(username):
     try:
         current_user.follow(user)
         db.session.commit()
-        data = get_user_data(username)
-        return success(data=data)
+        return success(data=user.to_json())
     except Exception as e:
         logging.error(f"关注用户失败: {str(e)}", exc_info=True)
         db.session.rollback()
@@ -53,8 +51,7 @@ def unfollow(username):
     try:
         current_user.unfollow(user)
         db.session.commit()
-        data = get_user_data(username)
-        return success(data=data)
+        return success(data=user.to_json())
     except Exception as e:
         logging.error(f"取消关注用户失败: {str(e)}", exc_info=True)
         db.session.rollback()

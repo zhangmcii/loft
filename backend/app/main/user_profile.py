@@ -75,18 +75,6 @@ def add_user_image():
         return error(500, f"存储用户图像地址失败: {str(e)}")
 
 
-# @main.route("/users/<username>")
-# @jwt_required(optional=True)
-# def get_user_by_username(username):
-#     """ 根据用户名获取用户数据
-#         前端已不再使用
-#     """
-#     logging.info(f"获取用户信息: username={username}")
-#     user = User.query.filter_by(username=username).first()
-#     data = get_user_data(username)
-#     return success(data=data)
-
-
 @main.route("/can/<int:perm>")
 @jwt_required(optional=True)
 def can(perm):

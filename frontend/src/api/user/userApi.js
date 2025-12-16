@@ -16,6 +16,10 @@ export default {
     return $http.get(`${url_prefix}/users/${userId}`);
   },
 
+  getUserByUsername(username) {
+    return $http.get(`${url_prefix}/users/u/${username}`);
+  },
+
   // 获取所有标签
   get_tag_list() {
     return $http.get(`${url_prefix}/tags`);

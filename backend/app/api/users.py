@@ -14,27 +14,23 @@ from . import api
 
 def get_user_data(username):
     """获取用户数据的公共逻辑"""
+    logging.info(f"获取用户信息: username={username}")
     user = User.query.filter_by(username=username).first()
     if not user:
         return not_found("用户不存在")
     # 如果登录的用户时管理员，则会携带 电子邮件地址
-    if current_user and current_user.is_administrator():
-        return user.to_json()
-    j = user.to_json()
-    j.pop("email", None)
-    j.pop("confirmed", None)
-    return j
+    # if current_user and current_user.is_administrator():
+    #     return user.to_json()
+    # j = user.to_json()
+    # j.pop("email", None)
+    # j.pop("confirmed", None)
+    return user.to_json()
 
 
 @api.route("/users/<username>")
 @jwt_required(optional=True)
 def get_user_by_username(username):
     """根据用户名获取用户数据"""
-    logging.info(f"获取用户信息: username={username}")
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return not_found("用户不存在")
-
     data = get_user_data(username)
     return success(data=data)
 
