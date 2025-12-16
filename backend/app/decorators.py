@@ -115,7 +115,7 @@ def get_client_info():
 
     # 获取设备信息
     user_agent = request.headers.get("user-agent")
-    ua = parse(user_agent)
+    ua = parse(user_agent) if user_agent else ""
     user_info = {
         "browser": ua.browser.family,
         "browser_version": ua.browser.version_string,
@@ -156,7 +156,9 @@ def sql_profile(func):
         logging.info(f"Total Time   : {time.time() - start_time:.2f} sec\n")
 
         for idx, q in enumerate(queries, start=1):
-            logging.info(f"\n[{idx}] ({q.duration:.6f}s) \n{q.statement} \nParams: {q.parameters} \n{'-' * 60}")
+            logging.info(
+                f"\n[{idx}] ({q.duration:.6f}s) \n{q.statement} \nParams: {q.parameters} \n{'-' * 60}"
+            )
         logging.info("==========================\n")
 
         return result

@@ -1,7 +1,7 @@
-import eventlet
+# import eventlet
 
-# 打补丁
-eventlet.monkey_patch()
+# # 打补丁
+# eventlet.monkey_patch()
 
 import os
 import logging

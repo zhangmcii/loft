@@ -15,7 +15,7 @@ RUN venv/bin/pip install -i http://mirrors.aliyun.com/pypi/simple/ --trusted-hos
 
 COPY app app
 COPY migrations migrations
-COPY flasky.py config.py boot.sh ./
+COPY flasky.py config.py boot.sh flasky_socketio.py ./
 
 
 # run-time configuration
