@@ -108,7 +108,7 @@ export default {
             uName: this.follows.username,
             avatar: this.follows.image,
           });
-          this.$message.success("关注成功");
+          ElMessage.success("关注成功");
         }
       });
     },
@@ -122,7 +122,7 @@ export default {
         return userApi.unFollow(this.follows.username).then((res) => {
           if (res.code == 200) {
             this.currentUser.delItemFollowed(this.follows.username);
-            this.$message.success("已取消关注");
+            ElMessage.success("已取消关注");
             if (this.tabAction == "followed") {
               this.$emit("remove", this.follows.username);
             } else {

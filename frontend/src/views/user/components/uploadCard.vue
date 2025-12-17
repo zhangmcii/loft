@@ -129,7 +129,7 @@ export default {
         this.internalFormData.coverImage.filter((f) => f.uid !== file.uid);
     },
     handleExceed(files) {
-      this.$message.error("最多只能上传3张封面图片");
+      ElMessage.error("最多只能上传3张封面图片");
     },
     validateForm() {
       return new Promise((resolve) => {
@@ -199,7 +199,7 @@ export default {
             this.button.loading = false;
             if (error.response && error.response.status === 429) {
               uploadApi.del_image(this.imageKey);
-              this.$message.info("今天的发布次数已达上限～");
+              ElMessage.info("今天的发布次数已达上限～");
             }
           });
       } catch (error) {

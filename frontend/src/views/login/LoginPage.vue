@@ -67,14 +67,14 @@ export default {
                   const u = res.data;
                   this.currentUser.setUserInfo(u);
                   this.currentUser.token = res.token;
-                  this.$message({
+                  ElMessage({
                     message: "登录成功",
                     type: "success",
                     duration: 1700,
                   });
                   this.$router.push({ path: "/posts" });
                 } else {
-                  this.$message({
+                  ElMessage({
                     message: res.message || "账号或密码错误",
                     type: "error",
                     duration: 1700,
@@ -85,10 +85,10 @@ export default {
                 this.loading = false;
               });
           } else {
-            this.$message("请先完成验证");
+            ElMessage("请先完成验证");
           }
         } else {
-          this.$message.error("请修正表单中的错误");
+          ElMessage.error("请修正表单中的错误");
         }
       });
     },

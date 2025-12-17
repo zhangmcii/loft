@@ -65,25 +65,17 @@ export default {
                 const u = res.data;
                 this.currentUser.setUserInfo(u);
                 this.currentUser.token = res.token;
-                this.$message({
-                  message: "登录成功",
-                  type: "success",
-                  duration: 1700,
-                });
+                ElMessage.success("登录成功");
                 this.$router.push({ path: "/posts" });
               } else {
-                this.$message({
-                  message: res.message || "账号或密码错误",
-                  type: "error",
-                  duration: 1700,
-                });
+                ElMessage.error(res.message || "账号或密码错误");
               }
             })
             .catch((error) => {
               this.loading = false;
             });
         } else {
-          this.$message.error("请修正表单中的错误");
+          ElMessage.error("请修正表单中的错误");
         }
       });
     },

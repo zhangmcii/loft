@@ -133,10 +133,10 @@ export default {
     },
     async submitBlog() {
       if (this.content === "") {
-        this.$message.error("内容不能为空");
+        ElMessage.error("内容不能为空");
         return;
       } else if (this.originalFiles.length === 0) {
-        this.$message.error("图片不能为空");
+        ElMessage.error("图片不能为空");
         return;
       }
       if (!beforePicUpload(this.originalFiles)) {
@@ -166,7 +166,7 @@ export default {
           })
           .then((response) => {
             if (response.code === 200) {
-              this.$message.success("发布成功");
+              ElMessage.success("发布成功");
               this.content = "";
               this.originalFiles = [];
               emitter.emit("newPost", response.data);
@@ -178,7 +178,7 @@ export default {
             loadingInstance.close();
             if (error.response.status === 429) {
               uploadApi.del_image(this.imageKey);
-              this.$message.info("今天的发布次数已达上限～");
+              ElMessage.info("今天的发布次数已达上限～");
             }
           });
       } catch (error) {
@@ -190,7 +190,7 @@ export default {
       this.dialogVisible = true;
     },
     handleExceed() {
-      this.$message.info("最多只能上传9张图片");
+      ElMessage.info("最多只能上传9张图片");
     },
   },
 };

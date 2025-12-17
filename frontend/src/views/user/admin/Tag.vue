@@ -65,7 +65,6 @@
 import { nextTick, ref, computed } from "vue";
 import editApi from "@/api/user/editApi.js";
 import userApi from "@/api/user/userApi.js";
-import { ElMessage, messageConfig } from "element-plus";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 
 // 原始tag数组

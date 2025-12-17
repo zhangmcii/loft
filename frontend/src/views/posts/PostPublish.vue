@@ -39,9 +39,9 @@ export default {
           this.$emit("postsResult", res);
           if (res.code == 200) {
             this.content = "";
-            this.$message.success("发布成功!");
+            ElMessage.success("发布成功!");
           } else {
-            this.$message.error("发布失败!");
+            ElMessage.error("发布失败!");
           }
         });
     },
@@ -55,9 +55,9 @@ export default {
         this.$emit("postsResult", res);
         if (res.code == 200) {
           this.$refs.md.clean();
-          this.$message.success("发布成功!");
+          ElMessage.success("发布成功!");
         } else {
-          this.$message.error("发布失败!");
+          ElMessage.error("发布失败!");
         }
       });
     },

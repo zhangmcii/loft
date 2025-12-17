@@ -55,14 +55,14 @@ export default {
         .applyCode(this.form)
         .then((res) => {
           if (res.code == 200) {
-            this.$message.success("验证码已发送");
+            ElMessage.success("验证码已发送");
           } else {
-            this.$message.error("验证码发送失败");
+            ElMessage.error("验证码发送失败");
           }
           loadingInstance.close();
         })
         .catch(() => {
-          this.$message.error("网络错误，请稍后再试");
+          ElMessage.error("网络错误，请稍后再试");
           loadingInstance.close();
         });
     },
@@ -71,10 +71,10 @@ export default {
         if (res.code == 200) {
           this.currentUser.userInfo.confirmed = res.data.isConfirmed;
           this.currentUser.userInfo.roleId = res.data.roleId;
-          this.$message.success("邮箱绑定成功！");
+          ElMessage.success("邮箱绑定成功！");
           this.$router.push("/posts");
         } else {
-          this.$message.error("邮箱绑定失败");
+          ElMessage.error("邮箱绑定失败");
         }
       });
     },

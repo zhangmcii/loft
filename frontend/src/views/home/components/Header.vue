@@ -203,11 +203,7 @@ export default {
       this.closeToggleMenu();
       this.currentUser.disconnectSocket();
       this.currentUser.logOut();
-      this.$message({
-        message: "已退出",
-        type: "success",
-        duration: 1700,
-      });
+      ElMessage.success("已退出");
       this.$router.push("/posts");
       this.initImage();
     },

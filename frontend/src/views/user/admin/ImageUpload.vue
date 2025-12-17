@@ -120,7 +120,7 @@ export default {
     },
     async submitBlog() {
       if (this.originalFiles.length === 0) {
-        this.$message.error("图片不能为空");
+        ElMessage.error("图片不能为空");
         return;
       }
       if (!beforePicUpload(this.originalFiles)) {
@@ -142,7 +142,7 @@ export default {
         );
         this.originalFiles = [];
         loadingInstance.close();
-        this.$message.success("上传成功");
+        ElMessage.success("上传成功");
       } catch (error) {
         loadingInstance.close();
       }
@@ -152,7 +152,7 @@ export default {
       this.dialogVisible = true;
     },
     handleExceed() {
-      this.$message.info("最多只能上传9张图片");
+      ElMessage.info("最多只能上传9张图片");
     },
   },
 };

@@ -56,19 +56,19 @@ export default {
       this.showButton = !this.showButton;
       authApi.applyCode({ email: this.form.email }).then((res) => {
         if (res.code == 200) {
-          this.$message.success("验证码已发送");
+          ElMessage.success("验证码已发送");
         } else {
-          this.$message.error("验证码发送失败");
+          ElMessage.error("验证码发送失败");
         }
       });
     },
     resetPassword() {
       authApi.resetPassword(this.form).then((res) => {
         if (res.code == 200) {
-          this.$message.success("密码重置成功");
+          ElMessage.success("密码重置成功");
           this.$router.push("/login");
         } else {
-          this.$message.error("密码重置失败");
+          ElMessage.error("密码重置失败");
         }
       });
     },

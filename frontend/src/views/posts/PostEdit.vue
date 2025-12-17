@@ -59,11 +59,11 @@ export default {
         .then((res) => {
           if (res.code == 200) {
             this.loading = false;
-            this.$message.success("修改成功");
+            ElMessage.success("修改成功");
             this.$router.push(`/postDetail/${this.postId}`);
           } else {
             this.loading = false;
-            this.$message.success("修改失败");
+            ElMessage.success("修改失败");
           }
         });
     },
@@ -74,13 +74,13 @@ export default {
       postApi.editPost(this.post.id, this.richContent).then((res) => {
         if (res.code == 200) {
           this.loading = false;
-          this.$message.success("修改成功");
+          ElMessage.success("修改成功");
           this.post.body = this.richContent.body;
           this.post.body_html = this.richContent.bodyHtml;
           this.$router.push(`/postDetail/${this.postId}`);
         } else {
           this.loading = false;
-          this.$message.success("修改失败");
+          ElMessage.success("修改失败");
         }
       });
     },

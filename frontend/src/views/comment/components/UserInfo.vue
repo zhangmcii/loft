@@ -4,7 +4,6 @@ import { useLevel } from "undraw-ui";
 import { useCurrentUserStore } from "@/stores/user";
 import { useOtherUserStore } from "@/stores/otherUser";
 import userApi from "@/api/user/userApi.js";
-import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 const props = defineProps({ scope: Object, loading: Boolean, config: Object });
 
@@ -31,7 +30,7 @@ function unFollowUser() {
       currentUser.delItemFollowed(props.scope.uName);
       ElMessage.success("已取消关注");
     } else {
-      this.$message.error("取消关注失败");
+      ElMessage.error("取消关注失败");
     }
   });
 }

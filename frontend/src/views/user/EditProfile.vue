@@ -9,7 +9,6 @@ import { useCurrentUserStore } from "@/stores/user";
 import { useOtherUserStore } from "@/stores/otherUser";
 import { cloneDeep } from "@pureadmin/utils";
 import { areaList } from "@vant/area-data";
-import { ElLoading } from "element-plus";
 import uploadApi from "@/api/upload/uploadApi.js";
 import emitter from "@/utils/emitter.js";
 import imageApi from "@/api/user/imageApi.js";
@@ -84,13 +83,13 @@ export default {
             // 新格式
             this.tagList = res.data;
           } else {
-            this.$message.error("获取标签列表失败");
+            ElMessage.error("获取标签列表失败");
           }
           this.loading.tag = false;
         })
         .catch((error) => {
           this.loading.tag = false;
-          this.$message.error("获取标签列表失败");
+          ElMessage.error("获取标签列表失败");
           console.error(error);
         });
     },
@@ -152,15 +151,15 @@ export default {
               tags: [...this.selectedTags],
             };
             this.tagShow = false;
-            this.$message.success("标签修改成功");
+            ElMessage.success("标签修改成功");
           } else {
-            this.$message.error(res.message || "标签修改失败");
+            ElMessage.error(res.message || "标签修改失败");
           }
           loading.close();
         })
         .catch((error) => {
           loading.close();
-          this.$message.error("标签修改失败");
+          ElMessage.error("标签修改失败");
           console.error(error);
         });
     },
@@ -220,13 +219,13 @@ export default {
             this.imgList = [];
             this.imgList.push(imageUrl);
             emitter.emit("image", imageUrl);
-            this.$message.success("图像上传成功");
+            ElMessage.success("图像上传成功");
           } else {
-            this.$message.error(res.message || "图像上传失败");
+            ElMessage.error(res.message || "图像上传失败");
           }
         })
         .catch((error) => {
-          this.$message.error("图像上传失败");
+          ElMessage.error("图像上传失败");
           console.error(error);
         });
     },
@@ -242,11 +241,11 @@ export default {
           // 兼容旧格式
           return response.data.upload_token;
         } else {
-          this.$message.error("获取上传凭证失败");
+          ElMessage.error("获取上传凭证失败");
           return null;
         }
       } catch (error) {
-        this.$message.error("获取上传凭证失败");
+        ElMessage.error("获取上传凭证失败");
         console.error(error);
         return null;
       }

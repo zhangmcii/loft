@@ -139,7 +139,7 @@ export default {
           this.praiseNum = res.total;
           this.hasPraised = res.data.has_praised;
         } else {
-          this.$message.error(res.data.detail);
+          ElMessage.error(res.data.detail);
         }
       });
     },

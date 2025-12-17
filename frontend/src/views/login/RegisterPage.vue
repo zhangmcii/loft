@@ -161,7 +161,7 @@ export default {
             // 适配新的统一接口返回格式
             if (res.code === 200) {
               this.congratulation();
-              this.$message.success(res.message || "注册成功");
+              ElMessage.success(res.message || "注册成功");
               setTimeout(() => {
                 this.$router.push({
                   path: "/login",
@@ -172,15 +172,15 @@ export default {
                 });
               }, 700);
             } else {
-              this.$message.error(res.message || "注册失败");
+              ElMessage.error(res.message || "注册失败");
             }
           })
           .catch((error) => {
             this.loading = false;
-            this.$message.error(error.message || "注册失败，请稍后重试");
+            ElMessage.error(error.message || "注册失败，请稍后重试");
           });
       } else {
-        this.$message.error("请修正表单中的错误");
+        ElMessage.error("请修正表单中的错误");
       }
     },
     congratulation() {

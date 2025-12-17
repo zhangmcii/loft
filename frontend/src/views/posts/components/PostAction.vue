@@ -145,7 +145,7 @@ export default {
           this.praiseNum = res.data.praise_total;
           this.hasPraised = res.data.has_praised;
         } else {
-          this.$message.error(res.data.detail);
+          ElMessage.error(res.data.detail);
         }
       });
     },
@@ -157,7 +157,7 @@ export default {
       if (option.name === "复制链接") {
         copy(`${import.meta.env.VITE_DOMAIN}/postDetail/${this.post.id}`);
       } else {
-        this.$message.info(option.name);
+        ElMessage.info(option.name);
       }
       this.show = false;
     },
@@ -168,13 +168,13 @@ export default {
       } else {
         return postApi.deletePost(this.post.id).then((res) => {
           if (res.code === 200) {
-            this.$message.success("文章删除成功");
+            ElMessage.success("文章删除成功");
             // 发送删除事件，通知文章列表页刷新
             emitter.emit("postDeleted");
             // 跳转到首页或文章列表页
             this.$router.push("/posts");
           } else {
-            this.$message.error(res.message || "删除文章失败");
+            ElMessage.error(res.message || "删除文章失败");
           }
           return res;
         });

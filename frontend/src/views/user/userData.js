@@ -287,7 +287,7 @@ export default {
           this.loading.userData = false;
           this.loading.skeleton = false;
           this.loading.fullScreen = false;
-          this.$message.error("获取用户数据失败");
+          ElMessage.error("获取用户数据失败");
           console.error(err);
         });
     },
@@ -308,7 +308,7 @@ export default {
         })
         .catch((error) => {
           console.error("获取用户文章失败", error);
-          this.$message.error("获取用户文章失败，请稍后重试");
+          ElMessage.error("获取用户文章失败，请稍后重试");
         });
     },
     editProfile() {
@@ -335,10 +335,10 @@ export default {
             uName: this.user.username,
             avatar: this.user.image,
           });
-          this.$message.success("关注成功");
+          ElMessage.success("关注成功");
         } else {
           this.loading.follow = false;
-          this.$message.error(res.message || res.data?.msg || "关注失败");
+          ElMessage.error(res.message || res.data?.msg || "关注失败");
         }
       });
     },
@@ -356,9 +356,9 @@ export default {
             // 新格式
             this.user = res.data;
             this.currentUser.delItemFollowed(this.user.username);
-            this.$message.success("已取消关注");
+            ElMessage.success("已取消关注");
           } else {
-            this.$message.error(res.message || res.data?.msg || "取消关注失败");
+            ElMessage.error(res.message || res.data?.msg || "取消关注失败");
           }
           return res;
         });

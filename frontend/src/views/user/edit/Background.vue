@@ -4,7 +4,6 @@ import { ref, reactive, onMounted, nextTick } from "vue";
 import imageApi from "@/api/user/imageApi.js";
 import editApi from "@/api/user/editApi.js";
 import { useRouter } from "vue-router";
-import { ElMessage, ElLoading } from "element-plus";
 import { useCurrentUserStore } from "@/stores/user";
 import { useChange } from "@/utils/composedFunc/change.js";
 

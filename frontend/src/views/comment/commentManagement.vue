@@ -52,7 +52,7 @@ export default {
       commentApi.enableOrDisable(item.id, "disable").then((res) => {
         if (res.code == 200) {
           this.comments = res.data;
-          this.$message.warning("已禁用");
+          ElMessage.warning("已禁用");
         }
       });
     },
@@ -60,7 +60,7 @@ export default {
       commentApi.enableOrDisable(item.id, "enable").then((res) => {
         if (res.code == 200) {
           this.comments = res.data;
-          this.$message.success("已开启");
+          ElMessage.success("已开启");
         }
       });
     },

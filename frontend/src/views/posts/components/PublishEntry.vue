@@ -225,16 +225,16 @@ export default {
         }
 
         if (result && result.code === 200) {
-          this.$message.success("发布成功!");
+          ElMessage.success("发布成功!");
           this.resetForm();
           this.showPublishPanel = false;
           this.$emit("newPost", result.data);
         } else {
-          this.$message.error("发布失败!");
+          ElMessage.error("发布失败!");
         }
       } catch (error) {
         console.error("发布失败:", error);
-        this.$message.error("发布失败: " + (error.message || "未知错误"));
+        ElMessage.error("发布失败: " + (error.message || "未知错误"));
       } finally {
         this.publishing = false;
         this.$emit("loadingBegin", false);

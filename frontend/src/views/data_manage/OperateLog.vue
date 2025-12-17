@@ -92,12 +92,12 @@ export default {
           .deleteLog({ ids: [this.currentRow.row.id] })
           .then((res) => {
             if (res.code == 200) {
-              this.$message.success("删除成功");
+              ElMessage.success("删除成功");
               // 移除表格的第index行
               this.table.tableData.splice(this.currentRow.index, 1);
               this.table.log_count--;
             } else {
-              this.$message.error("删除失败");
+              ElMessage.error("删除失败");
             }
             return res;
           });
@@ -113,7 +113,7 @@ export default {
         });
         return logApi.deleteLog({ ids: ids }).then((res) => {
           if (res.code == 200) {
-            this.$message.success("删除成功");
+            ElMessage.success("删除成功");
             // 根据所选的行号ids从table.tableDate移除数据
             this.table.tableData = this.table.tableData.filter((item) => {
               return !this.table.multipleSelection.includes(item);
@@ -121,7 +121,7 @@ export default {
             this.table.log_count -= this.table.multipleSelection.length;
             this.table.multipleSelection = [];
           } else {
-            this.$message.error("删除失败");
+            ElMessage.error("删除失败");
           }
           return res;
         });

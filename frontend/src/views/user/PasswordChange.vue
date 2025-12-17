@@ -82,14 +82,14 @@ export default {
             this.loading = false;
             this.isChange = false;
             if (res.code == 200) {
-              this.$message.success("修改密码成功");
+              ElMessage.success("修改密码成功");
               this.log_out();
             } else {
-              this.$message.error("修改密码失败");
+              ElMessage.error("修改密码失败");
             }
           });
         } else {
-          this.$message.error("请修正表单中的错误");
+          ElMessage.error("请修正表单中的错误");
         }
       });
     },

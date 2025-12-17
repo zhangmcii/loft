@@ -168,10 +168,6 @@ export const useCurrentUserStore = defineStore("currentUser", {
 
       this.socket.on("disconnect", (reason) => {
         console.warn("⚠️ WebSocket断开连接：", reason);
-        // 自动重连（若因服务器原因断开）
-        if (reason === "io server disconnect") {
-          this.socket.connect();
-        }
       });
 
       this.socket.on("message_sent", (msg) => {

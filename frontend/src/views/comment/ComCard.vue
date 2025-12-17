@@ -55,7 +55,6 @@ import praiseApi from "@/api/praise/praiseApi.js";
 import userApi from "@/api/user/userApi.js";
 import imageCfg from "@/config/image.js";
 import { useCurrentUserStore } from "@/stores/user";
-import { ElMessage } from "element-plus";
 import { loginReminder } from "@/utils/common.js";
 import message from "@/utils/message";
 

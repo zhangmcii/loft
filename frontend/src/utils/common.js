@@ -1,6 +1,4 @@
 import { copyTextToClipboard } from "@pureadmin/utils";
-import { ElMessage } from "element-plus";
-import { showConfirmDialog } from "vant";
 import { v4 as uuidv4 } from "uuid";
 import * as qiniu from "qiniu-js";
 import router from "@/router";

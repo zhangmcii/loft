@@ -84,10 +84,10 @@ export default {
         this.loading = false;
         this.isChange = false;
         if (res.code == 200) {
-          this.$message.success("修改成功");
+          ElMessage.success("修改成功");
           this.$router.push(`/user/${this.formLabelAlign.username}`);
         } else {
-          this.$message.error("修改失败");
+          ElMessage.error("修改失败");
         }
       });
     },
@@ -106,9 +106,9 @@ export default {
           .then((res) => {
             if (res.code === 200) {
               this.formLabelAlign.image = res.data.image;
-              this.$message.success("已设置为随机头像");
+              ElMessage.success("已设置为随机头像");
             } else {
-              this.$message.error(res.message || "操作失败");
+              ElMessage.error(res.message || "操作失败");
             }
             return res;
           });

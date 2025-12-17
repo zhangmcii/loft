@@ -3,7 +3,6 @@
 import { useCurrentUserStore } from "@/stores/user";
 import { useOtherUserStore } from "@/stores/otherUser";
 import { cloneDeep } from "@pureadmin/utils";
-import { ElLoading } from "element-plus";
 import { useRouter, useRoute } from "vue-router";
 import editApi from "@/api/user/editApi.js";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";

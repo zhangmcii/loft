@@ -15,7 +15,23 @@ export function getPluginsList(VITE_COMPRESSION, MODE) {
   return [
     vue(),
     AutoImport({
-      imports: ["vue"],
+      imports: ["vue",
+        // 自动导入函数式 API组件
+        {
+          'element-plus': [
+            'ElMessage',
+            // 'ElMessageBox',
+            // 'ElNotification',
+            'ElLoading',
+          ],
+          vant: [
+            'showConfirmDialog',
+            // 'showDialog',
+            // 'showToast',
+          ],
+        },
+      ],
+      // resolvers:  [ElementPlusResolver(), VantResolver()] 
       resolvers: isProd ? [ElementPlusResolver(), VantResolver()] : [],
     }),
     Components({
@@ -24,6 +40,7 @@ export function getPluginsList(VITE_COMPRESSION, MODE) {
         IconsResolver({
           enabledCollections: ["ep"],
         }),
+        // ElementPlusResolver(), VantResolver()
         ...(isProd ? [ElementPlusResolver(), VantResolver()] : []),
       ],
     }),
@@ -33,6 +50,6 @@ export function getPluginsList(VITE_COMPRESSION, MODE) {
     AppLoading(),
     configCompressPlugin(VITE_COMPRESSION),
     svgLoader(),
-    // removeConsole(),
+    removeConsole(),
   ];
 }

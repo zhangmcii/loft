@@ -52,24 +52,24 @@ export default {
         .applyCode({ email: this.form.new_email })
         .then((res) => {
           if (res.code == 200) {
-            this.$message.success("验证码已发送");
+            ElMessage.success("验证码已发送");
           } else {
-            this.$message.error("验证码发送失败");
+            ElMessage.error("验证码发送失败");
           }
           loadingInstance.close();
         })
         .catch(() => {
-          this.$message.error("网络错误，请稍后再试");
+          ElMessage.error("网络错误，请稍后再试");
           loadingInstance.close();
         });
     },
     changeEmail() {
       authApi.changeEmail(this.form).then((res) => {
         if (res.code == 200) {
-          this.$message.success("邮箱更换成功!");
+          ElMessage.success("邮箱更换成功!");
           this.$router.push("/posts");
         } else {
-          this.$message.error("邮箱更换失败");
+          ElMessage.error("邮箱更换失败");
         }
       });
     },

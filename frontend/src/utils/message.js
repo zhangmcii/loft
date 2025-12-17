@@ -1,4 +1,3 @@
-import { ElMessage, ElMessageBox, ElNotification } from "element-plus";
 
 class MessageManager {
   constructor() {
@@ -38,32 +37,6 @@ class MessageManager {
 
   info(message, options = {}) {
     return this.showMessage(message, "info", options);
-  }
-
-  confirm(message, title = "提示", options = {}) {
-    return ElMessageBox.confirm(message, title, {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-      ...options,
-    });
-  }
-
-  alert(message, title = "提示", options = {}) {
-    return ElMessageBox.alert(message, title, {
-      confirmButtonText: "确定",
-      ...options,
-    });
-  }
-
-  notify(title, message, type = "info", options = {}) {
-    return ElNotification({
-      title,
-      message,
-      type,
-      duration: 4500,
-      ...options,
-    });
   }
 }
 

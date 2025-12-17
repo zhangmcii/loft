@@ -4,7 +4,7 @@ export default {
   methods: {
     clear() {
       localStorage.clear("blog");
-      this.$message.success("清除成功");
+      ElMessage.success("清除成功");
     },
   },
 };

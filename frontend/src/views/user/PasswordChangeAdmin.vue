@@ -61,7 +61,7 @@ export default {
         if (valid) {
           this.dialogShow = true;
         } else {
-          this.$message.error("请修正表单中的错误");
+          ElMessage.error("请修正表单中的错误");
         }
       });
     },
@@ -72,9 +72,9 @@ export default {
         return authApi.helpChangePassword(this.form).then((res) => {
           this.isChange = false;
           if (res.code == 200) {
-            this.$message.success("该用户密码修改成功");
+            ElMessage.success("该用户密码修改成功");
           } else {
-            this.$message.error("该用户密码修改失败");
+            ElMessage.error("该用户密码修改失败");
           }
           return res;
         });
