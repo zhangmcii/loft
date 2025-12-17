@@ -26,10 +26,14 @@ CELERY_BEAT_PID=$!
 gunicorn -b :5000 -w 8 --access-logfile - --error-logfile - flasky:app &
 MAIN_APP_PID=$!
 
+# 等待主应用启动
+sleep 3
+
 # WebSocket 服务
-gunicorn -b :5001 -w 1 --worker-class eventlet --access-logfile - --error-logfile - flasky_socketio:app
+gunicorn -b :5001 -w 1 --worker-class eventlet --access-logfile - --error-logfile - flasky_socketio:app &
 WEBSOCKET_PID=$!
 
-# 等待所有后台进程
-wait $CELERY_WORKER_PID $CELERY_BEAT_PID $MAIN_APP_PID $WEBSOCKET_PID
-# wait $CELERY_WORKER_PID $CELERY_BEAT_PID $WEBSOCKET_PID
+# 等待任意子进程退出
+wait -n $CELERY_WORKER_PID $CELERY_BEAT_PID $MAIN_APP_PID $WEBSOCKET_PID
+
+echo "进程异常退出，退出码：$?"

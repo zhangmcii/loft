@@ -1,9 +1,15 @@
 import logging
+import os
 
 from celery import shared_task
+from flask_socketio import SocketIO
 
-from .. import db, socketio
+from .. import db
 from ..models import Notification, NotificationType
+
+socketio = SocketIO(
+    message_queue=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/4"
+)
 
 
 def _create_and_emit_notifications(notifications):

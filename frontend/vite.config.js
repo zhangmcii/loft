@@ -9,6 +9,7 @@ export default ({ mode }) => {
   const { VITE_COMPRESSION, VITE_PORT } = wrapperEnv(loadEnv(mode, root));
 
   const backendAddr = `http://${getLocalIP()}:8082`;
+  const sokcetIOAddr = `http://${getLocalIP()}:8083`;
   return {
     plugins: getPluginsList(VITE_COMPRESSION, mode),
     resolve: {
@@ -28,7 +29,7 @@ export default ({ mode }) => {
         },
         // websocket代理
         "/socket.io/": {
-          target: backendAddr,
+          target: sokcetIOAddr,
           changeOrigin: true,
           // 启用 WebSocket 代理
           ws: true,

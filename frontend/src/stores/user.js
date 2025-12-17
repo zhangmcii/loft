@@ -141,45 +141,73 @@ export const useCurrentUserStore = defineStore("currentUser", {
       localStorage.removeItem("blogOtherUser");
     },
     connectSocket() {
-      if (!this.socket) {
-        this.socket = io("", {
-          path: "/socket.io",
-          auth: { Authorization: this.token },
-          query: { token: this.token },
-          transports: ["websocket"],
-          reconnectionAttempts: 5,
-          reconnectionDelay: 5000,
-        });
+      if (this.socket) return;
+      this.socket = io(import.meta.env.DEV ? "" : import.meta.env.VITE_DOMAIN, {
+        path: "/socket.io",
+        query: { token: this.token },
+        transports: ["websocket"],
+        withCredentials: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 5000,
+        // 与后端ping_timeout一致
+        pingTimeout: 30000,
+        pingInterval: 60000,
+      });
 
-        // 监听连接成功事件
-        this.socket.on("connect", () => {
-          if (import.meta.env.DEV) {
-            console.log("已连接到WebSocket服务器");
-          }
+      // 监听连接成功事件
+      this.socket.on("connect", () => {
+        console.log("已连接到WebSocket服务器", this.socket.id);
+      });
+      this.socket.on("connect_error", (err) => {
+        console.error("❌ WebSocket连接失败：", {
+          message: err.message,
+          code: err.code,
+          data: err.data,
         });
-        this.socket.on("connect_error", (err) => {
-          if (import.meta.env.DEV) {
-            console.error("WebSocket连接失败:", err.message);
-          }
-        });
-        // 初始化心跳定时器
-        this.heartbeatInterval = setInterval(() => {
-          if (this.socket?.connected) {
-            this.socket.emit("heartbeat");
-          }
-        }, 30000);
-      }
+      });
+
+      this.socket.on("disconnect", (reason) => {
+        console.warn("⚠️ WebSocket断开连接：", reason);
+        // 自动重连（若因服务器原因断开）
+        if (reason === "io server disconnect") {
+          this.socket.connect();
+        }
+      });
+
+      this.socket.on("message_sent", (msg) => {
+        console.log("📤 消息发送成功（后端确认）：", msg);
+        // 前端消息发送成功后的逻辑（比如清空输入框、更新聊天记录）
+      });
+
+      this.socket.on("heartbeat", () => {
+        console.log("💓 心跳响应正常");
+      });
+
+      // 初始化心跳定时器
+      this.heartbeatInterval = setInterval(() => {
+        if (this.socket?.connected) {
+          this.socket.emit("heartbeat");
+        }
+      }, 30000);
     },
     disconnectSocket() {
-      if (this.socket) {
-        this.socket.off("connect");
-        this.socket.off("connect_error");
-        this.cleanup();
-        this.socket = null;
-        if (import.meta.env.DEV) {
-          console.log("前端主动断开WebSocket连接");
-        }
-      }
+      if (!this.socket) return;
+
+      // 监听new_notification，new_message事件， 在具体组件中写了
+
+      this.socket.off("connect");
+      this.socket.off("connect_error");
+
+      this.socket.off("disconnect");
+      // 清理业务事件
+      this.socket.off("new_message");
+      this.socket.off("message_sent");
+      this.socket.off("new_notification");
+      this.socket.off("heartbeat");
+
+      this.cleanup();
+      this.socket = null;
+      console.log("前端主动断开WebSocket连接");
     },
     cleanup() {
       // 清理定时器
@@ -196,32 +224,34 @@ export const useCurrentUserStore = defineStore("currentUser", {
     },
     enterChat(targetId) {
       this.activeChat = targetId;
-      this.socket.emit("enter_chat", { targetId: targetId });
-      if (import.meta.env.DEV) {
-        console.log("进入聊天:", targetId);
+      // 确保socket已连接再发送事件
+      if (this.socket?.connected) {
+        this.socket.emit("enter_chat", { targetId: targetId });
+        console.log("🗨️ 进入聊天:", targetId);
+      } else {
+        console.error("❌ 未连接WebSocket，无法进入聊天");
+        // 重连后重试（可选）
+        this.connectSocket();
+        setTimeout(() => this.enterChat(targetId), 1000);
       }
     },
 
     sendMessage(chat, func) {
       let content = chat.content;
       if (this.activeChat && content.trim()) {
-        this.socket.emit(
-          "send_message",
-          {
+        if (this.socket?.connected) {
+          this.socket.emit("send_message", {
             receiver_id: this.activeChat,
             content: content.trim(),
-          },
-          () => {
-            if (import.meta.env.DEV) {
-              console.log("消息发送成功");
-            }
-
-            func(chat);
-            // 在这里执行发送成功后的逻辑
-          }
-        );
-        if (import.meta.env.DEV) {
-          console.log("发送消息:", content.trim());
+          });
+          console.log("📤 发送消息:", content.trim());
+          // 前端临时处理（最终以后端message_sent为准）
+          if (func) func(chat);
+        } else {
+          console.error("❌ 未连接WebSocket，无法发送消息");
+          // 重连后重试（可选）
+          this.connectSocket();
+          setTimeout(() => this.sendMessage(chat, func), 1000);
         }
       }
     },

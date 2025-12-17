@@ -1,12 +1,6 @@
-# import eventlet
-
-# # 打补丁
-# eventlet.monkey_patch()
-
 import os
 import logging
 
-from app.event import *
 from app.utils.common import get_local_ip
 from app.utils.logger import setup_logging
 from dotenv import load_dotenv
@@ -32,7 +26,7 @@ if os.environ.get("FLASK_COVERAGE"):
 
 import sys
 import click
-from app import create_app, db, socketio
+from app import create_app, db
 from app.models import (
     Comment,
     Follow,
@@ -123,6 +117,4 @@ def add(some):
 
 
 if __name__ == "__main__":
-    socketio.run(
-        app, host=os.getenv("FLASK_RUN_HOST"), port=os.getenv("FLASK_RUN_PORT")
-    )
+    app.run(host=os.getenv("FLASK_RUN_HOST"), port=os.getenv("FLASK_RUN_PORT"))

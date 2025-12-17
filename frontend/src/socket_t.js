@@ -1,4 +1,4 @@
-import { io }  from "socket.io-client";
+import { io } from "socket.io-client";
 
 /**
  * ⚠️ 改这里
@@ -10,15 +10,18 @@ import { io }  from "socket.io-client";
 // const SOCKET_URL = "https://106.53.219.192:4289";
 const SOCKET_URL = "https://191718.com";
 
-const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2NTg5NTI0MSwianRpIjoiZmFlMGU4NWYtYmQ4My00MTQ1LTliYjktZTk3YjU2MzgwYjE5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6OTksIm5iZiI6MTc2NTg5NTI0MSwiY3NyZiI6ImY1Mzg4ODkyLWI1MjAtNDMwOC1iYjA0LTRhNjZmZTk3ZTA4ZSJ9.IdxfikDQQ7j8vYodQhHtDlBuntScJkOlCPlfTogwmuE"
+const token =
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc2NTg4MTY3NSwianRpIjoiZDAxNzdhYTMtOWM1Yi00NzYxLThlNDAtOTdlMDY0MDlkZjMzIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MTAwLCJuYmYiOjE3NjU4ODE2NzUsImNzcmYiOiJmZDU3Yzk4Yi0zMmNiLTRiNWQtOWEyZC04NzBiY2I0ZjMwZmMifQ.pJoR-aHLeToIUKFY4IBheu2Vg1A1zABSib9VPCbOJOg";
 
 const socket = io(SOCKET_URL, {
   path: "/socket.io",
-  transports: ["websocket"], // 强制 websocket，绕过 polling
-  timeout: 5000,
-  reconnectionAttempts: 3,
-  auth: { Authorization: token },
   query: { token: token },
+  transports: ["websocket"],
+  withCredentials: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 5000,
+  pingTimeout: 30000,
+  pingInterval: 60000,
 });
 
 socket.on("connect", () => {

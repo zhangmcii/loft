@@ -75,14 +75,6 @@ def create_app(config_name):
     mail.init_app(app)
     redis.init_app(app, decode_responses=True)
     celery_init_app(app)
-    socketio.init_app(
-        app,
-        cors_allowed_origins="*",
-        ping_timeout=30,
-        ping_interval=60,
-        message_queue=app.config["SOCKETIO_MESSAGE_QUEUE"],
-    )
-
     limiter.init_app(app)
     cache.init_app(app)
 
@@ -107,4 +99,42 @@ def create_app(config_name):
 
         return server_error(message=str(e))
 
+    return app
+
+
+def create_ws_app(config_name):
+    app = Flask(__name__)
+    # 设置代理配置
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,
+        x_proto=1,
+        x_host=1,
+        x_prefix=1,
+    )
+
+    # 跨域
+    CORS(app)
+
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
+
+    # 配置日志系统
+    setup_logging(app)
+
+    db.init_app(app)
+    jwt.init_app(app)
+    redis.init_app(app, decode_responses=True)
+    celery_init_app(app)
+    socketio.init_app(
+        app,
+        cors_allowed_origins="*",
+        ping_timeout=30,
+        ping_interval=60,
+        message_queue=app.config["SOCKETIO_MESSAGE_QUEUE"],
+    )
+    # 注册WS事件
+    from app.event import register_ws_events
+
+    register_ws_events(socketio, app)
     return app

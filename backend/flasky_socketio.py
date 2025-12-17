@@ -6,11 +6,13 @@ eventlet.monkey_patch()
 
 import os
 
-from app import create_app, socketio
+from app import create_ws_app, socketio
 
-app = create_app(os.getenv("FLASK_CONFIG") or "default")
+app = create_ws_app(os.getenv("FLASK_CONFIG") or "default")
 
 if __name__ == "__main__":
     socketio.run(
-        app, host=os.getenv("FLASK_RUN_HOST", "0.0.0.0"), port=5001
+        app,
+        host=os.getenv("FLASK_RUN_HOST", "0.0.0.0"),
+        port=os.getenv("SOCKETIO_RUN_PORT", 8083),
     )

@@ -15,10 +15,14 @@ function detect_platform(){
 }
 
 # 启动后端服务
-echo "启动后端服务..."
+echo "启动后端主应用..."
 cd backend
 python flasky.py &
 BACKEND_PID=$!
+
+echo "启动Socket.IO服务..."
+python flasky_socketio.py &
+SOCKETIO_PID=$!
 
 echo "启动Celery服务..."
 platform=$(detect_platform)
@@ -43,6 +47,6 @@ cd ../frontend
 npm run dev &
 FRONTEND_PID=$!
 
-trap "kill $BACKEND_PID $CELERY_PID $FRONTEND_PID 2>/dev/null; exit" INT
+trap "kill $BACKEND_PID $SOCKETIO_PID $CELERY_PID $FRONTEND_PID 2>/dev/null; exit" INT
 
 wait

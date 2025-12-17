@@ -155,7 +155,7 @@ export default {
     },
     shareSelect(option) {
       if (option.name === "复制链接") {
-        copy(`${import.meta.env.VITE_DOMIN}/postDetail/${this.post.id}`);
+        copy(`${import.meta.env.VITE_DOMAIN}/postDetail/${this.post.id}`);
       } else {
         this.$message.info(option.name);
       }
