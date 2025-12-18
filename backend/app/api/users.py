@@ -61,7 +61,7 @@ def get_post_by_user(username):
     )
     posts = pagination.items
 
-    posts_json = Post.batch_query_with_data(posts)
+    posts_json = Post.batch_query_with_data(posts, is_list=True)
 
     return success(data={"posts": posts_json}, total=pagination.total)
 

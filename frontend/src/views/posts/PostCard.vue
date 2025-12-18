@@ -202,7 +202,7 @@ export default {
           ><div v-if="post.body_html && show_body" v-html="post.body_html"></div
         ></el-row>
         <el-row v-if="!post.body_html && show_body"
-          ><div v-html="parseContent(post.body)"></div
+          ><div v-html="parseContent(post.summary || post.body)"></div
         ></el-row>
 
         <el-row :gutter="35" justify="end" class="icon-event">

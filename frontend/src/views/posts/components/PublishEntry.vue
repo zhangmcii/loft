@@ -134,7 +134,6 @@ import MarkdownEditor from "@/utils/components/MarkdownEditor.vue";
 import postApi from "@/api/posts/postApi.js";
 import uploadApi from "@/api/upload/uploadApi.js";
 import { useCurrentUserStore } from "@/stores/user";
-import emitter from "@/utils/emitter.js";
 import {
   compressImages,
   uploadFiles,

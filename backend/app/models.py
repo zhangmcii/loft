@@ -4,6 +4,7 @@ import logging
 from datetime import timedelta
 from enum import Enum
 
+
 from flask import current_app
 from flask_jwt_extended import create_access_token, current_user
 from sqlalchemy import and_, event, func
@@ -476,12 +477,32 @@ class PostType(Enum):
 class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
+
+    # title = db.Column(db.String(200))
+    summary = db.Column(db.String(500))
+
+    # 存储纯文本/Markdown 内容，用于纯文字和图文文章
     body = db.Column(db.Text)
+    # 存储富文本编辑器生成的 HTML 内容
     body_html = db.Column(db.Text)
+
+    # 类型：纯文字或者图文
     type = db.Column(db.Enum(PostType))
-    # images字段已废弃。暂时不硬删除
-    images = db.Column(db.Text)
+
+    # 封面图片
+    # cover = db.Column(db.String(255))
+    # # 浏览量
+    # view_count = db.Column(db.Integer, default=0)
+    # # 点赞数
+    # like_count = db.Column(db.Integer, default=0)
+    # # 评论数
+    # comment_count = db.Column(db.Integer, default=0)
+
+    # 发布时间
     timestamp = db.Column(db.DateTime, index=True, default=DateUtils.now_time)
+    # 更新时间
+    # updated_at = db.Column(db.DateTime)
+
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     comments = db.relationship("Comment", backref="post", lazy="dynamic")
@@ -489,7 +510,7 @@ class Post(db.Model):
     notifications = db.relationship("Notification", backref="post", lazy="dynamic")
     deleted = db.Column(db.Boolean, default=False)
 
-    def to_json(self, extra_data):
+    def to_json(self, extra_data, is_list=False):
         """
         纯序列化函数，不包含任何数据库查询
         必须传入 extra_data 参数包含所有需要的外部数据：
@@ -500,6 +521,8 @@ class Post(db.Model):
             'praise_num': int,
             'has_praised': bool
         }
+
+        is_list: 是否为列表API调用，如果为True，则使用summary字段替代body和body_html
         """
         if not extra_data:
             raise ValueError("to_json() 需要额外的参数")
@@ -514,17 +537,8 @@ class Post(db.Model):
         urls = [img["url"] for img in images]
         pos = [img["describe"] for img in images]
 
-        body = self.body
-        body_html = self.body_html
-
-        if self.type == PostType.IMAGE and self.body_html:
-            body = Post.replace_body(self.body, pos, urls)
-            body_html = Post.replace_body_html(self.body_html, pos, urls)
-
-        return {
+        j = {
             "id": self.id,
-            "body": body,
-            "body_html": body_html,
             "post_images": urls if not self.body_html else [],
             "pos": pos,
             "post_type": self.type.value,
@@ -539,6 +553,23 @@ class Post(db.Model):
             "praise_num": praise_num,
             "has_praised": has_praised,
         }
+        # 文章列表只返回摘要
+        if is_list:
+            j.update({"summary": self.summary})
+        # 文章详情返回完整内容
+        else:
+            body = self.body
+            body_html = self.body_html
+            if self.type == PostType.IMAGE and self.body_html:
+                body = Post.replace_body(self.body, pos, urls)
+                body_html = Post.replace_body_html(self.body_html, pos, urls)
+            j.update(
+                {
+                    "body": body,
+                    "body_html": body_html,
+                }
+            )
+        return j
 
     @staticmethod
     def _query_post_images(post_ids):
@@ -645,10 +676,12 @@ class Post(db.Model):
         return extra_data_map
 
     @staticmethod
-    def batch_query_with_data(posts):
+    def batch_query_with_data(posts, is_list=False):
         """
         为一组文章批量查询并预填充所有相关数据
         返回预填充了数据后的文章列表
+
+        is_list: 是否为列表API调用，如果为True，使用summary字段减少网络传输
         """
 
         if not posts:
@@ -674,7 +707,10 @@ class Post(db.Model):
         )
 
         # 6. 批量转换为JSON
-        return [post.to_json(extra_data=extra_data_map[post.id]) for post in posts]
+        return [
+            post.to_json(extra_data=extra_data_map[post.id], is_list=is_list)
+            for post in posts
+        ]
 
     @staticmethod
     def from_json(json_post):

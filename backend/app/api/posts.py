@@ -20,7 +20,7 @@ from ..mycelery.notification_task import create_new_post_notifications
 from ..utils.response import error, success
 from .. import cache
 from ..decorators import log_operate, sql_profile
-
+from ..utils.markdown_truncate import MarkdownTruncator
 
 class PostItemApi(DecoratedMethodView):
     method_decorators = {
@@ -81,7 +81,7 @@ class PostItemApi(DecoratedMethodView):
             .first_or_404()
         )
 
-        posts_json = Post.batch_query_with_data([post])
+        posts_json = Post.batch_query_with_data([post], is_list=False)
 
         return success(data=posts_json[0])
 
@@ -113,6 +113,9 @@ class PostItemApi(DecoratedMethodView):
         j = request.get_json()
         post.body = j.get("body", post.body)
         post.body_html = j.get("bodyHtml") if j.get("bodyHtml") else None
+        # 更新summary字段
+        if "body" in j:
+            post.summary = MarkdownTruncator.get_smart_preview(post.body)
         # 编辑markdown文章时新增图片
         images = j.get("images")
         if images:
@@ -128,7 +131,7 @@ class PostItemApi(DecoratedMethodView):
             db.session.add_all(images)
         db.session.commit()
 
-        posts_json = Post.batch_query_with_data([post])
+        posts_json = Post.batch_query_with_data([post], is_list=False)
 
         return success(data=posts_json[0])
 
@@ -163,7 +166,7 @@ class PostGroupApi(DecoratedMethodView):
         if not posts:
             return [], paginate.total
 
-        result = Post.batch_query_with_data(posts)
+        result = Post.batch_query_with_data(posts, is_list=True)
 
         return result, paginate.total
 
@@ -184,7 +187,11 @@ class PostGroupApi(DecoratedMethodView):
     def submit_to_db(post_type, body, body_html, images=None):
         try:
             post = Post(
-                body=body, body_html=body_html, type=post_type, author=current_user
+                body=body,
+                body_html=body_html,
+                summary=MarkdownTruncator.get_smart_preview(body),
+                type=post_type,
+                author=current_user,
             )
             db.session.add(post)
             db.session.flush()
