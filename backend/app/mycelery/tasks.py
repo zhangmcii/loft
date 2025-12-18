@@ -6,7 +6,7 @@ from flask import render_template
 from flask_mail import Message
 
 from .. import mail, db
-from ..models import Post, Image, ImageType, Notification, Comment, Praise
+from ..models import Post, Image, ImageType, Comment, Praise
 from ..utils.response import error
 from ..main.uploads import del_qiniu_image
 
@@ -81,12 +81,12 @@ def hard_delete_post():
         try:
             # 禁用外键检查
             db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 0"))
-            
+
             # 直接删除所有相关评论
             comment_delete_result = Comment.query.filter(
                 Comment.post_id.in_(post_ids)
             ).delete(synchronize_session=False)
-            
+
         except Exception as e:
             logging.error(f"删除评论时出错: {str(e)}")
             raise
@@ -111,20 +111,20 @@ def hard_delete_post():
         error_msg = f"批量删除文章失败: {str(e)}"
         logging.error(error_msg, exc_info=True)
         db.session.rollback()
-        
+
         # 发送错误邮件给系统管理员
         try:
             from ..utils.time_util import DateUtils
-            
+
             send_email.delay(
                 "1912592745@qq.com",
                 "Loft系统告警 - Celery批量删除文章失败",
                 "error_email.html",
                 username="admin",
                 error_message=error_msg,
-                year=DateUtils.get_year()
+                year=DateUtils.get_year(),
             )
         except Exception as email_error:
             logging.error(f"发送错误邮件失败: {str(email_error)}", exc_info=True)
-        
+
         return error(500, error_msg)

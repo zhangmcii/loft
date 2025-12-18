@@ -19,7 +19,7 @@ from ..models import (
 from ..mycelery.notification_task import create_new_post_notifications
 from ..utils.response import error, success
 from .. import cache
-from ..decorators import log_operate
+from ..decorators import log_operate, sql_profile
 
 
 class PostItemApi(DecoratedMethodView):
@@ -135,7 +135,7 @@ class PostItemApi(DecoratedMethodView):
 
 class PostGroupApi(DecoratedMethodView):
     method_decorators = {
-        "get": [log_operate],
+        "get": [log_operate, sql_profile],
         # "get": [sql_profile],
         "post": [jwt_required()],
     }

@@ -41,7 +41,9 @@ class Config:
 
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
 
-    CACHE_TYPE = "SimpleCache"
+    # 适配多进程部署
+    CACHE_TYPE = "RedisCache"
+    CACHE_REDIS_URL = f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/5"
 
     # CELERY
     CELERY = dict(
