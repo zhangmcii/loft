@@ -63,15 +63,14 @@ export default {
     },
   },
   computed: {},
-  methods: {
-  },
+  methods: {},
 };
 </script>
 
 <template>
   <div class="post-card" :style="containerStyle">
     <PostHeader :post="post" />
-    <PostContent :postContent="post.body" :preview="true" />
+    <PostContent :postContent="post.summary" :preview="true" />
     <slot name="image"></slot>
 
     <PostAction :post="post" />
