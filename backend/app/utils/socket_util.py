@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+import json
 import logging
 import time
 from threading import Lock
+from .. import redis
 
 
 # 管理WebSocket连接
@@ -58,31 +57,32 @@ class ManageSocket:
 
                 self.user_socket[user_id].add(sid)
                 self.socket_user[sid] = user_id
+                self._save_to_redis()
                 logging.info(
                     f"用户 {user_id} 建立新连接 {sid}，当前连接数: {len(self.user_socket[user_id])}"
                 )
             except Exception as e:
                 logging.error(f"添加用户连接映射时出错: {str(e)}", exc_info=True)
 
-    def get_user_socket(self, user_id):
-        """
-        获取用户的所有socket连接ID
+    # def get_user_socket(self, user_id):
+    #     """
+    #     获取用户的所有socket连接ID
 
-        Args:
-            user_id: 用户ID
+    #     Args:
+    #         user_id: 用户ID
 
-        Returns:
-            set: 用户的socket连接ID集合
-        """
-        with self.lock:
-            try:
-                # 返回副本避免线程安全问题
-                sockets = self.user_socket.get(user_id, set()).copy()
-                logging.info(f"获取用户 {user_id} 的连接，共 {len(sockets)} 个")
-                return sockets
-            except Exception as e:
-                logging.error(f"获取用户连接时出错: {str(e)}", exc_info=True)
-                return set()
+    #     Returns:
+    #         set: 用户的socket连接ID集合
+    #     """
+    #     with self.lock:
+    #         try:
+    #             # 返回副本避免线程安全问题
+    #             sockets = self.user_socket.get(user_id, set()).copy()
+    #             logging.info(f"获取用户 {user_id} 的连接，共 {len(sockets)} 个")
+    #             return sockets
+    #         except Exception as e:
+    #             logging.error(f"获取用户连接时出错: {str(e)}", exc_info=True)
+    #             return set()
 
     def remove_user_socket(self, sid):
         """
@@ -102,6 +102,7 @@ class ManageSocket:
                             del self.user_socket[user_id]
                             logging.info(f"用户 {user_id} 已断开所有连接")
                     del self.socket_user[sid]
+                    self._save_to_redis()
                     return user_id
                 return None
             except Exception as e:
@@ -111,30 +112,70 @@ class ManageSocket:
     def get_online_users_count(self):
         """
         获取当前在线用户数量
+        """
+        pass
+
+    # def cleanup_stale_connections(self):
+    #     """
+    #     清理可能的过期连接（定期维护用）
+    #     """
+    #     current_time = time.time()
+    #     # 每10分钟执行一次清理
+    #     if current_time - self.last_cleanup < 600:
+    #         return
+
+    #     with self.lock:
+    #         try:
+    #             before_count = len(self.socket_user)
+    #             # 实际清理逻辑可根据需要实现
+    #             # 这里只是记录日志，表明执行了清理
+    #             logging.info(f"执行连接清理，清理前连接数: {before_count}")
+    #             self.last_cleanup = current_time
+    #         except Exception as e:
+    #             logging.error(f"清理过期连接时出错: {str(e)}", exc_info=True)
+
+    def _save_to_redis(self):
+        """
+        将用户连接数据结构保存到Redis中
+        """
+        try:
+            # 准备要保存的数据
+            user_socket_dict = {
+                user_id: list(sockets) for user_id, sockets in self.user_socket.items()
+            }
+
+            # 使用JSON格式保存到Redis，设置过期时间为1小时
+            redis.set(
+                "socket:user_socket", json.dumps(user_socket_dict), ex=3600  # 1小时过期
+            )
+
+            redis.set("socket:socket_user", json.dumps(self.socket_user), ex=3600)
+
+            logging.info("用户连接数据已保存到Redis")
+        except Exception as e:
+            logging.error(f"保存数据到Redis时出错: {str(e)}", exc_info=True)
+
+    def get_online_user_ids(self):
+        """
+        从Redis中获取所有在线用户的ID列表
 
         Returns:
-            int: 在线用户数量
+            list: 在线用户ID列表
         """
-        with self.lock:
-            count = len(self.user_socket)
-            logging.info(f"当前在线用户数: {count}")
-            return count
+        try:
+            # 从Redis获取用户连接数据（decode_responses=True 自动处理字节串转换）
+            user_socket_data = redis.get("socket:user_socket")
 
-    def cleanup_stale_connections(self):
-        """
-        清理可能的过期连接（定期维护用）
-        """
-        current_time = time.time()
-        # 每10分钟执行一次清理
-        if current_time - self.last_cleanup < 600:
-            return
+            if user_socket_data:
+                # 解析Redis中的JSON数据为字典
+                user_socket_dict = json.loads(user_socket_data)
+                user_ids = list(user_socket_dict.keys())
+                logging.info(f"从Redis获取在线用户ID列表: {user_ids}")
+                return user_ids
+            else:
+                logging.info("Redis中没有在线用户数据")
+                return []
 
-        with self.lock:
-            try:
-                before_count = len(self.socket_user)
-                # 实际清理逻辑可根据需要实现
-                # 这里只是记录日志，表明执行了清理
-                logging.info(f"执行连接清理，清理前连接数: {before_count}")
-                self.last_cleanup = current_time
-            except Exception as e:
-                logging.error(f"清理过期连接时出错: {str(e)}", exc_info=True)
+        except Exception as e:
+            logging.error(f"从Redis获取在线用户ID列表时出错: {str(e)}", exc_info=True)
+            return []

@@ -21,13 +21,13 @@ def online():
 
     manage_socket = ManageSocket()
     # 在线人数信息
-    user_ids = manage_socket.user_socket.keys()
+    user_ids = manage_socket.get_online_user_ids()
     logging.info(f"在线用户:{user_ids}")
     online_users = User.query.filter(User.id.in_(user_ids))
     users = []
     for u in online_users:
         users.append({"username": u.username, "nickName": u.nickname})
-    return success(data=users, total=manage_socket.get_online_users_count())
+    return success(data=users, total=len(user_ids))
 
 
 class LogApi(DecoratedMethodView):
