@@ -225,7 +225,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
         this.socket.emit("enter_chat", { targetId: targetId });
         console.log("🗨️ 进入聊天:", targetId);
       } else {
-        console.error("❌ 未连接WebSocket，无法进入聊天");
+        console.error("❌ 未连接WebSocket，无法进入聊天。正在重试");
         // 重连后重试（可选）
         this.connectSocket();
         setTimeout(() => this.enterChat(targetId), 1000);

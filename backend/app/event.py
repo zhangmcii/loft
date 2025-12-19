@@ -4,14 +4,13 @@ from flask import request
 from flask_jwt_extended import decode_token
 from flask_socketio import ConnectionRefusedError, disconnect, join_room
 
-from . import db
+from . import db, redis
 from .models import Message, Notification, NotificationType, User
-from .utils.socket_util import ManageSocket
-from .utils.status import UserStatus
 from .mycelery.notification_task import create_chat_notifications
+from .websocket import init_ws_services
 
-status_manager = UserStatus()
-socket_manager = ManageSocket()
+
+connection, presence, conversation = init_ws_services(redis)
 
 
 # 封装为注册函数
@@ -45,16 +44,16 @@ def register_ws_events(socketio, app):
     def record_user_connect(user_id):
         """记录已连接的用户"""
         try:
-            old_sids = socket_manager.user_socket.get(user_id, set())
+            old_sids = connection.get_bound_sockets(user_id) or set()
             if old_sids:
                 logging.info(f"用户 {user_id} 有 {len(old_sids)} 个旧连接，将断开它们")
 
             for sid in list(old_sids):
                 disconnect(sid)
-                socket_manager.remove_user_socket(sid)
+                connection.unbind_socket(sid)
 
             # 记录新连接
-            socket_manager.add_user_socket(user_id, request.sid)
+            connection.bind_socket_to_user(user_id, request.sid)
             logging.info(f"用户 {user_id} 的新连接 {request.sid} 已记录")
         except Exception as e:
             logging.error(f"记录用户连接时出错: {str(e)}", exc_info=True)
@@ -64,8 +63,8 @@ def register_ws_events(socketio, app):
     def handle_connect():
         username, user_id = verify_token_in_websocket()
         # 内存操作同步执行（无阻塞）
-        status_manager.init_user_status(user_id)
-        record_user_connect(user_id)
+        connection.bind_socket_to_user(user_id, request.sid)
+        presence.mark_user_online(user_id)
         join_room(str(user_id))
         logging.info(f"用户 {username} 已连接，新连接ID：{request.sid}")
 
@@ -73,17 +72,24 @@ def register_ws_events(socketio, app):
     @socketio.on("disconnect")
     def handle_disconnect():
         username, user_id = verify_token_in_websocket()
-        socket_manager.remove_user_socket(request.sid)
-        status_manager.del_user_status(user_id)
+
+        user_id = connection.unbind_socket(request.sid)
+        if not user_id:
+            return
+
+        # 如果该用户已经没有任何 socket → 离线
+        if not connection.get_bound_sockets(user_id):
+            presence.mark_user_offline(user_id)
+        
         logging.info(
-            f"用户 {username} 已断开连接，状态：{status_manager.get_user_status(user_id)}"
+            f"用户 {username} 已断开连接"
         )
 
     # 心跳事件：纯内存操作，同步执行
     @socketio.on("heartbeat")
     def handle_heartbeat():
         username, user_id = verify_token_in_websocket()
-        status_manager.update_last_active(user_id)
+        presence.update_last_active(user_id)
         logging.info(f"用户 {username} 发送心跳包")
 
     # 进入聊天事件-异步DB操作（标记已读）
@@ -122,13 +128,31 @@ def register_ws_events(socketio, app):
         target_id = data["targetId"]
 
         # 内存操作同步执行
-        status_manager.active_chat(user_id, target_id)
-        status_manager.update_last_active(user_id)
-        status_manager.expire(60 * 5)
+        conversation.set_active_chat(user_id, target_id)
+        presence.update_last_active(user_id)
+
         logging.info(f"用户 {username} 进入与用户 {target_id} 的聊天页面")
 
         # DB操作异步执行
         eventlet.spawn_n(async_enter_chat, user_id, target_id)
+
+    # 输入状态事件
+    @socketio.on("chat:typing")
+    def handle_typing(data):
+        """处理用户正在输入事件"""
+        username, user_id = verify_token_in_websocket()
+        target_id = data.get("target_id")
+        
+        if target_id:
+            # 标记用户正在输入
+            conversation.mark_typing(user_id, target_id)
+            logging.info(f"用户 {username} 正在给用户 {target_id} 输入")
+            
+            # 向目标用户发送typing事件
+            socketio.emit("chat:typing", {
+                "sender_id": user_id,
+                "sender_name": username
+            }, room=str(target_id))
 
     # 发送消息事件-异步DB操作（消息入库+通知）
     def async_send_message(sender_id, receiver_id, content, sid):
@@ -139,19 +163,18 @@ def register_ws_events(socketio, app):
             db.session.flush()
 
             try:
-                receiver_status = status_manager.get_user_status(receiver_id)
-                logging.info(f"接收者 {receiver_id} 状态: {receiver_status}")
+                receiver_presence = presence.get_user_presence(receiver_id)
+                active_chat = conversation.get_active_chat(receiver_id)
+                logging.info(f"接收者 {receiver_id} 状态: {receiver_presence}, 活跃聊天: {active_chat}")
 
-                if receiver_status and receiver_status.get("active_chat") == str(
-                    sender_id
-                ):
+                if active_chat == sender_id:
                     logging.info(f"用户 {receiver_id} 当前正在与发送者 {sender_id} 聊天")
                     msg.is_read = True
                     socketio.emit("new_message", msg.to_json(), to=str(receiver_id))
                 else:
                     # 异步生成通知（Celery任务）
                     create_chat_notifications.delay(receiver_id, sender_id, msg.id)
-                    if receiver_status and receiver_status.get("online") == "1":
+                    if presence.is_user_online(receiver_id):
                         logging.info(f"用户 {receiver_id} 在线但不在聊天页面，消息已保存")
                     else:
                         logging.info(f"用户 {receiver_id} 离线，消息已保存")

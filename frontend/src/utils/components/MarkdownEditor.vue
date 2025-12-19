@@ -19,7 +19,7 @@ import {
 } from "@/utils/common.js";
 import uploadApi from "@/api/upload/uploadApi.js";
 import { v4 as uuidv4 } from "uuid";
-import { mavonEditor } from 'mavon-editor';
+import { mavonEditor } from "mavon-editor";
 import "mavon-editor/dist/css/index.css";
 
 export default {
@@ -34,8 +34,8 @@ export default {
       default: () => "",
     },
   },
-  components:{
-    mavonEditor
+  components: {
+    mavonEditor,
   },
   data() {
     return {
@@ -82,11 +82,12 @@ export default {
     },
 
     async uploadPhotos() {
-      if (!beforePicUpload(this.originalFiles)) {
-        return;
+      if (!this.compressedImages.length) {
+        return [];
       }
-      // 上传至七牛云
-      // await this.uploadFiles()
+      if (!beforePicUpload(this.originalFiles)) {
+        return [];
+      }
 
       // 获取上传凭证
       const uploadToken = await this.getUploadToken();

@@ -5,11 +5,12 @@ from flask import request
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy import and_
 
-from .. import db
+from .. import db, redis
 from ..decorators import admin_required
 from ..models import Image, ImageType, Role, User
 from ..utils.common import get_avatars_url
 from ..utils.response import error, success
+from ..websocket import init_ws_services
 from . import main
 
 
@@ -110,18 +111,12 @@ def generate_user_posts():
 def online():
     """获取在线用户信息"""
     logging.info("获取在线用户信息")
-    from ..models import User
-    from ..utils.socket_util import ManageSocket
-
-    manage_socket = ManageSocket()
+    _, presence, _ = init_ws_services(redis)
     # 在线人数信息
-    user_ids = manage_socket.user_socket.keys()
-    users = []
-    for user_id in user_ids:
-        u = User.query.get(user_id)
-        users.append({"username": u.username, "nickName": u.nickname})
-    online_total = len(users)
-    return success(data=users, total=online_total)
+    user_ids = presence.list_online_users()
+    online_users = User.query.filter(User.id.in_(user_ids)).all()
+    users = [{"username": u.username, "nickName": u.nickname} for u in online_users]
+    return success(data=users, total=len(user_ids))
 
 
 @main.route("/user/<int:user_id>/interest_images")

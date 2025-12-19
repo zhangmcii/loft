@@ -3,11 +3,11 @@ import logging
 from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
-from .. import db
+from .. import db, redis
 from ..decorators import DecoratedMethodView, admin_required
 from ..models import Log, User
 from ..utils.response import error, success
-from ..utils.socket_util import ManageSocket
+from ..websocket import init_ws_services
 from . import api
 
 
@@ -19,15 +19,13 @@ def online():
     """获取在线用户信息"""
     logging.info("获取在线用户信息")
 
-    manage_socket = ManageSocket()
+    _, presence, _ = init_ws_services(redis)
     # 在线人数信息
-    user_ids = manage_socket.user_socket.keys()
+    user_ids = presence.list_online_users()
     logging.info(f"在线用户:{user_ids}")
-    online_users = User.query.filter(User.id.in_(user_ids))
-    users = []
-    for u in online_users:
-        users.append({"username": u.username, "nickName": u.nickname})
-    return success(data=users, total=manage_socket.get_online_users_count())
+    online_users = User.query.filter(User.id.in_(user_ids)).all()
+    users = [{"username": u.username, "nickName": u.nickname} for u in online_users]
+    return success(data=users, total=len(user_ids))
 
 
 class LogApi(DecoratedMethodView):

@@ -2,24 +2,14 @@
   <!-- 社交链接 -->
   <div class="social">
     <div class="link">
-      <a
-        :href="value[0].url"
-        target="_blank"
-        @mouseenter="socialTip = value[0].tip"
-        @mouseleave="socialTip = '通过这里联系我吧'"
-      >
-        <img class="icon" :src="value[0].icon" height="20" />
-      </a>
-      <template v-for="item in value.slice(1)" :key="item.name">
-        <a
+      <template v-for="item in value" :key="item.name">
+        <component
           v-if="item.url"
-          target="_blank"
+          :is="getSvgComponent(item.name)"
+          class="icon"
           @mouseenter="socialTip = item.tip"
-          @mouseleave="socialTip = '通过这里联系我吧'"
-          @click="openDialog(item)"
-        >
-          <img class="icon" :src="item.icon" height="20" />
-        </a>
+          @click="handleSocialClick(item)"
+        />
       </template>
     </div>
     <span class="tip">{{ socialTip }}</span>
@@ -40,9 +30,14 @@
 </template>
 
 <script setup>
-import socialLinks from "@/config/socialLinks.json";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { copy } from "@/utils/common.js";
+import github from "@/asset/svg/github.svg?component";
+import email from "@/asset/svg/email.svg?component";
+import qqchat from "@/asset/svg/qqchat.svg?component";
+import wechat from "@/asset/svg/wechat.svg?component";
+import bilibili from "@/asset/svg/bilibili.svg?component";
+import twitter from "@/asset/svg/twitter.svg?component";
 
 const props = defineProps({
   // 社交链接配置
@@ -60,12 +55,38 @@ const props = defineProps({
     },
   },
 });
-const value = computed(() => {
-  return socialLinks.map((item) => ({
-    ...item,
-    url: props.links[item.name.toLowerCase()],
-  }));
-});
+
+const socialLinks = [
+  {
+    name: "Github",
+    tip: "去 Github 看看",
+  },
+  {
+    name: "Email",
+    tip: "来封 Email ~",
+  },
+  {
+    name: "QQ",
+    tip: "有什么事吗",
+  },
+  {
+    name: "WeChat",
+    tip: "你懂的 ~",
+  },
+  {
+    name: "BiliBili",
+    tip: "(゜-゜)つロ 干杯 ~",
+  },
+  {
+    name: "Twitter",
+    tip: "你懂的 ~",
+  },
+];
+
+const value = socialLinks.map((item) => ({
+  ...item,
+  url: props.links[item.name.toLowerCase()],
+}));
 const dialogShow = ref(false);
 const dialogData = ref({
   title: "",
@@ -74,6 +95,15 @@ const dialogData = ref({
 
 // 社交链接提示
 const socialTip = ref("通过这里联系我吧");
+
+function handleSocialClick(item) {
+  // 第一个社交链接直接跳转，其他的显示弹窗
+  if (item === value[0]) {
+    window.open(item.url, "_blank");
+  } else {
+    openDialog(item);
+  }
+}
 
 function openDialog(item) {
   dialogData.value = {
@@ -89,6 +119,19 @@ function beforeClose(action) {
     copy(dialogData.value.url);
     return Promise.resolve(true);
   }
+}
+
+// 根据社交链接名称获取对应的SVG组件
+function getSvgComponent(name) {
+  const componentMap = {
+    Github: github,
+    Email: email,
+    QQ: qqchat,
+    WeChat: wechat,
+    BiliBili: bilibili,
+    Twitter: twitter,
+  };
+  return componentMap[name];
 }
 </script>
 
@@ -122,17 +165,17 @@ function beforeClose(action) {
     display: flex;
     align-items: center;
     justify-content: center;
-    a {
-      display: inherit;
-      .icon {
-        margin: 0 12px;
-        transition: transform 0.3s;
-        &:hover {
-          transform: scale(1.1);
-        }
-        &:active {
-          transform: scale(1);
-        }
+    .icon {
+      margin: 0 4px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      transition: transform 0.3s;
+      &:hover {
+        transform: scale(1.2);
+      }
+      &:active {
+        transform: scale(1);
       }
     }
   }
@@ -143,7 +186,7 @@ function beforeClose(action) {
   }
   @media (min-width: 768px) {
     &:hover {
-      background-color: #00000040;
+      // background-color: #00000040;
       backdrop-filter: blur(5px);
       .tip {
         display: block;

@@ -6,8 +6,15 @@ import { cloneDeep } from "@pureadmin/utils";
 import { useRouter, useRoute } from "vue-router";
 import editApi from "@/api/user/editApi.js";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
-import socialLinks from "@/config/socialLinks.json";
 import { useChange } from "@/utils/composedFunc/change.js";
+
+import github from "@/asset/svg/github.svg?component";
+import email from "@/asset/svg/email.svg?component";
+import qqchat from "@/asset/svg/qqchat.svg?component";
+import wechat from "@/asset/svg/wechat.svg?component";
+import bilibili from "@/asset/svg/bilibili.svg?component";
+import twitter from "@/asset/svg/twitter.svg?component";
+
 const user = useCurrentUserStore();
 const other = useOtherUserStore();
 const router = useRouter();
@@ -109,7 +116,7 @@ function getAttr(type) {
           label="github"
         >
           <template #left-icon>
-            <img class="icon" :src="socialLinks[0].icon" height="20" />
+            <component :is="github" class="icon" />
           </template>
         </van-field>
         <van-field
@@ -117,7 +124,7 @@ function getAttr(type) {
           label="邮箱"
         >
           <template #left-icon>
-            <img class="icon" :src="socialLinks[1].icon" height="20" />
+            <component :is="email" class="icon" />
           </template>
         </van-field>
         <van-field
@@ -126,7 +133,7 @@ function getAttr(type) {
           label="qq"
         >
           <template #left-icon>
-            <img class="icon" :src="socialLinks[2].icon" height="20" />
+            <component :is="qqchat" class="icon" />
           </template>
         </van-field>
         <van-field
@@ -134,7 +141,7 @@ function getAttr(type) {
           label="微信"
         >
           <template #left-icon>
-            <img class="icon" :src="socialLinks[3].icon" height="20" />
+            <component :is="wechat" class="icon" />
           </template>
         </van-field>
         <van-field
@@ -142,7 +149,7 @@ function getAttr(type) {
           label="bilibili"
         >
           <template #left-icon>
-            <img class="icon" :src="socialLinks[4].icon" height="20" />
+            <component :is="bilibili" class="icon" />
           </template>
         </van-field>
         <van-field
@@ -150,7 +157,7 @@ function getAttr(type) {
           label="twitter"
         >
           <template #left-icon>
-            <img class="icon" :src="socialLinks[5].icon" height="20" />
+            <component :is="twitter" class="icon" />
           </template>
         </van-field>
       </van-cell-group>
@@ -165,5 +172,9 @@ function getAttr(type) {
 }
 img {
   background-color: black;
+}
+.icon {
+  width: 32px;
+  height: 32px;
 }
 </style>
