@@ -74,23 +74,35 @@ class AuthAction:
     def login(self, username="test", password="test"):
         r = self._client.post(
             "/auth/login",
-            json={
-                "uiAccountName": username,
-                "uiPassword": password,
-            },
+            json={"uiAccountName": username, "uiPassword": password},
         )
-        self._token = r.json.get("token")
+        # 修正点：Flask test_client 的 response 没有 .json.get，需使用 .get_json()
+        data = r.get_json()
+        if data:
+            self._token = data.get("token")
         return r
 
     def get_headers(self):
-        return {
-            "Authorization": self._token,
+        # 修正点：增加 Bearer 前缀（取决于你后端需求，通常需要）
+        # 如果不需要前缀，请去掉 f"Bearer "
+        headers = {
             "Accept": "application/json",
             "Content-type": "application/json",
         }
+        if self._token:
+            headers["Authorization"] = self._token 
+        return headers
+
+
+# @pytest.fixture
+# def auth(client):
+#     """提供认证操作的夹具"""
+#     return AuthAction(client)
 
 
 @pytest.fixture
 def auth(client):
-    """提供认证操作的夹具"""
-    return AuthAction(client)
+    # 这里保持工厂模式，但测试代码必须统一调用 auth()
+    def _make_auth():
+        return AuthAction(client)
+    return _make_auth

@@ -16,13 +16,14 @@ class TestPraiseCommentCase:
 
     def test_post_comment_and_praise(self, client, auth):
         """测试发表评论和点赞文章"""
+        auth_instance = auth()
         # 注册并验证成功
-        register_response = auth.register()
+        register_response = auth_instance.register()
         assert register_response.status_code == 200
         assert register_response.json.get("code") == 200
 
         # 登录并验证成功
-        login_response = auth.login()
+        login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
         assert login_response.json.get("token") is not None
@@ -30,7 +31,7 @@ class TestPraiseCommentCase:
         # 发布一篇文章
         r = client.post(
             self.pre_fix + "/posts",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"body": "测试文章内容", "bodyHtml": "测试文章内容", "images": []},
         )
         assert r.json.get("code") == 200
@@ -39,7 +40,7 @@ class TestPraiseCommentCase:
         # 发表评论
         r = client.post(
             self.pre_fix + f"/posts/{post_id}/comments",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"body": "这是一条测试评论", "directParentId": None, "at": []},
         )
         assert r.status_code == 200
@@ -48,7 +49,7 @@ class TestPraiseCommentCase:
 
         # 获取文章的评论列表
         r = client.get(
-            self.pre_fix + f"/posts/{post_id}/comments", headers=auth.get_headers()
+            self.pre_fix + f"/posts/{post_id}/comments", headers=auth_instance.get_headers()
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -56,7 +57,7 @@ class TestPraiseCommentCase:
 
         # 点赞文章
         r = client.post(
-            self.pre_fix + f"/posts/{post_id}/likes", headers=auth.get_headers()
+            self.pre_fix + f"/posts/{post_id}/likes", headers=auth_instance.get_headers()
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -65,7 +66,7 @@ class TestPraiseCommentCase:
 
         # 重复点赞应该失败
         r = client.post(
-            self.pre_fix + f"/posts/{post_id}/likes", headers=auth.get_headers()
+            self.pre_fix + f"/posts/{post_id}/likes", headers=auth_instance.get_headers()
         )
         assert r.status_code == 200
         assert r.json.get("code") == 400  # 应该返回错误码
@@ -73,13 +74,14 @@ class TestPraiseCommentCase:
 
     def test_comment_reply_and_praise(self, client, auth):
         """测试评论回复和点赞评论"""
+        auth_instance = auth()
         # 注册并验证成功
-        register_response = auth.register()
+        register_response = auth_instance.register()
         assert register_response.status_code == 200
         assert register_response.json.get("code") == 200
 
         # 登录并验证成功
-        login_response = auth.login()
+        login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
         assert login_response.json.get("token") is not None
@@ -87,7 +89,7 @@ class TestPraiseCommentCase:
         # 发布一篇文章
         r = client.post(
             self.pre_fix + "/posts",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"body": "测试文章内容", "bodyHtml": "测试文章内容", "images": []},
         )
         assert r.json.get("code") == 200
@@ -96,7 +98,7 @@ class TestPraiseCommentCase:
         # 发表根评论
         r = client.post(
             self.pre_fix + f"/posts/{post_id}/comments",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"body": "这是一条根评论", "directParentId": None, "at": []},
         )
         assert r.status_code == 200
@@ -105,7 +107,7 @@ class TestPraiseCommentCase:
         # 回复评论
         r = client.post(
             self.pre_fix + f"/posts/{post_id}/comments",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"body": "这是对根评论的回复", "directParentId": comment_id, "at": []},
         )
         assert r.status_code == 200
@@ -113,7 +115,7 @@ class TestPraiseCommentCase:
 
         # 获取评论的回复
         r = client.get(
-            self.pre_fix + f"/comments/{comment_id}/replies", headers=auth.get_headers()
+            self.pre_fix + f"/comments/{comment_id}/replies", headers=auth_instance.get_headers()
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -122,7 +124,7 @@ class TestPraiseCommentCase:
 
         # 点赞评论
         r = client.post(
-            self.pre_fix + f"/comments/{comment_id}/likes", headers=auth.get_headers()
+            self.pre_fix + f"/comments/{comment_id}/likes", headers=auth_instance.get_headers()
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -131,7 +133,7 @@ class TestPraiseCommentCase:
         # 检查已点赞的评论ID
         r = client.get(
             self.pre_fix + f"/posts/{post_id}/comments/praised?liked=true",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200

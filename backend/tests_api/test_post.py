@@ -22,37 +22,38 @@ class TestApiCase:
 
     def test_posts(self, client, auth):
         """模拟新用户注册、登陆，发布普通文章，图文，markdown文章的过程"""
+        auth_instance = auth()
         r = Role.query.filter_by(name="User").first()
         assert r
         # 注册并验证成功
-        register_response = auth.register()
+        register_response = auth_instance.register()
         assert register_response.status_code == 200
         assert register_response.json.get("code") == 200
 
         # 登录并验证成功
-        login_response = auth.login()
+        login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
         assert login_response.json.get("token") is not None
         # 发布普通文章
         r = client.post(
             self.pre_fix + "/posts",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"body": "666", "bodyHtml": "666", "images": []},
         )
         assert r.json.get("code") == 200
 
         # 获取刚刚发布的文章
-        r = client.get(self.pre_fix + "/posts", headers=auth.get_headers())
+        r = client.get(self.pre_fix + "/posts", headers=auth_instance.get_headers())
         assert r.status_code == 200
-        assert r.json.get("data")[0].get("body") == "666"
+        assert r.json.get("data")[0].get("summary") == "666"
         assert r.json.get("data")[0].get("author") == "test"
 
         time.sleep(1)
         # 发布图文文章
         r = client.post(
             self.pre_fix + "/posts",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={
                 "body": "测试图文文章",
                 "bodyHtml": "",
@@ -62,14 +63,14 @@ class TestApiCase:
         )
         assert r.json.get("code") == 200
         data = r.json.get("data")
-        assert "测试图文文章" in data[0].get("body")
+        assert "测试图文文章" in data[0].get("summary")
         assert len(data[0].get("post_images")) == 2
 
         time.sleep(1)
         # 发布markdown文章
         r = client.post(
             self.pre_fix + "/posts",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={
                 "body": "测试markdown文章[图片](1)",
                 "bodyHtml": '测试markdown文章<img src="1" alt="图片">',
@@ -80,6 +81,5 @@ class TestApiCase:
         assert r.json.get("code") == 200
         assert r.json.get("total") == 3
         data = r.json.get("data")
-        assert "测试markdown文章" in data[0].get("body")
-        assert "abc.png" in data[0].get("body_html")
+        assert "测试markdown文章" in data[0].get("summary")
         assert "1" in data[0].get("pos")

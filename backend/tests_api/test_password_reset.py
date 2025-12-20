@@ -16,13 +16,14 @@ class TestPasswordResetCase:
 
     def test_change_password(self, client, auth):
         """测试修改密码"""
+        auth_instance = auth()
         # 注册并验证成功
-        register_response = auth.register()
+        register_response = auth_instance.register()
         assert register_response.status_code == 200
         assert register_response.json.get("code") == 200
 
         # 登录并验证成功
-        login_response = auth.login()
+        login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
         assert login_response.json.get("token") is not None
@@ -30,7 +31,7 @@ class TestPasswordResetCase:
         # 修改密码
         r = client.post(
             "/auth/changePassword",
-            headers=auth.get_headers(),
+            headers=auth_instance.get_headers(),
             json={"old_password": "test", "new_password": "new_password"},
         )
         assert r.status_code == 200
