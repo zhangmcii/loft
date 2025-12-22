@@ -101,6 +101,10 @@ export default {
     },
     toPost(item) {
       this.handleNoticeRead(item);
+      if (!item.postId) {
+        this.$router.push("/content-not-found");
+        return;
+      }
       this.$router.push(`/postDetail/${item.postId}`);
     },
     toChat(item) {
@@ -131,10 +135,7 @@ export default {
       if (mergedData.length > this.currentUser.notice.MAX_ITEM) {
         this.currentUser.saveNotifications(mergedData.slice(0, 50));
       }
-      if (import.meta.env.DEV) {
-        console.log("收到实时通知:", data);
-      }
-      console.log("11收到实时通知:", data);
+      console.log("收到实时通知:", data);
     },
     mergeNotifications(localData, serverUnRead) {
       // 创建映射防止重复

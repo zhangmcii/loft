@@ -38,7 +38,7 @@ def post(id):
         # 若是其他回复，则direct_parent = 直接评论对象， root_commentNone = 根评论对象
         if direct_parent_id:
             # 直接父id
-            direct_parent = Comment.query.get(direct_parent_id)
+            direct_parent = db.session.get(Comment, direct_parent_id)
             # 获取根评论：如果父评论本身有根评论则继承，否则父评论就是根评论
             root_comment = (
                 direct_parent.root_comment

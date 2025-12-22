@@ -28,6 +28,8 @@ def celery_init_app(app) -> Celery:
         "del_post_task": {
             "task": "app.mycelery.tasks.hard_delete_post",
             "schedule": timedelta(days=30),
+            # 测试用，1分钟执行一次
+            # "schedule": timedelta(minutes=1.0),
         },
     }
 

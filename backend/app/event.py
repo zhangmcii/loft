@@ -41,23 +41,6 @@ def register_ws_events(socketio, app):
 
         return user.username, user.id
 
-    def record_user_connect(user_id):
-        """记录已连接的用户"""
-        try:
-            old_sids = connection.get_bound_sockets(user_id) or set()
-            if old_sids:
-                logging.info(f"用户 {user_id} 有 {len(old_sids)} 个旧连接，将断开它们")
-
-            for sid in list(old_sids):
-                disconnect(sid)
-                connection.unbind_socket(sid)
-
-            # 记录新连接
-            connection.bind_socket_to_user(user_id, request.sid)
-            logging.info(f"用户 {user_id} 的新连接 {request.sid} 已记录")
-        except Exception as e:
-            logging.error(f"记录用户连接时出错: {str(e)}", exc_info=True)
-
     # 连接事件
     @socketio.on("connect")
     def handle_connect():
@@ -80,10 +63,8 @@ def register_ws_events(socketio, app):
         # 如果该用户已经没有任何 socket → 离线
         if not connection.get_bound_sockets(user_id):
             presence.mark_user_offline(user_id)
-        
-        logging.info(
-            f"用户 {username} 已断开连接"
-        )
+
+        logging.info(f"用户 {username} 已断开连接")
 
     # 心跳事件：纯内存操作，同步执行
     @socketio.on("heartbeat")
@@ -142,17 +123,18 @@ def register_ws_events(socketio, app):
         """处理用户正在输入事件"""
         username, user_id = verify_token_in_websocket()
         target_id = data.get("target_id")
-        
+
         if target_id:
             # 标记用户正在输入
             conversation.mark_typing(user_id, target_id)
             logging.info(f"用户 {username} 正在给用户 {target_id} 输入")
-            
+
             # 向目标用户发送typing事件
-            socketio.emit("chat:typing", {
-                "sender_id": user_id,
-                "sender_name": username
-            }, room=str(target_id))
+            socketio.emit(
+                "chat:typing",
+                {"sender_id": user_id, "sender_name": username},
+                room=str(target_id),
+            )
 
     # 发送消息事件-异步DB操作（消息入库+通知）
     def async_send_message(sender_id, receiver_id, content, sid):
@@ -165,7 +147,9 @@ def register_ws_events(socketio, app):
             try:
                 receiver_presence = presence.get_user_presence(receiver_id)
                 active_chat = conversation.get_active_chat(receiver_id)
-                logging.info(f"接收者 {receiver_id} 状态: {receiver_presence}, 活跃聊天: {active_chat}")
+                logging.info(
+                    f"接收者 {receiver_id} 状态: {receiver_presence}, 活跃聊天: {active_chat}"
+                )
 
                 if active_chat == sender_id:
                     logging.info(f"用户 {receiver_id} 当前正在与发送者 {sender_id} 聊天")

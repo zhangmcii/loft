@@ -95,15 +95,15 @@ class TestingConfig(Config):
     # redis
     REDIS_URL = (
         os.environ.get("TEST_REDIS_URL")
-        or "redis://:1234@" + os.getenv("FLASK_RUN_HOST", "127.0.0.1") + ":6379/0"
+        or "redis://" + os.getenv("FLASK_RUN_HOST", "127.0.0.1") + ":6379/0"
     )
     WTF_CSRF_ENABLED = False
-    
+
     # Celery测试配置：强制同步执行任务
     CELERY = {
         **Config.CELERY,
-        'task_always_eager': True,  # 强制同步执行任务
-        'task_eager_propagates': True,  # 异常传播
+        "task_always_eager": True,  # 强制同步执行任务
+        "task_eager_propagates": True,  # 异常传播
     }
 
 

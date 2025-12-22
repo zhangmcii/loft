@@ -6,7 +6,7 @@ from flask import render_template
 from flask_mail import Message
 
 from .. import mail, db
-from ..models import Post, Image, ImageType, Comment, Praise
+from ..models import Post, Image, ImageType, Comment, Praise, Notification
 from ..utils.response import error
 from ..main.uploads import del_qiniu_image
 
@@ -97,13 +97,19 @@ def hard_delete_post():
             except Exception as e:
                 logging.warning(f"重新启用外键检查时出错: {str(e)}")
 
+        # 将相关通知记录的文章ID置为空，保留通知记录
+        notification_update_result = Notification.query.filter(
+            Notification.post_id.in_(post_ids)
+        ).update({"post_id": None}, synchronize_session=False)
+
         # 批量删除文章
         # synchronize_session=False 告诉 SQLAlchemy 不要同步当前 session 中的对象状态
         post_delete_result = posts_query.delete(synchronize_session=False)
 
         db.session.commit()
         logging.info(
-            f"批量删除完成：删除文章 {post_delete_result} 篇，保留通知记录，"
+            f"批量删除完成：删除文章 {post_delete_result} 篇，"
+            f"清空文章关联通知 {notification_update_result} 条，"
             f"评论 {comment_delete_result} 条，点赞 {praise_delete_result} 条，图片 {len(all_image_urls)} 张"
         )
 
