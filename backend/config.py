@@ -95,7 +95,7 @@ class TestingConfig(Config):
     # redis
     REDIS_URL = (
         os.environ.get("TEST_REDIS_URL")
-        or "redis://" + os.getenv("FLASK_RUN_HOST", "127.0.0.1") + ":6379/0"
+        or "redis://:1234@" + os.getenv("FLASK_RUN_HOST", "127.0.0.1") + ":6379/0"
     )
     WTF_CSRF_ENABLED = False
 
