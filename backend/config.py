@@ -41,14 +41,18 @@ class Config:
 
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
 
+    # github工作流上redis容器不使用密码
+    redis_pass = "" if os.getenv("FLASK_CONFIG") == "testing" else ":1234@"
     # 适配多进程部署
     CACHE_TYPE = "RedisCache"
-    CACHE_REDIS_URL = f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/5"
+    CACHE_REDIS_URL = (
+        f"redis://{redis_pass}{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/5"
+    )
 
     # CELERY
     CELERY = dict(
-        broker_url=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/1",
-        result_backend=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/2",
+        broker_url=f"redis://{redis_pass}{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/1",
+        result_backend=f"redis://{redis_pass}{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/2",
         timezone="Asia/Shanghai",
         task_serializer="pickle",
         result_serializer="pickle",
@@ -57,7 +61,7 @@ class Config:
 
     # 存储socketio的消息队列
     SOCKETIO_MESSAGE_QUEUE = (
-        f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/4"
+        f"redis://{redis_pass}{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/4"
     )
 
     @staticmethod
@@ -82,7 +86,7 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    # TESTING = True会导致flask_mail发送不了邮件
+    # TESTING = True会使flask_mail不发送邮件
     TESTING = True
     DEBUG = True
     # 关掉flask_limiter限流
@@ -92,10 +96,16 @@ class TestingConfig(Config):
         os.environ.get("TEST_DATABASE_URL")
         or "mysql+pymysql://root:1234@127.0.0.1:3306/test_backend_flask?charset=utf8mb4"
     )
+
+    # github工作流上redis容器不使用密码
+    redis_pass = "" if os.getenv("FLASK_CONFIG") == "testing" else ":1234@"
     # redis
     REDIS_URL = (
         os.environ.get("TEST_REDIS_URL")
-        or "redis://" + os.getenv("FLASK_RUN_HOST", "127.0.0.1") + ":6379/0"
+        or "redis://"
+        + redis_pass
+        + os.getenv("FLASK_RUN_HOST", "127.0.0.1")
+        + ":6379/0"
     )
     WTF_CSRF_ENABLED = False
 

@@ -7,8 +7,10 @@ from flask_socketio import SocketIO
 from .. import db
 from ..models import Notification, NotificationType
 
+# github工作流上redis容器不使用密码
+redis_pass = "" if os.getenv("FLASK_CONFIG") == "testing" else ":1234@"
 socketio = SocketIO(
-    message_queue=f"redis://:1234@{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/4"
+    message_queue=f"redis://{redis_pass}{os.getenv('REDIS_HOST') or '127.0.0.1'}:6379/4"
 )
 
 

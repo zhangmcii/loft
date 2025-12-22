@@ -58,5 +58,6 @@ jobs:
           # TEST_REDIS_URL: redis://:1234@127.0.0.1:6379/0
           SECRET_KEY: hard to guess string
           JWT_SECRET_KEY: super-secret
+          FLASK_CONFIG: "testing"
         run: pytest backend/tests_api -v
 

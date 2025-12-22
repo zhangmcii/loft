@@ -29,11 +29,14 @@ jwt = JWTManager()
 mail = Mail()
 redis = FlaskRedis()
 socketio = SocketIO()
+cache = Cache()
+
+# github工作流上redis容器不使用密码
+redis_pass = "" if os.getenv("FLASK_CONFIG") == "testing" else ":1234@"
 limiter = Limiter(
     my_key_func,
-    storage_uri=f"redis://:1234@{os.getenv('REDIS_HOST') or os.getenv('FLASK_RUN_HOST')}:6379/3",
+    storage_uri=f"redis://{redis_pass}{os.getenv('REDIS_HOST') or os.getenv('FLASK_RUN_HOST')}:6379/3",
 )
-cache = Cache()
 
 
 def create_app(config_name):
