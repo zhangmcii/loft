@@ -41,7 +41,7 @@ class Fake:
         user_count = User.query.count()
         for _ in range(count):
             u = User.query.offset(randint(0, user_count - 1)).first()
-            Post(body=fake.text(), timestamp=fake.past_date(), author=u)
+            Post(content=fake.text(), timestamp=fake.past_date(), author=u)
         db.session.commit()
 
     @staticmethod
@@ -62,7 +62,7 @@ class Fake:
 
             # 添加管理员的文章到post表
             u1 = User.query.filter_by(username="zmc").first()
-            Post(body=fake.text(), timestamp=fake.past_date(), author=u1)
+            Post(content=fake.text(), timestamp=fake.past_date(), author=u1)
             db.session.commit()
         except Exception as e:
             print("出现异常,回滚", e)

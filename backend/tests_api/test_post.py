@@ -39,7 +39,7 @@ class TestApiCase:
         r = client.post(
             self.pre_fix + "/posts",
             headers=auth_instance.get_headers(),
-            json={"body": "666", "bodyHtml": "666", "images": []},
+            json={"content": "666", "type": "text", "images": []},
         )
         assert r.json.get("code") == 200
 
@@ -55,10 +55,9 @@ class TestApiCase:
             self.pre_fix + "/posts",
             headers=auth_instance.get_headers(),
             json={
-                "body": "测试图文文章",
-                "bodyHtml": "",
+                "content": "测试图文文章",
                 "images": ["123.png", "456.png"],
-                "type": "image",
+                "type": "text",
             },
         )
         assert r.json.get("code") == 200
@@ -72,8 +71,7 @@ class TestApiCase:
             self.pre_fix + "/posts",
             headers=auth_instance.get_headers(),
             json={
-                "body": "测试markdown文章[图片](1)",
-                "bodyHtml": '测试markdown文章<img src="1" alt="图片">',
+                "content": "测试markdown文章[图片](1)",
                 "images": [{"url": "abc.png", "pos": 1}, {"url": "efg.png", "pos": 2}],
                 "type": "markdown",
             },

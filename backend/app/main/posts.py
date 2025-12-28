@@ -19,12 +19,20 @@ def index():
     if request.method == "POST" and current_user.can(Permission.WRITE):
         try:
             j = request.get_json()
-            body_html = j.get("bodyHtml")
             images = j.get("images")
+            post_type = j.get("type", "text")
+            # 根据type字段确定PostType
+            if post_type == "markdown":
+                post_type_enum = PostType.MARKDOWN
+            elif post_type == "image":
+                post_type_enum = PostType.TEXT  # 图文使用TEXT类型，通过has_image区分
+            else:
+                post_type_enum = PostType.TEXT
+                
             post = Post(
-                body=j.get("body"),
-                body_html=body_html if body_html else None,
-                type=PostType.IMAGE if body_html else PostType.TEXT,
+                content=j.get("content"),
+                type=post_type_enum,
+                has_image=bool(images),  # 如果有图片则设置has_image为True
                 author=current_user,
             )
             db.session.add(post)
@@ -133,8 +141,7 @@ def edit(id):
     try:
         # 对表单编辑业务逻辑
         j = request.get_json()
-        post.body = j.get("body")
-        post.body_html = j.get("bodyHtml") if j.get("bodyHtml") else None
+        post.content = j.get("content", post.content)
         db.session.commit()
         return success(message="文章编辑成功")
     except Exception as e:
@@ -151,7 +158,7 @@ def create_post():
     data = request.get_json()
     content = data.get("content", "")
     image_urls = data.get("imageUrls", [])
-    p = Post(body=content, body_html=None, type=PostType.IMAGE, author=current_user)
+    p = Post(content=content, type=PostType.MARKDOWN, has_image=bool(image_urls), author=current_user)
     db.session.flush()
     images = [
         Image(url=url, type=ImageType.POST, related_id=p.id) for url in image_urls

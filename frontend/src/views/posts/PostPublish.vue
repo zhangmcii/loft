@@ -16,9 +16,9 @@ export default {
       posts: [],
       loading: false,
       richContent: {
-        body: "",
-        bodyHtml: "",
+        content: "",
         images: [],
+        type: "text",
       },
       activeRichEditor: false,
       showPopover: false,
@@ -33,7 +33,7 @@ export default {
       // 替换换行符为 <br>
       const formattedContent = this.content.replace(/\n/g, "<br>");
       postApi
-        .publish_post({ body: formattedContent, bodyHtml: null })
+        .publish_post({ content: formattedContent, type: "text" })
         .then((res) => {
           this.loading = false;
           this.$emit("postsResult", res);
@@ -50,6 +50,7 @@ export default {
       this.loading = true;
       const images = await this.$refs.md.uploadPhotos();
       this.richContent.images = images;
+      this.richContent.type = "markdown";
       postApi.publish_post(this.richContent).then((res) => {
         this.loading = false;
         this.$emit("postsResult", res);
@@ -103,7 +104,7 @@ export default {
     class="custom-button"
     content="发布"
     size="small"
-    :disabled="!content && !richContent.body"
+    :disabled="!content && !richContent.content"
     :loading="loading"
     @do-search="publish"
   >

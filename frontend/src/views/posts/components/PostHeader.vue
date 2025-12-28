@@ -8,8 +8,8 @@ export default {
       default() {
         return {
           id: 1,
-          body: "",
-          body_html: null,
+          content: "",
+          post_type: "text",
           timestamp: "",
           author: "--",
           nick_name: "",

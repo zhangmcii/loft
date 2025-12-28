@@ -36,8 +36,8 @@ export default {
     return {
       post: {
         id: 1,
-        body: "",
-        body_html: null,
+        content: "",
+        post_type: "text",
         timestamp: "",
         author: "--",
         nick_name: "",
@@ -88,11 +88,11 @@ export default {
   computed: {},
 
   mounted() {
-    // 移除这里的调用，只在post.body变化时生成目录
+    // 移除这里的调用，只在post.content变化时生成目录
   },
 
   watch: {
-    "post.body": {
+    "post.content": {
       handler(newVal) {
         if (newVal) {
           this.$nextTick(() => {
@@ -235,7 +235,7 @@ export default {
         <PostHeader :post="post" class="post-header" />
 
         <PostContent
-          :postContent="post.body"
+          :postContent="post.content"
           class="post-content"
           :fontSize="fontSize"
           ref="postContent"

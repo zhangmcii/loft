@@ -165,10 +165,9 @@ export default {
 
       // Markdown内容
       markdownContent: {
-        body: "",
-        bodyHtml: "",
+        content: "", 
         images: [],
-        type: "",
+        type: "markdown",
       },
     };
   },
@@ -184,7 +183,7 @@ export default {
         case "image":
           return this.imageContent.trim() !== "" && this.imageFiles.length > 0;
         case "markdown":
-          return this.markdownContent.body.trim() !== "";
+          return this.markdownContent.content.trim() !== "";
         default:
           return false;
       }
@@ -244,8 +243,7 @@ export default {
       // 替换换行符为 <br>
       const formattedContent = this.textContent.replace(/\n/g, "<br>");
       return await postApi.publish_post({
-        body: formattedContent,
-        bodyHtml: null,
+        content: formattedContent,
         images: [],
         type: "text",
       });
@@ -271,7 +269,7 @@ export default {
 
       const formattedContent = this.imageContent.replace(/\n/g, "<br>");
       return await postApi.publish_post({
-        body: formattedContent,
+        content: formattedContent,
         images: imageKey,
         type: "image",
       });

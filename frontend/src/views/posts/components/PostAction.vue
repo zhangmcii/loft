@@ -13,8 +13,8 @@ export default {
       default() {
         return {
           id: 1,
-          body: "文章",
-          body_html: null,
+          content: "文章",
+          post_type: "text",
           timestamp: "",
           author: "张三",
           nick_name: "",

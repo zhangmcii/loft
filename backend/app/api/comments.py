@@ -216,7 +216,7 @@ class CommentManageApi(DecoratedMethodView):
         )
         comments = [
             {
-                "body": item.body,
+                "content": item.body,
                 "timestamp": DateUtils.datetime_to_str(item.timestamp),
                 "author": item.author.username,
                 "user_id": item.author.id,

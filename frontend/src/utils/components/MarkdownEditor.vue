@@ -105,8 +105,7 @@ export default {
     },
     change(value) {
       this.$emit("contentChange", {
-        body: value,
-        bodyHtml: value,
+        content: value
       });
     },
     clean() {

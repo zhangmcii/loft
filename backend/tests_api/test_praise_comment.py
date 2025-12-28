@@ -32,7 +32,7 @@ class TestPraiseCommentCase:
         r = client.post(
             self.pre_fix + "/posts",
             headers=auth_instance.get_headers(),
-            json={"body": "测试文章内容", "bodyHtml": "测试文章内容", "images": []},
+            json={"content": "测试文章内容", "type": "text", "images": []},
         )
         assert r.json.get("code") == 200
         post_id = r.json.get("data")[0].get("id")
@@ -90,7 +90,7 @@ class TestPraiseCommentCase:
         r = client.post(
             self.pre_fix + "/posts",
             headers=auth_instance.get_headers(),
-            json={"body": "测试文章内容", "bodyHtml": "测试文章内容", "images": []},
+            json={"content": "测试文章内容", "type": "text", "images": []},
         )
         assert r.json.get("code") == 200
         post_id = r.json.get("data")[-1].get("id")

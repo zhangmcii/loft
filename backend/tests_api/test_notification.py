@@ -31,7 +31,7 @@ class TestNotificationCase:
         r = client.post(
             self.pre_fix + "/posts",
             headers=auth_a.get_headers(),
-            json={"body": "测试文章内容", "bodyHtml": "测试文章内容", "images": []},
+            json={"content": "测试文章内容", "type": "text", "images": []},
         )
         assert r.get_json().get("code") == 200
         # 根据你后端的返回结构获取 ID，通常在 data 列表或对象中
@@ -70,7 +70,7 @@ class TestNotificationCase:
         r = client.post(
             self.pre_fix + "/posts",
             headers=auth_author.get_headers(),
-            json={"body": "测试文章内容", "bodyHtml": "测试文章内容", "images": []},
+            json={"content": "测试文章内容", "type": "text", "images": []},
         )
         post_id = r.get_json().get("data")[0].get("id")
 
@@ -97,7 +97,7 @@ class TestNotificationCase:
         auth_c1.register(username="commenter3", password="password")
         auth_c1.login(username="commenter3", password="password")
         
-        r_post = client.post(self.pre_fix + "/posts", headers=auth_c1.get_headers(), json={"body": "内容", "bodyHtml": "内容", "images": []})
+        r_post = client.post(self.pre_fix + "/posts", headers=auth_c1.get_headers(), json={"content": "内容", "type": "text", "images": []})
         post_id = r_post.get_json().get("data")[0].get("id")
 
         r_cmt = client.post(
@@ -132,7 +132,7 @@ class TestNotificationCase:
         # A发帖
         auth_a.register(username="author4", password="password")
         auth_a.login(username="author4", password="password")
-        r_post = client.post(self.pre_fix + "/posts", headers=auth_a.get_headers(), json={"body": "内容", "bodyHtml": "内容", "images": []})
+        r_post = client.post(self.pre_fix + "/posts", headers=auth_a.get_headers(), json={"content": "内容", "type": "text", "images": []})
         post_id = r_post.get_json().get("data")[0].get("id")
 
         # B评论

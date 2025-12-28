@@ -15,8 +15,7 @@ export default {
       post: {},
       postId: -1,
       richContent: {
-        body: "",
-        bodyHtml: "",
+        content: "",
         images: [],
       },
       originalPost: "",
@@ -33,10 +32,10 @@ export default {
     });
   },
   watch: {
-    "post.body"(newVal) {
+    "post.content"(newVal) {
       this.isChange = newVal !== this.originalPost;
     },
-    "richContent.body"(newVal) {
+    "richContent.content"(newVal) {
       this.isChange = newVal !== this.originalPost;
     },
   },
@@ -44,9 +43,9 @@ export default {
     getPostById(postId) {
       postApi.getPost(postId).then((res) => {
         if (res.code == 200) {
-          this.originalPost = res.data.body;
+          this.originalPost = res.data.content;
           this.post = res.data;
-          if (this.post.body_html) {
+          if (this.post.post_type === "markdown") {
             this.activeRichEditor = true;
           }
         }
@@ -55,7 +54,7 @@ export default {
     normalModify() {
       this.loading = true;
       postApi
-        .editPost(this.post.id, { body: this.post.body, bodyHtml: null })
+        .editPost(this.post.id, { content: this.post.content })
         .then((res) => {
           if (res.code == 200) {
             this.loading = false;
@@ -75,8 +74,7 @@ export default {
         if (res.code == 200) {
           this.loading = false;
           ElMessage.success("修改成功");
-          this.post.body = this.richContent.body;
-          this.post.body_html = this.richContent.bodyHtml;
+          this.post.content = this.richContent.content;
           this.$router.push(`/postDetail/${this.postId}`);
         } else {
           this.loading = false;
@@ -102,12 +100,12 @@ export default {
     <MarkdownEditor
       ref="md"
       v-if="activeRichEditor"
-      :bodyInit="post.body"
+      :bodyInit="post.content"
       @contentChange="(n) => (richContent = n)"
     />
     <el-input
       v-else
-      v-model="post.body"
+      v-model="post.content"
       :autosize="{ minRows: 2, maxRows: 4 }"
       type="textarea"
       placeholder="发你所想"

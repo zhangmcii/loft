@@ -119,7 +119,7 @@ def all_comments(page):
     )
     comments = [
         {
-            "body": item.body,
+            "content": item.body,
             "timestamp": DateUtils.datetime_to_str(item.timestamp),
             "author": item.author.username,
             "image": get_avatars_url(item.author.image),

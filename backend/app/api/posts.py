@@ -1,12 +1,10 @@
 import logging
-import os
 
 from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy.orm import joinedload
 from .. import db, limiter
 from ..decorators import DecoratedMethodView
-from ..main.uploads import del_qiniu_image
 from ..models import (
     Follow,
     Image,
@@ -34,38 +32,6 @@ class PostItemApi(DecoratedMethodView):
         logging.info(f"逻辑删除文章: id={post.id}")
         post.deleted = True
         db.session.commit()
-
-    @staticmethod
-    def hard_delete(post):
-        # 删除文章，同时也要删除文章中的图片url
-        is_contain_image, data = None, None
-        try:
-            is_contain_image = post.type == PostType.IMAGE
-            to_del_urls = []
-            if is_contain_image:
-                post_images = (
-                    Image.query.filter(
-                        Image.type == ImageType.POST, Image.related_id == post.id
-                    )
-                    .order_by(Image.id.asc())
-                    .all()
-                )
-                to_del_urls = [image.url for image in post_images]
-                # 删除图片
-                data = {
-                    "bucket_name": os.getenv("QINIU_BUCKET_NAME", ""),
-                    "keys": to_del_urls,
-                }
-            db.session.delete(post)
-            db.session.commit()
-        except Exception as e:
-            logging.error(f"删除文章失败: {str(e)}", exc_info=True)
-            db.session.rollback()
-            return error(500, f"删除文章失败: {str(e)}")
-
-        if is_contain_image and to_del_urls:
-            # 传递j,执行图片删除
-            del_qiniu_image(**data)
 
     def get(self, id):
         """获取单篇文章"""
@@ -111,11 +77,10 @@ class PostItemApi(DecoratedMethodView):
 
         # 对表单编辑业务逻辑
         j = request.get_json()
-        post.body = j.get("body", post.body)
-        post.body_html = j.get("bodyHtml") if j.get("bodyHtml") else None
+        post.content = j.get("content", post.content)
         # 更新summary字段
-        if "body" in j:
-            post.summary = MarkdownTruncator.get_smart_preview(post.body)
+        if "content" in j:
+            post.summary = MarkdownTruncator.get_smart_preview(post.content)
         # 编辑markdown文章时新增图片
         images = j.get("images")
         if images:
@@ -184,13 +149,13 @@ class PostGroupApi(DecoratedMethodView):
         create_new_post_notifications.delay(post_id, current_user.id, follower_ids)
 
     @staticmethod
-    def submit_to_db(post_type, body, body_html, images=None):
+    def submit_to_db(post_type, content, images=None):
         try:
             post = Post(
-                body=body,
-                body_html=body_html,
-                summary=MarkdownTruncator.get_smart_preview(body),
+                content=content,
+                summary=MarkdownTruncator.get_smart_preview(content),
                 type=post_type,
+                has_image=bool(images),  # 如果有图片则设置has_image为True
                 author=current_user,
             )
             db.session.add(post)
@@ -225,19 +190,18 @@ class PostGroupApi(DecoratedMethodView):
 
     @staticmethod
     def posts_publish(data: dict):
-        body = data.get("body", "")
-        body_html = data.get("bodyHtml", None)
+        content = data.get("content", "")
         images = data.get("images", [])
         # 可选text, image, markdown
         post_type = data.get("type", "text")
         match post_type:
             case "text":
-                PostGroupApi.submit_to_db(PostType.TEXT, body, body_html, images)
+                PostGroupApi.submit_to_db(PostType.TEXT, content, images)
             case "image":
-                PostGroupApi.submit_to_db(PostType.IMAGE, body, body_html, images)
+                PostGroupApi.submit_to_db(PostType.TEXT, content, images)  # 图文使用TEXT类型，通过has_image区分
             case "markdown":
                 limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
-                PostGroupApi.submit_to_db(PostType.IMAGE, body, body_html, images)
+                PostGroupApi.submit_to_db(PostType.MARKDOWN, content, images)
 
     def get(self):
         """获取所有文章"""

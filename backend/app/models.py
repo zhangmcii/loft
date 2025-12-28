@@ -470,8 +470,10 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 
 class PostType(Enum):
-    TEXT = "纯文字"
-    IMAGE = "图文"
+    TEXT = "text"
+    MARKDOWN = "markdown"
+    # 富文本（如果以后有）
+    # HTML = "html"
 
 
 class Post(db.Model):
@@ -485,8 +487,13 @@ class Post(db.Model):
     body = db.Column(db.Text)
     # 存储富文本编辑器生成的 HTML 内容
     body_html = db.Column(db.Text)
+    
+    content = db.Column(db.Text)
+    
+    # 是否包含图片
+    has_image = db.Column(db.Boolean, default=False)
 
-    # 类型：纯文字或者图文
+    # 内容格式
     type = db.Column(db.Enum(PostType))
 
     # 封面图片
@@ -509,6 +516,20 @@ class Post(db.Model):
     praise = db.relationship("Praise", backref="post", lazy="dynamic")
     notifications = db.relationship("Notification", backref="post", lazy="dynamic")
     deleted = db.Column(db.Boolean, default=False)
+
+    @property
+    def derived_type(self):
+        """ 推导文章类型 """
+        # 纯文本
+        if self.type == PostType.TEXT and not self.has_image:
+            return "text"
+
+        # 图文
+        if self.type == PostType.TEXT and self.has_image:
+            return "image"
+
+        # markdown
+        return "markdown"
 
     def to_json(self, extra_data, is_list=False):
         """
@@ -539,9 +560,9 @@ class Post(db.Model):
 
         j = {
             "id": self.id,
-            "post_images": urls if not self.body_html else [],
+            "post_images": urls if self.derived_type == "image" else [],
             "pos": pos,
-            "post_type": self.type.value,
+            "post_type": self.derived_type,
             "timestamp": self.timestamp
             if isinstance(self.timestamp, str)
             else DateUtils.datetime_to_str(self.timestamp),
@@ -558,15 +579,12 @@ class Post(db.Model):
             j.update({"summary": self.summary})
         # 文章详情返回完整内容
         else:
-            body = self.body
-            body_html = self.body_html
-            if self.type == PostType.IMAGE and self.body_html:
-                body = Post.replace_body(self.body, pos, urls)
-                body_html = Post.replace_body_html(self.body_html, pos, urls)
+            content = self.content
+            if self.has_image and self.derived_type == "markdown":
+                content = Post.replace_body(content, pos, urls)
             j.update(
                 {
-                    "body": body,
-                    "body_html": body_html,
+                    "content": content,
                 }
             )
         return j
@@ -714,28 +732,28 @@ class Post(db.Model):
 
     @staticmethod
     def from_json(json_post):
-        body = json_post.get("body")
-        if body is None or body == "":
-            raise ValidationError("post does not have a body")
-        return Post(body=body)
+        content = json_post.get("content")
+        if not content:
+            raise ValidationError("post does not have a content")
+        return Post(content=content)
 
-    @staticmethod
-    def replace_body_html(html, pos, image_urls):
-        pos2url = {str(_pos): _url for _pos, _url in zip(pos, image_urls)}
+    # @staticmethod
+    # def replace_body_html(html, pos, image_urls):
+    #     pos2url = {str(_pos): _url for _pos, _url in zip(pos, image_urls)}
 
-        def replacer(match):
-            src = match.group(1)
-            alt = match.group(2)
-            url = pos2url.get(src)
-            if url:
-                return f'<img src="{url}" alt="{alt}">'
-            else:
-                # 不替换
-                return match.group(0)
+    #     def replacer(match):
+    #         src = match.group(1)
+    #         alt = match.group(2)
+    #         url = pos2url.get(src)
+    #         if url:
+    #             return f'<img src="{url}" alt="{alt}">'
+    #         else:
+    #             # 不替换
+    #             return match.group(0)
 
-        # 匹配 <img src="数字" alt="xxx">，支持前后有其他内容
-        pattern = re.compile(r'<img\s+src="(\d+)"\s+alt="([^"]*)">')
-        return pattern.sub(replacer, html)
+    #     # 匹配 <img src="数字" alt="xxx">，支持前后有其他内容
+    #     pattern = re.compile(r'<img\s+src="(\d+)"\s+alt="([^"]*)">')
+    #     return pattern.sub(replacer, html)
 
     @staticmethod
     def replace_body(content, pos, image_urls):
