@@ -199,10 +199,9 @@ export default {
         <el-row v-if="post.disabled">
           <p><i>此评论已被版主禁用</i></p>
         </el-row>
-        <el-row v-if="show_body"
-          >
+        <el-row v-if="show_body">
           <!-- <div v-html="parseContent(post.content)"></div -->
-             <div v-html="post.content"></div
+          <div v-html="post.content"></div
         ></el-row>
 
         <el-row :gutter="35" justify="end" class="icon-event">

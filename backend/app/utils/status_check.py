@@ -1,9 +1,9 @@
 import time
 from threading import Thread
 
+from .. import redis
 from ..models import User
 from ..websocket import init_ws_services
-from .. import redis
 
 _, presence, _ = init_ws_services(redis)
 

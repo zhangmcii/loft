@@ -1,5 +1,5 @@
 from base64 import b64encode
-import pytest
+
 
 class TestNotificationCase:
     """测试通知推送功能"""
@@ -66,7 +66,7 @@ class TestNotificationCase:
         # 作者发布文章
         auth_author.register(username="author2", password="password")
         auth_author.login(username="author2", password="password")
-        
+
         r = client.post(
             self.pre_fix + "/posts",
             headers=auth_author.get_headers(),
@@ -79,11 +79,15 @@ class TestNotificationCase:
         auth_liker.login(username="liker2", password="password")
 
         # 点赞操作
-        r = client.post(self.pre_fix + f"/posts/{post_id}/likes", headers=auth_liker.get_headers())
+        r = client.post(
+            self.pre_fix + f"/posts/{post_id}/likes", headers=auth_liker.get_headers()
+        )
         assert r.get_json().get("code") == 200
 
         # 作者检查通知
-        r = client.get(self.pre_fix + "/notifications", headers=auth_author.get_headers())
+        r = client.get(
+            self.pre_fix + "/notifications", headers=auth_author.get_headers()
+        )
         notifications = r.get_json().get("data")
         assert len(notifications) > 0
         assert notifications[-1].get("type") == "点赞"
@@ -96,8 +100,12 @@ class TestNotificationCase:
         # 用户1发帖并自评
         auth_c1.register(username="commenter3", password="password")
         auth_c1.login(username="commenter3", password="password")
-        
-        r_post = client.post(self.pre_fix + "/posts", headers=auth_c1.get_headers(), json={"content": "内容", "type": "text", "images": []})
+
+        r_post = client.post(
+            self.pre_fix + "/posts",
+            headers=auth_c1.get_headers(),
+            json={"content": "内容", "type": "text", "images": []},
+        )
         post_id = r_post.get_json().get("data")[0].get("id")
 
         r_cmt = client.post(
@@ -132,16 +140,26 @@ class TestNotificationCase:
         # A发帖
         auth_a.register(username="author4", password="password")
         auth_a.login(username="author4", password="password")
-        r_post = client.post(self.pre_fix + "/posts", headers=auth_a.get_headers(), json={"content": "内容", "type": "text", "images": []})
+        r_post = client.post(
+            self.pre_fix + "/posts",
+            headers=auth_a.get_headers(),
+            json={"content": "内容", "type": "text", "images": []},
+        )
         post_id = r_post.get_json().get("data")[0].get("id")
 
         # B评论
         auth_b.register(username="commenter4", password="password")
         auth_b.login(username="commenter4", password="password")
-        client.post(self.pre_fix + f"/posts/{post_id}/comments", headers=auth_b.get_headers(), json={"body": "评论", "directParentId": None, "at": []})
+        client.post(
+            self.pre_fix + f"/posts/{post_id}/comments",
+            headers=auth_b.get_headers(),
+            json={"body": "评论", "directParentId": None, "at": []},
+        )
 
         # A查看并标记已读
-        r_notif = client.get(self.pre_fix + "/notifications", headers=auth_a.get_headers())
+        r_notif = client.get(
+            self.pre_fix + "/notifications", headers=auth_a.get_headers()
+        )
         notification_id = r_notif.get_json().get("data")[-1].get("id")
 
         r_read = client.patch(
@@ -152,5 +170,7 @@ class TestNotificationCase:
         assert r_read.get_json().get("code") == 200
 
         # 验证状态
-        r_final = client.get(self.pre_fix + "/notifications", headers=auth_a.get_headers())
+        r_final = client.get(
+            self.pre_fix + "/notifications", headers=auth_a.get_headers()
+        )
         assert r_final.get_json().get("data")[-1].get("isRead") is True

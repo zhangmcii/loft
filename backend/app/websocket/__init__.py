@@ -1,6 +1,6 @@
 from .connection import WSConnectionManager
-from .presence import UserPresenceService
 from .conversation import ConversationStateService
+from .presence import UserPresenceService
 
 
 def init_ws_services(redis):

@@ -2,10 +2,14 @@
   <PageHeadBack :title="title">
     <div class="container">
       <!-- 功能标签页 -->
-      <el-tabs v-model="activeTab" class="tabs-container" @tab-change="handleTabChange">
+      <el-tabs
+        v-model="activeTab"
+        class="tabs-container"
+        @tab-change="handleTabChange"
+      >
         <!-- 上传图像标签页 -->
         <el-tab-pane label="上传图像" name="upload">
-          <ImageUpload 
+          <ImageUpload
             :title="uploadTitle"
             :uploadPath="uploadPath"
             @upload-success="handleUploadSuccess"
@@ -15,9 +19,11 @@
         <!-- 管理图像标签页 -->
         <el-tab-pane label="管理图像" name="manage">
           <!-- 图像列表 -->
-          <div class="image-grid" v-loading="loading" element-loading-text="加载中...">
-
-            
+          <div
+            class="image-grid"
+            v-loading="loading"
+            element-loading-text="加载中..."
+          >
             <div v-if="images.length === 0 && !loading" class="empty-state">
               <el-icon class="empty-icon"><i-ep-Picture /></el-icon>
               <div class="empty-text">暂无{{ uploadTitle }}</div>
@@ -27,9 +33,14 @@
             <!-- 骨架屏显示 -->
             <div v-if="loading" class="skeleton-wrapper">
               <el-row :gutter="currentGutter">
-                <el-col 
-                  v-for="i in 6" :key="`skeleton-${i}`"
-                  :xs="imageCol.xs" :sm="imageCol.sm" :md="imageCol.md" :lg="imageCol.lg" :xl="imageCol.xl"
+                <el-col
+                  v-for="i in 6"
+                  :key="`skeleton-${i}`"
+                  :xs="imageCol.xs"
+                  :sm="imageCol.sm"
+                  :md="imageCol.md"
+                  :lg="imageCol.lg"
+                  :xl="imageCol.xl"
                 >
                   <div class="skeleton-item">
                     <div class="skeleton-image"></div>
@@ -41,27 +52,42 @@
 
             <div class="images-wrapper" v-show="images.length > 0 && !loading">
               <el-row :gutter="currentGutter">
-                <el-col :xs="imageCol.xs" :sm="imageCol.sm" :md="imageCol.md" :lg="imageCol.lg" :xl="imageCol.xl" 
-                  v-for="(image, index) in images" :key="image">
-                  <div class="image-item" 
-                    :class="{ 
-                      'selected': selectedImages.includes(image),
-                      'loading': loadingImages.has(image),
-                      'fade-in': imageFadeIn.has(image)
-                    }" 
-                    @click="toggleImageSelection(image)">
+                <el-col
+                  :xs="imageCol.xs"
+                  :sm="imageCol.sm"
+                  :md="imageCol.md"
+                  :lg="imageCol.lg"
+                  :xl="imageCol.xl"
+                  v-for="(image, index) in images"
+                  :key="image"
+                >
+                  <div
+                    class="image-item"
+                    :class="{
+                      selected: selectedImages.includes(image),
+                      loading: loadingImages.has(image),
+                      'fade-in': imageFadeIn.has(image),
+                    }"
+                    @click="toggleImageSelection(image)"
+                  >
                     <!-- 加载遮罩 -->
-                    <div v-if="loadingImages.has(image)" class="image-loading-overlay">
+                    <div
+                      v-if="loadingImages.has(image)"
+                      class="image-loading-overlay"
+                    >
                       <div class="loading-spinner">
                         <div class="spinner"></div>
                       </div>
                     </div>
-                    
+
                     <!-- 选择状态指示器 -->
-                    <div class="selection-indicator" :class="{ 'checked': selectedImages.includes(image) }">
+                    <div
+                      class="selection-indicator"
+                      :class="{ checked: selectedImages.includes(image) }"
+                    >
                       <el-icon><i-ep-Check /></el-icon>
                     </div>
-                    
+
                     <!-- 图像容器 -->
                     <div class="image-container">
                       <el-image
@@ -87,23 +113,23 @@
                         </template>
                       </el-image>
                     </div>
-                    
+
                     <!-- 图像信息 -->
                     <div class="image-info">
                       <div class="image-name">{{ getImageName(image) }}</div>
                       <div class="image-actions">
-                        <el-button 
-                          size="small" 
-                          type="primary" 
+                        <el-button
+                          size="small"
+                          type="primary"
                           link
                           @click.stop="previewImage(image)"
                         >
                           <el-icon><i-ep-View /></el-icon>
                           预览
                         </el-button>
-                        <el-button 
-                          size="small" 
-                          type="danger" 
+                        <el-button
+                          size="small"
+                          type="danger"
                           link
                           @click.stop="deleteSingleImage(image)"
                         >
@@ -134,8 +160,8 @@
 
           <!-- 操作按钮 -->
           <div class="action-bar" v-if="images.length > 0">
-            <el-button 
-              type="danger" 
+            <el-button
+              type="danger"
               :disabled="selectedImages.length === 0"
               @click="handleDeleteSelected"
               :loading="deleting"
@@ -156,10 +182,10 @@
 
 <script>
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
-import ImageUpload from './ImageUpload.vue';
+import ImageUpload from "./ImageUpload.vue";
 import uploadApi from "@/api/upload/uploadApi.js";
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { h } from 'vue';
+import { ElMessage, ElMessageBox } from "element-plus";
+import { h } from "vue";
 
 export default {
   name: "ImageManager",
@@ -170,26 +196,26 @@ export default {
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     uploadTitle: {
       type: String,
-      required: true
+      required: true,
     },
     uploadPath: {
       type: String,
-      required: true
+      required: true,
     },
     loadImagesMethod: {
       type: Function,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
       // 标签页
-      activeTab: 'upload',
-      
+      activeTab: "upload",
+
       // 管理功能相关
       images: [],
       selectedImages: [],
@@ -200,20 +226,20 @@ export default {
         size: 12,
         total: 0,
       },
-      
+
       // 新增状态
       loadingImages: new Set(),
       imageFadeIn: new Set(),
-      
+
       // 响应式配置
       imageCol: {
-        xs: 24,  // 移动端：每行1个
-        sm: 12,  // 平板：每行2个
-        md: 8,   // 小PC：每行3个
-        lg: 6,   // 中PC：每行4个
-        xl: 6,   // 大PC：每行4个
+        xs: 24, // 移动端：每行1个
+        sm: 12, // 平板：每行2个
+        md: 8, // 小PC：每行3个
+        lg: 6, // 中PC：每行4个
+        xl: 6, // 大PC：每行4个
       },
-      currentGutter: 16,  // 当前使用的gutter值
+      currentGutter: 16, // 当前使用的gutter值
     };
   },
   mounted() {
@@ -222,7 +248,7 @@ export default {
   },
   beforeUnmount() {
     // 清理事件监听器
-    if (typeof this.cleanupResponsive === 'function') {
+    if (typeof this.cleanupResponsive === "function") {
       this.cleanupResponsive();
     }
   },
@@ -231,43 +257,48 @@ export default {
     setupResponsiveConfig() {
       const updateConfig = () => {
         const width = window.innerWidth;
-        if (width < 576) { // 移动端
+        if (width < 576) {
+          // 移动端
           this.imageCol = { xs: 24, sm: 12, md: 8, lg: 6, xl: 6 };
           this.currentGutter = 8;
-        } else if (width < 768) { // 平板竖屏
+        } else if (width < 768) {
+          // 平板竖屏
           this.imageCol = { xs: 24, sm: 12, md: 8, lg: 6, xl: 6 };
           this.currentGutter = 12;
-        } else if (width < 992) { // 平板横屏/小PC
+        } else if (width < 992) {
+          // 平板横屏/小PC
           this.imageCol = { xs: 24, sm: 12, md: 8, lg: 6, xl: 6 };
           this.currentGutter = 16;
-        } else if (width < 1200) { // 中PC
+        } else if (width < 1200) {
+          // 中PC
           this.imageCol = { xs: 24, sm: 12, md: 6, lg: 6, xl: 6 };
           this.currentGutter = 20;
-        } else { // 大PC
+        } else {
+          // 大PC
           this.imageCol = { xs: 24, sm: 12, md: 6, lg: 6, xl: 4 };
           this.currentGutter = 24;
         }
       };
-      
+
       updateConfig();
-      window.addEventListener('resize', updateConfig);
-      
+      window.addEventListener("resize", updateConfig);
+
       // 存储清理函数
       this.cleanupResponsive = () => {
-        window.removeEventListener('resize', updateConfig);
+        window.removeEventListener("resize", updateConfig);
       };
     },
 
     // 标签页切换
     handleTabChange(tabName) {
-      if (tabName === 'manage') {
+      if (tabName === "manage") {
         this.loadImages();
       }
     },
 
     // 上传成功回调
     handleUploadSuccess() {
-      this.activeTab = 'manage';
+      this.activeTab = "manage";
       this.loadImages();
       ElMessage.success(`${this.uploadTitle}上传成功，已切换到管理页面`);
     },
@@ -278,23 +309,23 @@ export default {
       this.loadingImages.clear();
       this.imageFadeIn.clear();
       try {
-        console.log('Loading images with params:', {
+        console.log("Loading images with params:", {
           page: this.query.currentPage,
           size: this.query.size,
-          method: this.loadImagesMethod.name
+          method: this.loadImagesMethod.name,
         });
-        
+
         const response = await this.loadImagesMethod(
           this.query.currentPage,
           this.query.size
         );
-        
-        console.log('API response:', response);
-        
+
+        console.log("API response:", response);
+
         if (response && response.code === 200) {
           this.images = Array.isArray(response.data) ? response.data : [];
           this.query.total = response.total || 0;
-          
+
           // 为每个图像设置加载状态
           this.images.forEach((image, index) => {
             this.loadingImages.add(image);
@@ -303,16 +334,16 @@ export default {
               this.onImageLoad(image, index);
             }, index * 100); // 每个图像延迟100ms
           });
-          
-          console.log('Images loaded:', this.images.length);
+
+          console.log("Images loaded:", this.images.length);
         } else {
-          console.error('API response error:', response);
-          ElMessage.error(response?.message || '加载图像列表失败');
+          console.error("API response error:", response);
+          ElMessage.error(response?.message || "加载图像列表失败");
           this.images = [];
         }
       } catch (error) {
-        console.error('加载图像列表失败:', error);
-        ElMessage.error('加载图像列表失败');
+        console.error("加载图像列表失败:", error);
+        ElMessage.error("加载图像列表失败");
         this.images = [];
       } finally {
         this.loading = false;
@@ -366,20 +397,24 @@ export default {
     // 预览图像
     previewImage(imageUrl) {
       ElMessageBox({
-        title: '图像预览',
-        message: h('div', [
-          h('img', {
+        title: "图像预览",
+        message: h("div", [
+          h("img", {
             src: imageUrl,
-            style: 'width: 100%; max-height: 70vh; object-fit: contain;'
+            style: "width: 100%; max-height: 70vh; object-fit: contain;",
           }),
-          h('div', {
-            style: 'text-align: center; margin-top: 10px; color: #666;'
-          }, this.getImageName(imageUrl))
+          h(
+            "div",
+            {
+              style: "text-align: center; margin-top: 10px; color: #666;",
+            },
+            this.getImageName(imageUrl)
+          ),
         ]),
         showConfirmButton: false,
         closeOnClickModal: true,
         closeOnPressEscape: true,
-        customClass: 'image-preview-dialog'
+        customClass: "image-preview-dialog",
       });
     },
 
@@ -388,18 +423,18 @@ export default {
       try {
         await ElMessageBox.confirm(
           `确定要删除"${this.getImageName(imageUrl)}"吗？此操作不可撤销。`,
-          '确认删除',
+          "确认删除",
           {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
           }
         );
 
-        const imageKeys = [imageUrl].map(url => {
+        const imageKeys = [imageUrl].map((url) => {
           const urlObj = new URL(url);
           let key = urlObj.pathname.substring(1);
-          if (key.endsWith('-slim')) {
+          if (key.endsWith("-slim")) {
             key = key.slice(0, -5);
           }
           return key;
@@ -407,15 +442,15 @@ export default {
 
         const response = await uploadApi.del_image(imageKeys);
         if (response.code === 200) {
-          ElMessage.success('删除成功');
+          ElMessage.success("删除成功");
           this.loadImages();
         } else {
-          ElMessage.error(response.message || '删除失败');
+          ElMessage.error(response.message || "删除失败");
         }
       } catch (error) {
-        if (error !== 'cancel') {
-          console.error('删除图像失败:', error);
-          ElMessage.error('删除图像失败');
+        if (error !== "cancel") {
+          console.error("删除图像失败:", error);
+          ElMessage.error("删除图像失败");
         }
       }
     },
@@ -429,37 +464,37 @@ export default {
       try {
         await ElMessageBox.confirm(
           `确定要删除选中的 ${this.selectedImages.length} 张${this.uploadTitle}吗？此操作不可撤销。`,
-          '确认删除',
+          "确认删除",
           {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
           }
         );
 
         this.deleting = true;
-        
-        const imageKeys = this.selectedImages.map(imageUrl => {
+
+        const imageKeys = this.selectedImages.map((imageUrl) => {
           const url = new URL(imageUrl);
           let key = url.pathname.substring(1);
-          if (key.endsWith('-slim')) {
+          if (key.endsWith("-slim")) {
             key = key.slice(0, -5);
           }
           return key;
         });
-        
+
         const response = await uploadApi.del_image(imageKeys);
         if (response.code === 200) {
-          ElMessage.success('删除成功');
+          ElMessage.success("删除成功");
           this.selectedImages = [];
           this.loadImages();
         } else {
-          ElMessage.error(response.message || '删除失败');
+          ElMessage.error(response.message || "删除失败");
         }
       } catch (error) {
-        if (error !== 'cancel') {
-          console.error('删除图像失败:', error);
-          ElMessage.error('删除图像失败');
+        if (error !== "cancel") {
+          console.error("删除图像失败:", error);
+          ElMessage.error("删除图像失败");
         }
       } finally {
         this.deleting = false;
@@ -469,9 +504,9 @@ export default {
     getImageName(imageUrl) {
       try {
         const url = new URL(imageUrl);
-        return url.pathname.split('/').pop() || '未知文件';
+        return url.pathname.split("/").pop() || "未知文件";
       } catch {
-        return imageUrl.split('/').pop() || '未知文件';
+        return imageUrl.split("/").pop() || "未知文件";
       }
     },
   },
@@ -485,17 +520,16 @@ export default {
 
 .tabs-container {
   width: 100%;
-  
+
   :deep(.el-tabs__header) {
     margin-bottom: 24px;
   }
-  
+
   :deep(.el-tabs__nav-wrap) {
     &::after {
       display: none;
     }
   }
-
 }
 
 // ========== 管理页面样式 ==========
@@ -528,25 +562,25 @@ export default {
   min-height: 240px; // 确保有最小高度
   display: flex;
   flex-direction: column;
-  
+
   &.fade-in {
     opacity: 1;
     transform: translateY(0);
   }
-  
+
   &.loading {
     pointer-events: none;
   }
-  
+
   &:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     border-color: #409eff;
-    
+
     .selection-indicator {
       opacity: 1;
     }
-    
+
     .image-info {
       .image-actions {
         opacity: 1;
@@ -554,10 +588,11 @@ export default {
       }
     }
   }
-  
+
   &.selected {
     border: 2px solid #409eff;
-    box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.15), 0 20px 40px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.15),
+      0 20px 40px rgba(0, 0, 0, 0.15);
     background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
   }
 }
@@ -579,25 +614,25 @@ export default {
   opacity: 0.7;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  
+
   &:hover {
     transform: scale(1.1);
     border-color: #409eff;
   }
-  
+
   &.checked {
     background: #409eff;
     border-color: #409eff;
     opacity: 1;
     transform: scale(1.1);
-    
+
     .el-icon {
       color: white;
       font-size: 16px;
       animation: checkBounce 0.3s ease-out;
     }
   }
-  
+
   .el-icon {
     color: #909399;
     font-size: 14px;
@@ -614,7 +649,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &:hover .image-preview {
     transform: scale(1.05);
   }
@@ -669,7 +704,11 @@ export default {
 // 图像信息
 .image-info {
   padding: 12px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.95) 100%
+  );
   border-radius: 0 0 12px 12px;
   border-top: 1px solid rgba(240, 240, 240, 0.8);
 }
@@ -693,25 +732,25 @@ export default {
   opacity: 0;
   transform: translateY(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   .el-button {
     border-radius: 8px;
     font-size: 12px;
     padding: 4px 8px;
     height: 28px;
-    
+
     &.is-link {
       border: none;
       background: rgba(64, 158, 255, 0.1);
-      
+
       &:hover {
         background: rgba(64, 158, 255, 0.2);
         transform: translateY(-2px);
       }
-      
+
       &.el-button--danger {
         background: rgba(245, 108, 108, 0.1);
-        
+
         &:hover {
           background: rgba(245, 108, 108, 0.2);
         }
@@ -731,7 +770,7 @@ export default {
   color: #ef4444;
   font-size: 14px;
   border-radius: 12px 12px 0 0;
-  
+
   .el-icon {
     font-size: 32px;
     margin-bottom: 8px;
@@ -740,14 +779,24 @@ export default {
 
 // 加载动画
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes checkBounce {
-  0% { transform: scale(0.8); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 // ========== 骨架屏样式 ==========
@@ -786,16 +835,18 @@ export default {
 }
 
 @keyframes skeletonLoading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .pagination-container {
   display: flex;
   justify-content: center;
   margin: 32px 0;
-  
-
 }
 
 .action-bar {
@@ -807,7 +858,7 @@ export default {
   background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
   border-radius: 12px;
   border: 1px solid #f0f0f0;
-  
+
   .el-button {
     border-radius: 10px;
     padding: 14px 28px;
@@ -828,19 +879,19 @@ export default {
   justify-content: center;
   min-height: 300px;
   color: #909399;
-  
+
   .empty-icon {
     font-size: 64px;
     margin-bottom: 16px;
     opacity: 0.5;
   }
-  
+
   .empty-text {
     font-size: 16px;
     margin-bottom: 8px;
     font-weight: 500;
   }
-  
+
   .empty-tip {
     font-size: 14px;
     opacity: 0.7;
@@ -852,11 +903,11 @@ export default {
   .image-preview {
     height: 180px;
   }
-  
+
   .image-info {
     padding: 10px;
   }
-  
+
   .selection-indicator {
     width: 24px;
     height: 24px;
@@ -869,13 +920,13 @@ export default {
   .image-preview {
     height: 160px;
   }
-  
+
   .image-item {
     &:hover {
       transform: translateY(-6px);
     }
   }
-  
+
   .image-actions {
     .el-button {
       font-size: 11px;
@@ -889,45 +940,45 @@ export default {
   .container {
     padding: 12px;
   }
-  
+
   .image-grid {
     padding: 12px;
     min-height: 300px;
   }
-  
+
   :deep(.el-tabs__item) {
     padding: 10px 16px;
     font-size: 14px;
   }
-  
+
   .image-preview {
     height: 140px;
   }
-  
+
   .image-info {
     padding: 8px;
   }
-  
+
   .image-name {
     font-size: 12px;
     margin-bottom: 6px;
   }
-  
+
   .selection-indicator {
     width: 22px;
     height: 22px;
     top: 8px;
     right: 8px;
   }
-  
+
   .image-item {
     margin-bottom: 16px;
-    
+
     &:hover {
       transform: translateY(-4px);
     }
   }
-  
+
   .action-bar {
     .el-button {
       width: 100%;
@@ -940,56 +991,56 @@ export default {
   .container {
     padding: 8px;
   }
-  
+
   .image-grid {
     padding: 8px;
   }
-  
+
   .image-preview {
     height: 120px;
   }
-  
+
   .image-info {
     padding: 6px;
   }
-  
+
   .image-name {
     font-size: 11px;
     margin-bottom: 4px;
   }
-  
+
   .selection-indicator {
     width: 20px;
     height: 20px;
     top: 6px;
     right: 6px;
-    
+
     &.checked .el-icon {
       font-size: 12px;
     }
-    
+
     .el-icon {
       font-size: 12px;
     }
   }
-  
+
   .image-actions {
     gap: 6px;
-    
+
     .el-button {
       font-size: 10px;
       padding: 2px 4px;
       height: 20px;
-      
+
       .el-icon {
         font-size: 10px;
       }
     }
   }
-  
+
   .image-item {
     border-radius: 8px;
-    
+
     &:hover {
       transform: translateY(-3px);
     }
@@ -1000,11 +1051,11 @@ export default {
   .image-preview {
     height: 160px;
   }
-  
+
   .image-grid {
     min-height: 250px;
   }
-  
+
   :deep(.el-tabs__header) {
     margin-bottom: 16px;
   }
@@ -1015,11 +1066,11 @@ export default {
   .image-preview {
     height: 100px;
   }
-  
+
   .image-info {
     padding: 4px;
   }
-  
+
   .image-name {
     font-size: 10px;
   }

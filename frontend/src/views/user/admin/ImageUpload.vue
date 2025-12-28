@@ -1,9 +1,19 @@
 <template>
   <div class="container">
-    <el-upload ref="uploadRef" v-model:file-list="originalFiles" list-type="picture-card" :auto-upload="false"
-      :before-upload="() => false" accept="image/jpeg,image/png,image/jpg,image/webp" :on-change="handleFileChange"
-      :on-preview="handlePictureCardPreview" :on-remove="handleFileRemove" :on-exceed="handleExceed" :limit="9"
-      multiple>
+    <el-upload
+      ref="uploadRef"
+      v-model:file-list="originalFiles"
+      list-type="picture-card"
+      :auto-upload="false"
+      :before-upload="() => false"
+      accept="image/jpeg,image/png,image/jpg,image/webp"
+      :on-change="handleFileChange"
+      :on-preview="handlePictureCardPreview"
+      :on-remove="handleFileRemove"
+      :on-exceed="handleExceed"
+      :limit="9"
+      multiple
+    >
       <el-icon><i-ep-Plus /></el-icon>
     </el-upload>
 
@@ -11,7 +21,13 @@
       <img w-full :src="dialogImageUrl" alt="Preview Image" />
     </el-dialog>
   </div>
-  <ButtonClick class="button" content="上传" size="small" :disabled="ban_pub" @do-search="submitBlog">
+  <ButtonClick
+    class="button"
+    content="上传"
+    size="small"
+    :disabled="ban_pub"
+    @do-search="submitBlog"
+  >
     <el-icon><i-ep-Pointer /></el-icon>
   </ButtonClick>
 </template>
@@ -37,13 +53,13 @@ export default {
     uploadPath: {
       type: String,
       default: "",
-    }
+    },
   },
   components: {
     PageHeadBack,
     ButtonClick,
   },
-  emits: ['upload-success'],
+  emits: ["upload-success"],
   data() {
     return {
       imageUrls: [],
@@ -129,15 +145,11 @@ export default {
         // 获取上传凭证
         const uploadToken = await this.getUploadToken();
         // 上传图片
-        await uploadFiles(
-          this.compressedImages,
-          this.uploadPath,
-          uploadToken
-        );
+        await uploadFiles(this.compressedImages, this.uploadPath, uploadToken);
         this.originalFiles = [];
         this.compressedImages = [];
         loadingInstance.close();
-        this.$emit('upload-success');
+        this.$emit("upload-success");
       } catch (error) {
         loadingInstance.close();
       }

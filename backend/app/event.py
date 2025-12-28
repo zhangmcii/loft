@@ -1,14 +1,14 @@
 import logging
+
 import eventlet
 from flask import request
 from flask_jwt_extended import decode_token
-from flask_socketio import ConnectionRefusedError, disconnect, join_room
+from flask_socketio import ConnectionRefusedError, join_room
 
 from . import db, redis
 from .models import Message, Notification, NotificationType, User
 from .mycelery.notification_task import create_chat_notifications
 from .websocket import init_ws_services
-
 
 connection, presence, conversation = init_ws_services(redis)
 

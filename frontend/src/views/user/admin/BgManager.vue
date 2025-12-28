@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import ImageManager from './ImageManager.vue';
+import ImageManager from "./ImageManager.vue";
 import imageApi from "@/api/user/imageApi.js";
 import { useCurrentUserStore } from "@/stores/user";
 
@@ -28,7 +28,7 @@ export default {
         return imageApi.getBackgroundImage(
           currentPage,
           size,
-          'userBackground/static',
+          "userBackground/static",
           1
         );
       };

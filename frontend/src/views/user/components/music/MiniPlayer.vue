@@ -10,7 +10,9 @@
               :src="currentSongInfo.cover"
               fit="cover"
               class="cover-image"
-              :preview-src-list="currentSongInfo.cover ? [currentSongInfo.cover] : []"
+              :preview-src-list="
+                currentSongInfo.cover ? [currentSongInfo.cover] : []
+              "
               :preview-teleported="true"
               :hide-on-click-modal="true"
             >
@@ -21,13 +23,13 @@
               </template>
             </el-image>
           </div>
-          
+
           <div class="song-info">
             <div class="song-title" :title="currentSongInfo.name">
-              {{ currentSongInfo.name || '暂无歌曲' }}
+              {{ currentSongInfo.name || "暂无歌曲" }}
             </div>
             <div class="song-artist" :title="currentSongInfo.artist">
-              {{ currentSongInfo.artist || '未知艺术家' }}
+              {{ currentSongInfo.artist || "未知艺术家" }}
             </div>
           </div>
         </div>
@@ -63,13 +65,8 @@
               class="volume-slider"
             />
           </div>
-          
-          <el-button
-            circle
-            size="small"
-            @click="hidePlayer"
-            class="close-btn"
-          >
+
+          <el-button circle size="small" @click="hidePlayer" class="close-btn">
             <el-icon><i-ep-Close /></el-icon>
           </el-button>
         </div>
@@ -79,8 +76,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useMusicStore } from '@/stores/music';
+import { computed } from "vue";
+import { useMusicStore } from "@/stores/music";
 
 const musicStore = useMusicStore();
 
@@ -91,7 +88,7 @@ const isPlaying = computed(() => musicStore.isPlaying);
 const currentSongInfo = computed(() => musicStore.currentSongInfo);
 const volume = computed({
   get: () => musicStore.volume,
-  set: (value) => musicStore.setVolume(value)
+  set: (value) => musicStore.setVolume(value),
 });
 
 // 方法
@@ -102,8 +99,6 @@ const togglePlay = () => {
 const hidePlayer = () => {
   musicStore.hideMiniPlayer();
 };
-
-
 
 const handleVolumeChange = (value) => {
   musicStore.setVolume(value);
@@ -121,7 +116,7 @@ const handleVolumeChange = (value) => {
   border-top: 1px solid #e8e8e8;
   box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
-  
+
   .mini-player-content {
     display: flex;
     align-items: center;
@@ -139,7 +134,7 @@ const handleVolumeChange = (value) => {
   gap: 12px;
   flex: 1;
   min-width: 0;
-  
+
   .album-cover {
     width: 50px;
     height: 50px;
@@ -147,17 +142,17 @@ const handleVolumeChange = (value) => {
     overflow: hidden;
     flex-shrink: 0;
     transition: all 0.3s ease;
-    
+
     &.album-spin {
       animation: spin 8s linear infinite;
     }
-    
+
     .cover-image {
       width: 100%;
       height: 100%;
       border-radius: 8px;
     }
-    
+
     .cover-error {
       width: 100%;
       height: 100%;
@@ -167,17 +162,17 @@ const handleVolumeChange = (value) => {
       background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
       color: #c0c4cc;
       border-radius: 8px;
-      
+
       .el-icon {
         font-size: 24px;
       }
     }
   }
-  
+
   .song-info {
     flex: 1;
     min-width: 0;
-    
+
     .song-title {
       font-size: 14px;
       font-weight: 600;
@@ -188,7 +183,7 @@ const handleVolumeChange = (value) => {
       white-space: nowrap;
       line-height: 1.2;
     }
-    
+
     .song-artist {
       font-size: 12px;
       color: #606266;
@@ -207,23 +202,22 @@ const handleVolumeChange = (value) => {
   gap: 8px;
   flex: 2;
   max-width: 400px;
-  
+
   .control-buttons {
     display: flex;
     align-items: center;
     gap: 8px;
-    
-    .play-btn, .stop-btn {
+
+    .play-btn,
+    .stop-btn {
       width: 32px;
       height: 32px;
-      
+
       .el-icon {
         font-size: 16px;
       }
     }
   }
-  
-
 }
 
 .player-right {
@@ -232,31 +226,31 @@ const handleVolumeChange = (value) => {
   gap: 16px;
   flex: 1;
   justify-content: flex-end;
-  
+
   .volume-control {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 120px;
-    
+
     .el-icon {
       color: #606266;
       font-size: 16px;
     }
-    
+
     .volume-slider {
       flex: 1;
-      
+
       :deep(.el-slider__runway) {
         background-color: #e4e7ed;
         height: 4px;
       }
-      
+
       :deep(.el-slider__bar) {
         background-color: #409eff;
         height: 4px;
       }
-      
+
       :deep(.el-slider__button) {
         width: 10px;
         height: 10px;
@@ -264,11 +258,11 @@ const handleVolumeChange = (value) => {
       }
     }
   }
-  
+
   .close-btn {
     width: 32px;
     height: 32px;
-    
+
     .el-icon {
       font-size: 16px;
     }
@@ -306,37 +300,38 @@ const handleVolumeChange = (value) => {
 @media (max-width: 1024px) {
   .mini-player-content {
     padding: 8px 12px;
-    
+
     .player-left {
       gap: 8px;
-      
+
       .album-cover {
         width: 40px;
         height: 40px;
       }
-      
+
       .song-info {
         .song-title {
           font-size: 13px;
         }
-        
+
         .song-artist {
           font-size: 11px;
         }
       }
     }
-    
+
     .player-center {
       max-width: 300px;
-      
+
       .progress-container {
-        .time-current, .time-total {
+        .time-current,
+        .time-total {
           font-size: 10px;
           min-width: 30px;
         }
       }
     }
-    
+
     .player-right {
       .volume-control {
         min-width: 100px;

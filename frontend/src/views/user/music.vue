@@ -35,8 +35,6 @@
             <span class="song-author">{{ currentSong?.artist || "" }}</span>
           </div>
 
-
-
           <div class="player-controls" v-if="currentSong?.name">
             <el-button
               :size="playButtonSize"
@@ -89,7 +87,10 @@ const currentSong = computed(() => {
 });
 
 const isPlaying = computed(() => {
-  return musicStore.isPlaying && musicStore.currentMusic?.url === currentSong.value?.url;
+  return (
+    musicStore.isPlaying &&
+    musicStore.currentMusic?.url === currentSong.value?.url
+  );
 });
 
 const playButtonSize = computed(() => {
@@ -98,24 +99,32 @@ const playButtonSize = computed(() => {
 
 const handlePlayMusic = () => {
   if (!currentSong.value?.url) return;
-  
+
   // 使用全局音乐播放器
   musicStore.playMusic(currentSong.value);
 };
 
 // 监听全局播放状态变化 - 优化性能
-watch(() => musicStore.isPlaying, (playing) => {
-  if (playing && musicStore.currentMusic?.url === currentSong.value?.url) {
-    // 当前歌曲正在播放
-  }
-}, { immediate: true });
+watch(
+  () => musicStore.isPlaying,
+  (playing) => {
+    if (playing && musicStore.currentMusic?.url === currentSong.value?.url) {
+      // 当前歌曲正在播放
+    }
+  },
+  { immediate: true }
+);
 
 // 监听当前音乐变化 - 优化性能
-watch(() => musicStore.currentMusic, (newMusic) => {
-  if (newMusic?.url === currentSong.value?.url) {
-    // 当前歌曲被选中播放
-  }
-}, { immediate: true });
+watch(
+  () => musicStore.currentMusic,
+  (newMusic) => {
+    if (newMusic?.url === currentSong.value?.url) {
+      // 当前歌曲被选中播放
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>

@@ -49,7 +49,8 @@ class TestPraiseCommentCase:
 
         # 获取文章的评论列表
         r = client.get(
-            self.pre_fix + f"/posts/{post_id}/comments", headers=auth_instance.get_headers()
+            self.pre_fix + f"/posts/{post_id}/comments",
+            headers=auth_instance.get_headers(),
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -57,7 +58,8 @@ class TestPraiseCommentCase:
 
         # 点赞文章
         r = client.post(
-            self.pre_fix + f"/posts/{post_id}/likes", headers=auth_instance.get_headers()
+            self.pre_fix + f"/posts/{post_id}/likes",
+            headers=auth_instance.get_headers(),
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -66,7 +68,8 @@ class TestPraiseCommentCase:
 
         # 重复点赞应该失败
         r = client.post(
-            self.pre_fix + f"/posts/{post_id}/likes", headers=auth_instance.get_headers()
+            self.pre_fix + f"/posts/{post_id}/likes",
+            headers=auth_instance.get_headers(),
         )
         assert r.status_code == 200
         assert r.json.get("code") == 400  # 应该返回错误码
@@ -115,7 +118,8 @@ class TestPraiseCommentCase:
 
         # 获取评论的回复
         r = client.get(
-            self.pre_fix + f"/comments/{comment_id}/replies", headers=auth_instance.get_headers()
+            self.pre_fix + f"/comments/{comment_id}/replies",
+            headers=auth_instance.get_headers(),
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -124,7 +128,8 @@ class TestPraiseCommentCase:
 
         # 点赞评论
         r = client.post(
-            self.pre_fix + f"/comments/{comment_id}/likes", headers=auth_instance.get_headers()
+            self.pre_fix + f"/comments/{comment_id}/likes",
+            headers=auth_instance.get_headers(),
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200

@@ -7,8 +7,8 @@ from sqlalchemy.orm import joinedload
 
 from .. import db, limiter
 from ..models import Image, ImageType, Permission, Post, PostType, User
-from ..utils.response import error, forbidden, not_found, success
 from ..mycelery.notification_task import create_new_post_notifications
+from ..utils.response import error, forbidden, not_found, success
 from . import main
 
 
@@ -28,7 +28,7 @@ def index():
                 post_type_enum = PostType.TEXT  # 图文使用TEXT类型，通过has_image区分
             else:
                 post_type_enum = PostType.TEXT
-                
+
             post = Post(
                 content=j.get("content"),
                 type=post_type_enum,
@@ -158,7 +158,12 @@ def create_post():
     data = request.get_json()
     content = data.get("content", "")
     image_urls = data.get("imageUrls", [])
-    p = Post(content=content, type=PostType.MARKDOWN, has_image=bool(image_urls), author=current_user)
+    p = Post(
+        content=content,
+        type=PostType.MARKDOWN,
+        has_image=bool(image_urls),
+        author=current_user,
+    )
     db.session.flush()
     images = [
         Image(url=url, type=ImageType.POST, related_id=p.id) for url in image_urls

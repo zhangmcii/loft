@@ -140,7 +140,6 @@ const routes = [
         component: () => import("../views/user/UserData.vue"),
       },
 
-
       {
         path: "/postDetail/:id",
         name: "postDetail",

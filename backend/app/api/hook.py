@@ -1,7 +1,8 @@
 import logging
 
-from flask_sqlalchemy import record_queries
 from flask import current_app
+from flask_sqlalchemy import record_queries
+
 from . import api
 
 

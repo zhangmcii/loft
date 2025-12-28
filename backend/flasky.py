@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 from app.utils.common import get_local_ip
 from app.utils.logger import setup_logging
@@ -25,23 +25,23 @@ if os.environ.get("FLASK_COVERAGE"):
     COV.start()
 
 import sys
+
 import click
 from app import create_app, db
 from app.models import (
     Comment,
     Follow,
+    Image,
+    ImageType,
     Log,
     Permission,
     Post,
+    PostType,
     Praise,
     Role,
     User,
-    Image,
-    PostType,
-    ImageType,
 )
 from flask_migrate import Migrate, upgrade
-
 
 app = create_app(os.getenv("FLASK_CONFIG") or "default")
 migrate = Migrate(app, db)

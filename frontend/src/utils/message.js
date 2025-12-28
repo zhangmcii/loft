@@ -1,4 +1,3 @@
-
 class MessageManager {
   constructor() {
     this.messageMap = new Map();

@@ -165,7 +165,7 @@ export default {
 
       // Markdown内容
       markdownContent: {
-        content: "", 
+        content: "",
         images: [],
         type: "markdown",
       },

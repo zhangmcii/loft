@@ -19,7 +19,13 @@ export default defineConfig([
     files: ["**/*.{js,mjs,cjs,vue}"],
     plugins: { js },
     extends: ["js/recommended"],
-    languageOptions: { globals: globals.browser },
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ElMessage: "readonly",
+        showConfirmDialog: "readonly",
+      },
+    },
   },
   pluginVue.configs["flat/essential"],
   {

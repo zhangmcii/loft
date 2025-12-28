@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import ImageManager from './ImageManager.vue';
+import ImageManager from "./ImageManager.vue";
 import imageApi from "@/api/user/imageApi.js";
 import { useCurrentUserStore } from "@/stores/user";
 

@@ -1,14 +1,15 @@
-import time
 import logging
+import time
 from functools import wraps
 
-from user_agents import parse
 from flask import abort, request
 from flask.views import MethodView
 from flask_jwt_extended import current_user
 from flask_sqlalchemy import record_queries
-from .mycelery.log_task import log_visitor
+from user_agents import parse
+
 from .models import Permission
+from .mycelery.log_task import log_visitor
 
 
 class DecoratedMethodView(MethodView):

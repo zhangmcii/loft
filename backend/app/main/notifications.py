@@ -18,6 +18,7 @@ def get_currentUsernotification():
     logging.info(f"获取用户通知: user_id={current_user.id}")
     # 预加载触发用户数据避免N+1查询
     from sqlalchemy.orm import joinedload
+
     from ..models import User
 
     notifications = (

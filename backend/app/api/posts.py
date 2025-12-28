@@ -3,22 +3,14 @@ import logging
 from flask import current_app, request
 from flask_jwt_extended import current_user, jwt_required
 from sqlalchemy.orm import joinedload
-from .. import db, limiter
-from ..decorators import DecoratedMethodView
-from ..models import (
-    Follow,
-    Image,
-    ImageType,
-    Permission,
-    Post,
-    PostType,
-    User,
-)
+
+from .. import cache, db, limiter
+from ..decorators import DecoratedMethodView, log_operate, sql_profile
+from ..models import Follow, Image, ImageType, Permission, Post, PostType, User
 from ..mycelery.notification_task import create_new_post_notifications
-from ..utils.response import error, success
-from .. import cache
-from ..decorators import log_operate, sql_profile
 from ..utils.markdown_truncate import MarkdownTruncator
+from ..utils.response import error, success
+
 
 class PostItemApi(DecoratedMethodView):
     method_decorators = {
@@ -198,7 +190,9 @@ class PostGroupApi(DecoratedMethodView):
             case "text":
                 PostGroupApi.submit_to_db(PostType.TEXT, content, images)
             case "image":
-                PostGroupApi.submit_to_db(PostType.TEXT, content, images)  # 图文使用TEXT类型，通过has_image区分
+                PostGroupApi.submit_to_db(
+                    PostType.TEXT, content, images
+                )  # 图文使用TEXT类型，通过has_image区分
             case "markdown":
                 limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
                 PostGroupApi.submit_to_db(PostType.MARKDOWN, content, images)

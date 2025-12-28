@@ -57,7 +57,9 @@ class TestUserProfileCase:
             "nickname": "测试昵称",
         }
         r = client.patch(
-            self.pre_fix + "/users/1", headers=auth_instance.get_headers(), json=update_data
+            self.pre_fix + "/users/1",
+            headers=auth_instance.get_headers(),
+            json=update_data,
         )
         assert r.status_code == 200
         assert r.json.get("code") == 200
@@ -73,7 +75,7 @@ class TestUserProfileCase:
         # 创建两个独立的认证实例
         auth_user1 = auth()
         auth_user2 = auth()
-        
+
         # 注册第一个用户并验证成功
         register_response = auth_user1.register(username="user1", password="password1")
         assert register_response.status_code == 200

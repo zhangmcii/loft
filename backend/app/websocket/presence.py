@@ -11,7 +11,7 @@ class UserPresenceService:
     是否在线的唯一判断
 
 
-    Key: user:{user_id}:status  -> 
+    Key: user:{user_id}:status  ->
     Type: HASH
     Fields:
     - online       -> 0 / 1
@@ -31,10 +31,7 @@ class UserPresenceService:
         pipe.sadd("online:users", user_id)
         pipe.hset(
             f"user:{user_id}:status",
-            mapping={
-                "online": 1,
-                "last_active": int(time.time())
-            }
+            mapping={"online": 1, "last_active": int(time.time())},
         )
         pipe.execute()
 
@@ -51,11 +48,7 @@ class UserPresenceService:
         """
         更新用户最后活跃时间
         """
-        self.redis.hset(
-            f"user:{user_id}:status",
-            "last_active",
-            int(time.time())
-        )
+        self.redis.hset(f"user:{user_id}:status", "last_active", int(time.time()))
 
     # ---------- 查询（无副作用） ----------
 

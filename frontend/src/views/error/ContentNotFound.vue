@@ -2,15 +2,15 @@
 import contentDeleted from "@/asset/status/content-deleted.svg?component";
 
 export default {
-  name: 'ContentNotFound',
+  name: "ContentNotFound",
   components: {
     contentDeleted,
   },
   methods: {
     goHome() {
-      this.$router.push('/posts');
+      this.$router.push("/posts");
     },
-  }
+  },
 };
 </script>
 
@@ -18,9 +18,7 @@ export default {
   <div class="container">
     <p>该内容已被作者删除或不存在</p>
     <contentDeleted />
-    <el-button round type="primary" @click="goHome">
-      返回首页
-    </el-button>
+    <el-button round type="primary" @click="goHome"> 返回首页 </el-button>
   </div>
 </template>
 

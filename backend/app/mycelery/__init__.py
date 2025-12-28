@@ -1,5 +1,6 @@
-from celery import Celery, Task
 from datetime import timedelta
+
+from celery import Celery, Task
 
 
 def celery_init_app(app) -> Celery:

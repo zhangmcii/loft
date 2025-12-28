@@ -4,6 +4,7 @@ import os
 from config import config
 from dotenv import load_dotenv
 from flask import Flask
+from flask_caching import Cache
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, current_user
 from flask_limiter import Limiter
@@ -13,7 +14,6 @@ from flask_redis import FlaskRedis
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.middleware.proxy_fix import ProxyFix
-from flask_caching import Cache
 
 from .mycelery import celery_init_app
 from .utils.logger import setup_logging

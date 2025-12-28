@@ -8,7 +8,7 @@ class WSConnectionManager:
     一个用户可以有多个 websocket 连接
 
     Key: socket:{sid}   ->  user_id
-    Type: STRING 
+    Type: STRING
     用于通过 sid 快速反查 user
     """
 

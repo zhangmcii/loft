@@ -1,14 +1,14 @@
-import os
 import logging
+import os
 
 from celery import shared_task
 from flask import render_template
 from flask_mail import Message
 
-from .. import mail, db
-from ..models import Post, Image, ImageType, Comment, Praise, Notification
-from ..utils.response import error
+from .. import db, mail
 from ..main.uploads import del_qiniu_image
+from ..models import Comment, Image, ImageType, Notification, Post, Praise
+from ..utils.response import error
 
 
 @shared_task(ignore_result=False)

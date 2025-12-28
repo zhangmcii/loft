@@ -90,7 +90,7 @@ class AuthAction:
             "Content-type": "application/json",
         }
         if self._token:
-            headers["Authorization"] = self._token 
+            headers["Authorization"] = self._token
         return headers
 
 
@@ -105,4 +105,5 @@ def auth(client):
     # 这里保持工厂模式，但测试代码必须统一调用 auth()
     def _make_auth():
         return AuthAction(client)
+
     return _make_auth

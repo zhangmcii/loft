@@ -1,8 +1,8 @@
 import json
 import logging
 import os
-import time
 import random
+import time
 
 from flask import request
 from flask_jwt_extended import current_user, jwt_required
@@ -70,8 +70,8 @@ def get_signed_image_urls():
 @jwt_required()
 def delete_image():
     """删除七牛云图片
-       key格式： path/xxx.jpg
-       比如：userAvatars/af8e0ade-6bc4-45d0-a5ac-dea1b098119d.jpg
+    key格式： path/xxx.jpg
+    比如：userAvatars/af8e0ade-6bc4-45d0-a5ac-dea1b098119d.jpg
     """
     logging.info(f"删除图片: user_id={current_user.id}")
     j = request.get_json()

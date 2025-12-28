@@ -1,9 +1,10 @@
 import logging
-import requests
 import os
-from celery import shared_task
-from .. import db
 
+import requests
+from celery import shared_task
+
+from .. import db
 from ..models import Log
 from ..utils.time_util import DateUtils
 

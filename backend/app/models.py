@@ -1,9 +1,8 @@
+import logging
 import random
 import re
-import logging
 from datetime import timedelta
 from enum import Enum
-
 
 from flask import current_app
 from flask_jwt_extended import create_access_token, current_user
@@ -487,9 +486,9 @@ class Post(db.Model):
     body = db.Column(db.Text)
     # 存储富文本编辑器生成的 HTML 内容
     body_html = db.Column(db.Text)
-    
+
     content = db.Column(db.Text)
-    
+
     # 是否包含图片
     has_image = db.Column(db.Boolean, default=False)
 
@@ -519,7 +518,7 @@ class Post(db.Model):
 
     @property
     def derived_type(self):
-        """ 推导文章类型 """
+        """推导文章类型"""
         # 纯文本
         if self.type == PostType.TEXT and not self.has_image:
             return "text"

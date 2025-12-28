@@ -1,12 +1,12 @@
 <template>
   <transition name="bounce">
-    <div 
-      v-show="isVisible && hasMusic" 
+    <div
+      v-show="isVisible && hasMusic"
       class="mobile-floating-player"
       @click="handleClick"
     >
       <!-- 主播放按钮 -->
-      <div class="floating-btn" :class="{ 'playing': isPlaying }">
+      <div class="floating-btn" :class="{ playing: isPlaying }">
         <div class="btn-content">
           <!-- 旋转的专辑封面 -->
           <div class="floating-cover" :class="{ 'cover-spin': isPlaying }">
@@ -14,7 +14,9 @@
               :src="currentSongInfo.cover"
               fit="cover"
               class="cover-image"
-              :preview-src-list="currentSongInfo.cover ? [currentSongInfo.cover] : []"
+              :preview-src-list="
+                currentSongInfo.cover ? [currentSongInfo.cover] : []
+              "
               :preview-teleported="true"
               :hide-on-click-modal="true"
             >
@@ -25,7 +27,7 @@
               </template>
             </el-image>
           </div>
-          
+
           <!-- 播放/暂停图标 -->
           <div class="play-icon">
             <el-icon v-if="!isPlaying">
@@ -37,29 +39,25 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 歌曲信息弹窗（长按时显示） -->
-      <div 
-        v-show="showTooltip" 
+      <div
+        v-show="showTooltip"
         class="song-tooltip"
         :class="{ 'tooltip-visible': showTooltip }"
       >
         <div class="tooltip-content">
           <div class="song-title" :title="currentSongInfo.name">
-            {{ currentSongInfo.name || '暂无歌曲' }}
+            {{ currentSongInfo.name || "暂无歌曲" }}
           </div>
           <div class="song-artist" :title="currentSongInfo.artist">
-            {{ currentSongInfo.artist || '未知艺术家' }}
+            {{ currentSongInfo.artist || "未知艺术家" }}
           </div>
         </div>
       </div>
-      
+
       <!-- 关闭按钮 -->
-      <div 
-        v-show="showCloseBtn" 
-        class="close-btn"
-        @click.stop="hidePlayer"
-      >
+      <div v-show="showCloseBtn" class="close-btn" @click.stop="hidePlayer">
         <el-icon><i-ep-Close /></el-icon>
       </div>
     </div>
@@ -67,8 +65,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useMusicStore } from '@/stores/music';
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useMusicStore } from "@/stores/music";
 
 const musicStore = useMusicStore();
 
@@ -80,7 +78,9 @@ const tooltipTimer = ref(null);
 const closeBtnTimer = ref(null);
 
 // 计算属性
-const isVisible = computed(() => musicStore.isMiniPlayerVisible && musicStore.isMobile);
+const isVisible = computed(
+  () => musicStore.isMiniPlayerVisible && musicStore.isMobile
+);
 const hasMusic = computed(() => musicStore.hasMusic);
 const isPlaying = computed(() => musicStore.isPlaying);
 const currentSongInfo = computed(() => musicStore.currentSongInfo);
@@ -99,22 +99,22 @@ const hidePlayer = () => {
 const handleTouchStart = (event) => {
   touchStartTime.value = Date.now();
   showCloseBtn.value = true;
-  
+
   // 清除之前的定时器
   if (tooltipTimer.value) {
     clearTimeout(tooltipTimer.value);
   }
-  
+
   // 延迟显示tooltip
   tooltipTimer.value = setTimeout(() => {
     showTooltip.value = true;
   }, 500);
-  
+
   // 设置关闭按钮隐藏定时器
   if (closeBtnTimer.value) {
     clearTimeout(closeBtnTimer.value);
   }
-  
+
   closeBtnTimer.value = setTimeout(() => {
     showCloseBtn.value = false;
   }, 3000);
@@ -122,13 +122,13 @@ const handleTouchStart = (event) => {
 
 const handleTouchEnd = () => {
   const touchDuration = Date.now() - touchStartTime.value;
-  
+
   // 清除定时器
   if (tooltipTimer.value) {
     clearTimeout(tooltipTimer.value);
     tooltipTimer.value = null;
   }
-  
+
   // 如果触摸时间短于500ms，可能是点击而非长按
   if (touchDuration < 500) {
     showTooltip.value = false;
@@ -138,7 +138,7 @@ const handleTouchEnd = () => {
       showTooltip.value = false;
     }, 2000);
   }
-  
+
   // 延迟隐藏关闭按钮
   setTimeout(() => {
     showCloseBtn.value = false;
@@ -146,22 +146,30 @@ const handleTouchEnd = () => {
 };
 
 const formatTime = (seconds) => {
-  if (!seconds || isNaN(seconds)) return '00:00';
-  
+  if (!seconds || isNaN(seconds)) return "00:00";
+
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
-  
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+  return `${mins.toString().padStart(2, "0")}:${secs
+    .toString()
+    .padStart(2, "0")}`;
 };
 
 // 生命周期
 onMounted(() => {
   // 添加触摸事件监听
-  const playerElement = document.querySelector('.mobile-floating-player');
+  const playerElement = document.querySelector(".mobile-floating-player");
   if (playerElement) {
-    playerElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-    playerElement.addEventListener('touchend', handleTouchEnd, { passive: true });
-    playerElement.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    playerElement.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    playerElement.addEventListener("touchend", handleTouchEnd, {
+      passive: true,
+    });
+    playerElement.addEventListener("touchcancel", handleTouchEnd, {
+      passive: true,
+    });
   }
 });
 
@@ -173,13 +181,19 @@ onUnmounted(() => {
   if (closeBtnTimer.value) {
     clearTimeout(closeBtnTimer.value);
   }
-  
+
   // 移除事件监听
-  const playerElement = document.querySelector('.mobile-floating-player');
+  const playerElement = document.querySelector(".mobile-floating-player");
   if (playerElement) {
-    playerElement.removeEventListener('touchstart', handleTouchStart, { passive: true });
-    playerElement.removeEventListener('touchend', handleTouchEnd, { passive: true });
-    playerElement.removeEventListener('touchcancel', handleTouchEnd, { passive: true });
+    playerElement.removeEventListener("touchstart", handleTouchStart, {
+      passive: true,
+    });
+    playerElement.removeEventListener("touchend", handleTouchEnd, {
+      passive: true,
+    });
+    playerElement.removeEventListener("touchcancel", handleTouchEnd, {
+      passive: true,
+    });
   }
 });
 </script>
@@ -191,7 +205,7 @@ onUnmounted(() => {
   right: 20px;
   z-index: 1999;
   cursor: pointer;
-  
+
   .floating-btn {
     width: 60px;
     height: 60px;
@@ -204,17 +218,17 @@ onUnmounted(() => {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    
+
     &.playing {
       box-shadow: 0 4px 25px rgba(103, 194, 58, 0.6);
       transform: scale(1.05);
     }
-    
+
     .btn-content {
       position: relative;
       width: 100%;
       height: 100%;
-      
+
       .floating-cover {
         width: 40px;
         height: 40px;
@@ -225,17 +239,17 @@ onUnmounted(() => {
         left: 50%;
         transform: translate(-50%, -50%);
         transition: all 0.3s ease;
-        
+
         &.cover-spin {
           animation: spin 8s linear infinite;
         }
-        
+
         .cover-image {
           width: 100%;
           height: 100%;
           border-radius: 50%;
         }
-        
+
         .cover-error {
           width: 100%;
           height: 100%;
@@ -246,13 +260,13 @@ onUnmounted(() => {
           backdrop-filter: blur(10px);
           color: rgba(255, 255, 255, 0.8);
           border-radius: 50%;
-          
+
           .el-icon {
             font-size: 20px;
           }
         }
       }
-      
+
       .play-icon {
         position: absolute;
         top: 50%;
@@ -261,7 +275,7 @@ onUnmounted(() => {
         z-index: 2;
         opacity: 0;
         transition: opacity 0.3s ease;
-        
+
         .el-icon {
           color: white;
           font-size: 24px;
@@ -269,12 +283,12 @@ onUnmounted(() => {
         }
       }
     }
-    
+
     &:hover .play-icon {
       opacity: 1;
     }
   }
-  
+
   .song-tooltip {
     position: absolute;
     bottom: 70px;
@@ -290,12 +304,12 @@ onUnmounted(() => {
     transform: translateY(10px);
     transition: all 0.3s ease;
     pointer-events: none;
-    
+
     &.tooltip-visible {
       opacity: 1;
       transform: translateY(0);
     }
-    
+
     .tooltip-content {
       .song-title {
         font-size: 14px;
@@ -307,7 +321,7 @@ onUnmounted(() => {
         white-space: nowrap;
         line-height: 1.2;
       }
-      
+
       .song-artist {
         font-size: 12px;
         color: #606266;
@@ -317,11 +331,10 @@ onUnmounted(() => {
         white-space: nowrap;
         line-height: 1.2;
       }
-      
     }
-    
+
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: -6px;
       right: 20px;
@@ -333,7 +346,7 @@ onUnmounted(() => {
       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     }
   }
-  
+
   .close-btn {
     position: absolute;
     top: -8px;
@@ -349,12 +362,12 @@ onUnmounted(() => {
     cursor: pointer;
     z-index: 3;
     transition: all 0.3s ease;
-    
+
     .el-icon {
       color: white;
       font-size: 12px;
     }
-    
+
     &:hover {
       transform: scale(1.1);
       background: #f78989;
@@ -410,36 +423,36 @@ onUnmounted(() => {
   .mobile-floating-player {
     bottom: 100px;
     right: 16px;
-    
+
     .floating-btn {
       width: 56px;
       height: 56px;
-      
+
       .btn-content {
         .floating-cover {
           width: 36px;
           height: 36px;
         }
-        
+
         .play-icon .el-icon {
           font-size: 22px;
         }
       }
     }
-    
+
     .song-tooltip {
       min-width: 140px;
       padding: 10px;
-      
+
       .tooltip-content {
         .song-title {
           font-size: 13px;
         }
-        
+
         .song-artist {
           font-size: 11px;
         }
-        
+
         .progress-info {
           font-size: 10px;
         }

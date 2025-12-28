@@ -5,6 +5,7 @@ import logging
 import logging.handlers
 import os
 from datetime import datetime
+
 from .time_util import DateUtils
 
 
@@ -34,7 +35,6 @@ class FlaskMailHandler(logging.Handler):
             )
         except Exception:
             self.handleError(record)
-
 
 
 def setup_logging(app=None):
