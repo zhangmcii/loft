@@ -19,38 +19,14 @@
         <!-- 管理图像标签页 -->
         <el-tab-pane label="管理图像" name="manage">
           <!-- 图像列表 -->
-          <div
-            class="image-grid"
-            v-loading="loading"
-            element-loading-text="加载中..."
-          >
+          <div class="image-grid">
             <div v-if="images.length === 0 && !loading" class="empty-state">
               <el-icon class="empty-icon"><i-ep-Picture /></el-icon>
               <div class="empty-text">暂无{{ uploadTitle }}</div>
               <div class="empty-tip">请先上传{{ uploadTitle }}</div>
             </div>
 
-            <!-- 骨架屏显示 -->
-            <div v-if="loading" class="skeleton-wrapper">
-              <el-row :gutter="currentGutter">
-                <el-col
-                  v-for="i in 6"
-                  :key="`skeleton-${i}`"
-                  :xs="imageCol.xs"
-                  :sm="imageCol.sm"
-                  :md="imageCol.md"
-                  :lg="imageCol.lg"
-                  :xl="imageCol.xl"
-                >
-                  <div class="skeleton-item">
-                    <div class="skeleton-image"></div>
-                    <div class="skeleton-text"></div>
-                  </div>
-                </el-col>
-              </el-row>
-            </div>
-
-            <div class="images-wrapper" v-show="images.length > 0 && !loading">
+            <div class="images-wrapper" v-show="images.length > 0">
               <el-row :gutter="currentGutter">
                 <el-col
                   :xs="imageCol.xs"
@@ -61,84 +37,86 @@
                   v-for="(image, index) in images"
                   :key="image"
                 >
-                  <div
-                    class="image-item"
-                    :class="{
-                      selected: selectedImages.includes(image),
-                      loading: loadingImages.has(image),
-                      'fade-in': imageFadeIn.has(image),
-                    }"
-                    @click="toggleImageSelection(image)"
-                  >
-                    <!-- 加载遮罩 -->
-                    <div
-                      v-if="loadingImages.has(image)"
-                      class="image-loading-overlay"
-                    >
-                      <div class="loading-spinner">
-                        <div class="spinner"></div>
+                  <el-skeleton :loading="loadingImages.has(image)" animated>
+                    <template #template>
+                      <div class="skeleton-item">
+                        <el-skeleton-item
+                          variant="image"
+                          style="height: 200px; border-radius: 12px 12px 0 0"
+                        />
+                        <div style="padding: 12px">
+                          <el-skeleton-item
+                            variant="text"
+                            style="width: 80%; margin: 0 auto"
+                          />
+                        </div>
                       </div>
-                    </div>
-
-                    <!-- 选择状态指示器 -->
-                    <div
-                      class="selection-indicator"
-                      :class="{ checked: selectedImages.includes(image) }"
-                    >
-                      <el-icon><i-ep-Check /></el-icon>
-                    </div>
-
-                    <!-- 图像容器 -->
-                    <div class="image-container">
-                      <el-image
-                        :src="image"
-                        fit="cover"
-                        loading="lazy"
-                        class="image-preview"
-                        @load="onImageLoad(image, index)"
-                        @error="onImageError(image)"
+                    </template>
+                    <template #default>
+                      <div
+                        class="image-item"
+                        :class="{
+                          selected: selectedImages.includes(image),
+                          'fade-in': imageFadeIn.has(image),
+                        }"
+                        @click="toggleImageSelection(image)"
                       >
-                        <template #placeholder>
-                          <div class="image-placeholder">
-                            <div class="placeholder-spinner">
-                              <div class="spinner"></div>
-                            </div>
-                          </div>
-                        </template>
-                        <template #error>
-                          <div class="image-error">
-                            <el-icon><i-ep-Picture /></el-icon>
-                            <span>加载失败</span>
-                          </div>
-                        </template>
-                      </el-image>
-                    </div>
+                        <!-- 选择状态指示器 -->
+                        <div
+                          class="selection-indicator"
+                          :class="{ checked: selectedImages.includes(image) }"
+                        >
+                          <el-icon><i-ep-Check /></el-icon>
+                        </div>
 
-                    <!-- 图像信息 -->
-                    <div class="image-info">
-                      <div class="image-name">{{ getImageName(image) }}</div>
-                      <div class="image-actions">
-                        <el-button
-                          size="small"
-                          type="primary"
-                          link
-                          @click.stop="previewImage(image)"
-                        >
-                          <el-icon><i-ep-View /></el-icon>
-                          预览
-                        </el-button>
-                        <el-button
-                          size="small"
-                          type="danger"
-                          link
-                          @click.stop="deleteSingleImage(image)"
-                        >
-                          <el-icon><i-ep-Delete /></el-icon>
-                          删除
-                        </el-button>
+                        <!-- 图像容器 -->
+                        <div class="image-container">
+                          <el-image
+                            :src="image"
+                            fit="cover"
+                            loading="lazy"
+                            class="image-preview"
+                            @load="onImageLoad(image, index)"
+                            @error="onImageError(image)"
+                          >
+                            <template #error>
+                              <div class="image-error">
+                                <el-icon><i-ep-Picture /></el-icon>
+                                <span>加载失败</span>
+                              </div>
+                            </template>
+                          </el-image>
+                        </div>
+
+                        <!-- 图像信息 -->
+                        <div class="image-info">
+                          <div class="image-name">
+                            {{ getImageName(image) }}
+                          </div>
+                          <div class="image-actions">
+                            <el-button
+                              size="small"
+                              type="primary"
+                              link
+                              @click.stop="previewImage(image)"
+                            >
+                              <el-icon><i-ep-View /></el-icon>
+                              预览
+                            </el-button>
+                            <el-button
+                              size="small"
+                              type="danger"
+                              link
+                              @click.stop="deleteSingleImage(image)"
+                            >
+                              <el-icon><i-ep-Delete /></el-icon>
+                              删除
+                            </el-button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </template>
+                  </el-skeleton>
                 </el-col>
               </el-row>
             </div>
@@ -233,7 +211,7 @@ export default {
 
       // 响应式配置
       imageCol: {
-        xs: 24, // 移动端：每行1个
+        xs: 12, // 移动端：每行2个
         sm: 12, // 平板：每行2个
         md: 8, // 小PC：每行3个
         lg: 6, // 中PC：每行4个
@@ -259,23 +237,23 @@ export default {
         const width = window.innerWidth;
         if (width < 576) {
           // 移动端
-          this.imageCol = { xs: 24, sm: 12, md: 8, lg: 6, xl: 6 };
+          this.imageCol = { xs: 12, sm: 12, md: 8, lg: 6, xl: 6 };
           this.currentGutter = 8;
         } else if (width < 768) {
           // 平板竖屏
-          this.imageCol = { xs: 24, sm: 12, md: 8, lg: 6, xl: 6 };
+          this.imageCol = { xs: 12, sm: 12, md: 8, lg: 6, xl: 6 };
           this.currentGutter = 12;
         } else if (width < 992) {
           // 平板横屏/小PC
-          this.imageCol = { xs: 24, sm: 12, md: 8, lg: 6, xl: 6 };
+          this.imageCol = { xs: 12, sm: 12, md: 8, lg: 6, xl: 6 };
           this.currentGutter = 16;
         } else if (width < 1200) {
           // 中PC
-          this.imageCol = { xs: 24, sm: 12, md: 6, lg: 6, xl: 6 };
+          this.imageCol = { xs: 12, sm: 12, md: 6, lg: 6, xl: 6 };
           this.currentGutter = 20;
         } else {
           // 大PC
-          this.imageCol = { xs: 24, sm: 12, md: 6, lg: 6, xl: 4 };
+          this.imageCol = { xs: 12, sm: 12, md: 6, lg: 6, xl: 4 };
           this.currentGutter = 24;
         }
       };
@@ -350,10 +328,6 @@ export default {
       }
     },
 
-    handleSelectionChange(selected) {
-      this.selectedImages = selected;
-    },
-
     handleSizeChange(size) {
       this.query.size = size;
       this.query.currentPage = 1;
@@ -391,7 +365,6 @@ export default {
       } else {
         this.selectedImages.push(imageUrl);
       }
-      this.handleSelectionChange(this.selectedImages);
     },
 
     // 预览图像
@@ -431,14 +404,7 @@ export default {
           }
         );
 
-        const imageKeys = [imageUrl].map((url) => {
-          const urlObj = new URL(url);
-          let key = urlObj.pathname.substring(1);
-          if (key.endsWith("-slim")) {
-            key = key.slice(0, -5);
-          }
-          return key;
-        });
+        const imageKeys = [imageUrl].map((url) => this.getImageKey(url));
 
         const response = await uploadApi.del_image(imageKeys);
         if (response.code === 200) {
@@ -474,14 +440,9 @@ export default {
 
         this.deleting = true;
 
-        const imageKeys = this.selectedImages.map((imageUrl) => {
-          const url = new URL(imageUrl);
-          let key = url.pathname.substring(1);
-          if (key.endsWith("-slim")) {
-            key = key.slice(0, -5);
-          }
-          return key;
-        });
+        const imageKeys = this.selectedImages.map((url) =>
+          this.getImageKey(url)
+        );
 
         const response = await uploadApi.del_image(imageKeys);
         if (response.code === 200) {
@@ -498,6 +459,20 @@ export default {
         }
       } finally {
         this.deleting = false;
+      }
+    },
+
+    // 提取图像键值的通用方法
+    getImageKey(imageUrl) {
+      try {
+        const urlObj = new URL(imageUrl);
+        let key = urlObj.pathname.substring(1);
+        if (key.endsWith("-slim")) {
+          key = key.slice(0, -5);
+        }
+        return key;
+      } catch {
+        return imageUrl;
       }
     },
 
@@ -538,7 +513,6 @@ export default {
   min-height: 400px;
   background: #fafafa;
   border-radius: 12px;
-  padding: 16px;
   position: relative;
 }
 
@@ -566,10 +540,6 @@ export default {
   &.fade-in {
     opacity: 1;
     transform: translateY(0);
-  }
-
-  &.loading {
-    pointer-events: none;
   }
 
   &:hover {
@@ -664,43 +634,6 @@ export default {
   object-fit: cover;
 }
 
-// 加载遮罩
-.image-loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  border-radius: 12px 12px 0 0;
-}
-
-// 占位符样式
-.image-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px 12px 0 0;
-}
-
-.placeholder-spinner {
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid #e4e7ed;
-    border-top: 3px solid #409eff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-}
-
 // 图像信息
 .image-info {
   padding: 12px;
@@ -777,16 +710,6 @@ export default {
   }
 }
 
-// 加载动画
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes checkBounce {
   0% {
     transform: scale(0.8);
@@ -800,11 +723,6 @@ export default {
 }
 
 // ========== 骨架屏样式 ==========
-.skeleton-wrapper {
-  width: 100%;
-  min-height: 400px;
-}
-
 .skeleton-item {
   position: relative;
   margin-bottom: 20px;
@@ -815,32 +733,6 @@ export default {
   min-height: 240px;
   display: flex;
   flex-direction: column;
-}
-
-.skeleton-image {
-  flex: 1;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeletonLoading 1.5s ease-in-out infinite;
-  border-radius: 12px 12px 0 0;
-}
-
-.skeleton-text {
-  height: 16px;
-  margin: 12px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeletonLoading 1.5s ease-in-out infinite;
-  border-radius: 4px;
-}
-
-@keyframes skeletonLoading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 
 .pagination-container {
@@ -858,10 +750,9 @@ export default {
   background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
   border-radius: 12px;
   border: 1px solid #f0f0f0;
-
   .el-button {
     border-radius: 10px;
-    padding: 14px 28px;
+    padding: 14px 15px;
     font-weight: 600;
     font-size: 14px;
     letter-spacing: 0.5px;
@@ -895,184 +786,6 @@ export default {
   .empty-tip {
     font-size: 14px;
     opacity: 0.7;
-  }
-}
-
-// ========== 响应式设计 ==========
-@media (max-width: 1200px) {
-  .image-preview {
-    height: 180px;
-  }
-
-  .image-info {
-    padding: 10px;
-  }
-
-  .selection-indicator {
-    width: 24px;
-    height: 24px;
-    top: 10px;
-    right: 10px;
-  }
-}
-
-@media (max-width: 992px) {
-  .image-preview {
-    height: 160px;
-  }
-
-  .image-item {
-    &:hover {
-      transform: translateY(-6px);
-    }
-  }
-
-  .image-actions {
-    .el-button {
-      font-size: 11px;
-      padding: 3px 6px;
-      height: 24px;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 12px;
-  }
-
-  .image-grid {
-    padding: 12px;
-    min-height: 300px;
-  }
-
-  :deep(.el-tabs__item) {
-    padding: 10px 16px;
-    font-size: 14px;
-  }
-
-  .image-preview {
-    height: 140px;
-  }
-
-  .image-info {
-    padding: 8px;
-  }
-
-  .image-name {
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
-
-  .selection-indicator {
-    width: 22px;
-    height: 22px;
-    top: 8px;
-    right: 8px;
-  }
-
-  .image-item {
-    margin-bottom: 16px;
-
-    &:hover {
-      transform: translateY(-4px);
-    }
-  }
-
-  .action-bar {
-    .el-button {
-      width: 100%;
-      padding: 12px 20px;
-    }
-  }
-}
-
-@media (max-width: 576px) {
-  .container {
-    padding: 8px;
-  }
-
-  .image-grid {
-    padding: 8px;
-  }
-
-  .image-preview {
-    height: 120px;
-  }
-
-  .image-info {
-    padding: 6px;
-  }
-
-  .image-name {
-    font-size: 11px;
-    margin-bottom: 4px;
-  }
-
-  .selection-indicator {
-    width: 20px;
-    height: 20px;
-    top: 6px;
-    right: 6px;
-
-    &.checked .el-icon {
-      font-size: 12px;
-    }
-
-    .el-icon {
-      font-size: 12px;
-    }
-  }
-
-  .image-actions {
-    gap: 6px;
-
-    .el-button {
-      font-size: 10px;
-      padding: 2px 4px;
-      height: 20px;
-
-      .el-icon {
-        font-size: 10px;
-      }
-    }
-  }
-
-  .image-item {
-    border-radius: 8px;
-
-    &:hover {
-      transform: translateY(-3px);
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .image-preview {
-    height: 160px;
-  }
-
-  .image-grid {
-    min-height: 250px;
-  }
-
-  :deep(.el-tabs__header) {
-    margin-bottom: 16px;
-  }
-}
-
-// 横屏模式优化
-@media (max-height: 600px) and (orientation: landscape) {
-  .image-preview {
-    height: 100px;
-  }
-
-  .image-info {
-    padding: 4px;
-  }
-
-  .image-name {
-    font-size: 10px;
   }
 }
 </style>
