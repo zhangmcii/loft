@@ -27,4 +27,20 @@ export default {
     };
     return $http.get(`${url_prefix}/dir_name`, { params: params });
   },
+
+  // 获取用户公共图像列表
+  getPublicImages(
+    currentPage,
+    pageSize,
+    prefix = "userAvatars/",
+    complete_url = 1
+  ) {
+    const params = {
+      prefix: prefix,
+      pageSize: pageSize,
+      currentPage: currentPage,
+      completeUrl: complete_url,
+    };
+    return $http.get(`${url_prefix}/dir_name`, { params: params });
+  },
 };

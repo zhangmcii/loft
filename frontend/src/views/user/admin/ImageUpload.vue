@@ -1,26 +1,19 @@
 <template>
-  <PageHeadBack>
-    <div class="container">
-      <el-text>选择{{ title }}库图片</el-text>
-      <el-text>文件名即为图片名</el-text>
-      <el-text>支持webp格式图片</el-text>
-      <el-upload ref="uploadRef" v-model:file-list="originalFiles" list-type="picture-card" :auto-upload="false"
-        :before-upload="() => false" accept="image/jpeg,image/png,image/jpg,image/webp" :on-change="handleFileChange"
-        :on-preview="handlePictureCardPreview" :on-remove="handleFileRemove" :on-exceed="handleExceed" :limit="9"
-        multiple>
-        <el-icon><i-ep-Plus /></el-icon>
-      </el-upload>
+  <div class="container">
+    <el-upload ref="uploadRef" v-model:file-list="originalFiles" list-type="picture-card" :auto-upload="false"
+      :before-upload="() => false" accept="image/jpeg,image/png,image/jpg,image/webp" :on-change="handleFileChange"
+      :on-preview="handlePictureCardPreview" :on-remove="handleFileRemove" :on-exceed="handleExceed" :limit="9"
+      multiple>
+      <el-icon><i-ep-Plus /></el-icon>
+    </el-upload>
 
-      <el-dialog v-model="dialogVisible">
-        <img w-full :src="dialogImageUrl" alt="Preview Image" />
-      </el-dialog>
-    </div>
-    <template #action>
-      <ButtonClick content="上传" size="small" :disabled="ban_pub" @do-search="submitBlog">
-        <el-icon><i-ep-Pointer /></el-icon>
-      </ButtonClick>
-    </template>
-  </PageHeadBack>
+    <el-dialog v-model="dialogVisible">
+      <img w-full :src="dialogImageUrl" alt="Preview Image" />
+    </el-dialog>
+  </div>
+  <ButtonClick class="button" content="上传" size="small" :disabled="ban_pub" @do-search="submitBlog">
+    <el-icon><i-ep-Pointer /></el-icon>
+  </ButtonClick>
 </template>
 
 <script>
@@ -50,6 +43,7 @@ export default {
     PageHeadBack,
     ButtonClick,
   },
+  emits: ['upload-success'],
   data() {
     return {
       imageUrls: [],
@@ -110,7 +104,7 @@ export default {
       );
     },
 
-    handleFileRemove(file, fileList) {
+    handleFileRemove(file) {
       // 删除原始文件
       this.originalFiles = this.originalFiles.filter((f) => f.uid !== file.uid);
       // 删除压缩文件
@@ -141,8 +135,9 @@ export default {
           uploadToken
         );
         this.originalFiles = [];
+        this.compressedImages = [];
         loadingInstance.close();
-        ElMessage.success("上传成功");
+        this.$emit('upload-success');
       } catch (error) {
         loadingInstance.close();
       }
@@ -178,5 +173,8 @@ export default {
 
 img {
   width: 100%;
+}
+.button {
+  margin-top: 20px;
 }
 </style>

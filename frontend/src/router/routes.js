@@ -107,6 +107,20 @@ const admin = [
     component: () => import("../views/user/admin/Tag.vue"),
     meta: { roles: ["admin"] },
   },
+  // 上传公共背景库图片
+  {
+    path: "/uploadBg",
+    name: "uploadBg",
+    component: () => import("../views/user/admin/BgManager.vue"),
+    meta: { roles: ["admin"] },
+  },
+  // 上传公共图像库图片
+  {
+    path: "/uploadAva",
+    name: "uploadAva",
+    component: () => import("../views/user/admin/AvatarsManager.vue"),
+    meta: { roles: ["admin"] },
+  },
 ];
 const routes = [
   {
@@ -126,20 +140,7 @@ const routes = [
         component: () => import("../views/user/UserData.vue"),
       },
 
-      // 上传公共背景库图片
-      {
-        path: "/uploadBg",
-        name: "uploadBg",
-        component: () => import("../views/user/admin/BgShare.vue"),
-        meta: { requireAuth: true },
-      },
-      // 上传公共图像库图片
-      {
-        path: "/uploadAva",
-        name: "uploadAva",
-        component: () => import("../views/user/admin/AvatarsShare.vue"),
-        meta: { requireAuth: true },
-      },
+
       {
         path: "/postDetail/:id",
         name: "postDetail",

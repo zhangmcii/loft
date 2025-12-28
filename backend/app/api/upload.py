@@ -69,11 +69,16 @@ def get_signed_image_urls():
 @api.route("/del_image", methods=["DELETE"])
 @jwt_required()
 def delete_image():
-    """删除七牛云图片"""
+    """删除七牛云图片
+       key格式： path/xxx.jpg
+       比如：userAvatars/af8e0ade-6bc4-45d0-a5ac-dea1b098119d.jpg
+    """
     logging.info(f"删除图片: user_id={current_user.id}")
     j = request.get_json()
     bucket_name = j.get("bucket")
     keys = j.get("key", [])
+    if not keys:
+        return bad_request("缺少要删除的图片key")
     del_qiniu_image(keys, bucket_name)
     return success(message="图片删除成功")
 

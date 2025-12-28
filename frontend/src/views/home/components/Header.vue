@@ -73,6 +73,18 @@
                 @click="handleCellClick('/operateLog')"
               />
               <van-cell
+                title="管理背景库"
+                icon="photo-o"
+                clickable
+                @click="handleCellClick('/uploadBg')"
+              />
+              <van-cell
+                title="管理图像库"
+                icon="user-o"
+                clickable
+                @click="handleCellClick('/uploadAva')"
+              />
+              <van-cell
                 title="找回其他用户密码"
                 icon="warning-o"
                 clickable
