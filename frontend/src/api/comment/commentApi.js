@@ -35,4 +35,8 @@ export default {
     params["action"] = action;
     return $http.patch(`${url_prefix}/comments/${commentId}`, params);
   },
+  // 删除评论
+  deleteComment(commentId) {
+    return $http.delete(`${url_prefix}/comments/${commentId}`);
+  },
 };

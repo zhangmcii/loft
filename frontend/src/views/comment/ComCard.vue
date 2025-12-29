@@ -29,7 +29,11 @@
           />
         </template>
         <template #operate="scope">
-          <Operate :comment="scope" @remove="remove" />
+          <Operate
+            :comment="scope"
+            :post-author="props.postAuthor"
+            @remove="remove"
+          />
         </template>
         <template #card="scope">
           <UserInfo :scope="scope" :loading="loading" :config="config" />
@@ -58,7 +62,7 @@ import { loginReminder } from "@/utils/common.js";
 import message from "@/utils/message";
 
 const currentUser = useCurrentUserStore();
-const props = defineProps({ postId: Number });
+const props = defineProps({ postId: Number, postAuthor: String });
 const config = reactive({
   user: {}, // 当前用户信息
   emoji: emoji, // 表情包数据
@@ -278,9 +282,46 @@ const sorted = (latest) => {
 const commentRef = ref();
 // 删除评论
 const remove = (comment) => {
-  setTimeout(() => {
-    commentRef.value?.remove(comment);
-  }, 200);
+  if (!currentUser.isLogin) {
+    loginReminder("请先登录");
+    return;
+  }
+
+  showConfirmDialog({
+    title: "删除确认",
+    message: "确定要删除这条评论吗？删除后无法恢复。",
+    confirmButtonText: "确定删除",
+    cancelButtonText: "取消",
+  })
+    .then(() => {
+      commentApi
+        .deleteComment(comment.id)
+        .then((res) => {
+          if (res.code === 200) {
+            ElMessage.success("删除成功");
+            // 从列表中移除评论
+            commentRef.value?.remove(comment);
+
+            // 更新评论总数
+            if (query.total > 0) {
+              query.total--;
+            }
+          } else {
+            ElMessage.error(res.message || "删除失败");
+          }
+        })
+        .catch((error) => {
+          if (error.response?.status === 403) {
+            ElMessage.error("没有权限删除此评论");
+          } else {
+            ElMessage.error("删除失败，请稍后重试");
+          }
+          console.error(error);
+        });
+    })
+    .catch(() => {
+      // 用户取消删除
+    });
 };
 
 let currentRequestId = 0;

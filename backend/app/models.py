@@ -119,9 +119,13 @@ class Notification(db.Model):
     # 触发者（评论/点赞用户）
     trigger_user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     # 关联文章id
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+    post_id = db.Column(
+        db.Integer, db.ForeignKey("posts.id", ondelete="SET NULL"), nullable=True
+    )
     # 评论id
-    comment_id = db.Column(db.Integer, db.ForeignKey("comments.id"))
+    comment_id = db.Column(
+        db.Integer, db.ForeignKey("comments.id", ondelete="SET NULL"), nullable=True
+    )
 
     def to_json(self):
         data = {
@@ -482,6 +486,7 @@ class Post(db.Model):
     # title = db.Column(db.String(200))
     summary = db.Column(db.String(500))
 
+    # body和body_html字段已废弃
     # 存储纯文本/Markdown 内容，用于纯文字和图文文章
     body = db.Column(db.Text)
     # 存储富文本编辑器生成的 HTML 内容
@@ -511,8 +516,13 @@ class Post(db.Model):
 
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    comments = db.relationship("Comment", backref="post", lazy="dynamic")
-    praise = db.relationship("Praise", backref="post", lazy="dynamic")
+    # passive_deletes=True : 删除交给数据库处理，不用先把子对象 load 出来
+    comments = db.relationship(
+        "Comment", backref="post", lazy="dynamic", passive_deletes=True
+    )
+    praise = db.relationship(
+        "Praise", backref="post", lazy="dynamic", passive_deletes=True
+    )
     notifications = db.relationship("Notification", backref="post", lazy="dynamic")
     deleted = db.Column(db.Boolean, default=False)
 
@@ -779,17 +789,22 @@ class Comment(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=DateUtils.now_time)
     disabled = db.Column(db.Boolean, default=False)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
+    # 数据库级级联删除
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id", ondelete="CASCADE"))
 
     # 根评论id
-    root_comment_id = db.Column(db.Integer, db.ForeignKey("comments.id"))
+    root_comment_id = db.Column(
+        db.Integer, db.ForeignKey("comments.id", ondelete="CASCADE")
+    )
     # 根评论
     root_comment = db.relationship(
         "Comment", remote_side=[id], foreign_keys=[root_comment_id]
     )
 
     # 直接父评论id
-    direct_parent_id = db.Column(db.Integer, db.ForeignKey("comments.id"))
+    direct_parent_id = db.Column(
+        db.Integer, db.ForeignKey("comments.id", ondelete="CASCADE")
+    )
     # 直接父评论 remote_side指向"一"的那方
     direct_parent = db.relationship(
         "Comment",
@@ -807,7 +822,9 @@ class Comment(db.Model):
     # 通知
     notifications = db.relationship("Notification", backref="comments", lazy="dynamic")
     # 评论点赞
-    praise = db.relationship("Praise", backref="comment", lazy="dynamic")
+    praise = db.relationship(
+        "Praise", backref="comment", lazy="dynamic", passive_deletes=True
+    )
 
     def to_json(self):
         j = {
@@ -841,8 +858,9 @@ class Praise(db.Model):
     __tablename__ = "praise"
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"))
-    comment_id = db.Column(db.Integer, db.ForeignKey("comments.id"))
+    # 数据库级级联删除
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id", ondelete="CASCADE"))
+    comment_id = db.Column(db.Integer, db.ForeignKey("comments.id", ondelete="CASCADE"))
 
     @staticmethod
     def has_praised(post_id):
@@ -944,6 +962,7 @@ class Image(db.Model):
     related_id = db.Column(db.Integer, nullable=False)
     # 是否禁用（0：未禁用，1：已禁用）
     disabled = db.Column(db.Boolean, default=False)
+    # 已废弃
     # 是否删除（0：未删除，1：已删除）
     isDeleted = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=DateUtils.now_time)

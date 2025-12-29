@@ -203,7 +203,8 @@ class CommentManageApi(DecoratedMethodView):
     """评论管理"""
 
     method_decorators = {
-        "share": [jwt_required(), permission_required(Permission.MODERATE)]
+        "patch": [jwt_required(), permission_required(Permission.MODERATE)],
+        "delete": [jwt_required()],
     }
 
     @staticmethod
@@ -253,7 +254,30 @@ class CommentManageApi(DecoratedMethodView):
 
     def delete(self, comment_id):
         """删除评论"""
-        return error(500, "操作失败")
+        logging.info(f"{current_user.username}删除评论: id={comment_id}")
+        try:
+            comment = Comment.query.get_or_404(comment_id)
+
+            # 权限检查：只有评论作者、文章作者、管理员可以删除
+            post = Post.query.get(comment.post_id)
+            is_comment_author = current_user.id == comment.author_id
+            is_post_author = current_user.id == post.author_id
+            is_admin = current_user.role.permissions & Permission.ADMIN
+
+            if not (is_comment_author or is_post_author or is_admin):
+                return error(403, "没有权限删除此评论")
+
+            # 删除评论（由于设置了级联删除，相关回复、点赞、通知会自动删除）
+            db.session.delete(comment)
+            db.session.commit()
+
+            logging.info(f"评论删除成功: id={comment_id}")
+            return success(message="删除成功")
+
+        except Exception as e:
+            logging.error(f"删除评论失败: {str(e)}", exc_info=True)
+            db.session.rollback()
+            return error(500, f"删除失败: {str(e)}")
 
     def put(self, comment_id):
         """修改评论"""

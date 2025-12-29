@@ -253,7 +253,7 @@ export default {
       </div>
 
       <div class="post-comments">
-        <CommentCard :post-id="postId" />
+        <CommentCard :post-id="postId" :post-author="post.author" />
       </div>
       <PostToc
         :toc="toc"

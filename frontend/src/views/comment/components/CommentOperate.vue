@@ -16,8 +16,10 @@
     </div>
     <template #dropdown>
       <el-dropdown-menu>
-        <!-- <el-dropdown-item command="report">举报</el-dropdown-item>
-        <el-dropdown-item command="remove">删除</el-dropdown-item> -->
+        <!-- <el-dropdown-item command="report">举报</el-dropdown-item> -->
+        <el-dropdown-item v-if="canDelete" command="remove"
+          >删除</el-dropdown-item
+        >
         <!-- <el-dropdown-item divided command="copy">复制</el-dropdown-item> -->
         <el-dropdown-item command="copy">复制</el-dropdown-item>
       </el-dropdown-menu>
@@ -25,11 +27,23 @@
   </el-dropdown>
 </template>
 <script setup>
+import { useCurrentUserStore } from "@/stores/user";
 import { copy } from "@/utils/common.js";
 
-const props = defineProps({ comment: Object });
+const currentUser = useCurrentUserStore();
+const props = defineProps({ comment: Object, postAuthor: String });
 
 const emit = defineEmits(["remove"]);
+
+// 检查是否可以删除评论
+// 评论作者、文章作者可以看到删除按钮
+const canDelete = computed(() => {
+  return (
+    currentUser.isLogin &&
+    (currentUser.userInfo.id === props.comment.uid ||
+      currentUser.userInfo.username === props.postAuthor)
+  );
+});
 
 function rawCopy(html) {
   // 去除html标签
