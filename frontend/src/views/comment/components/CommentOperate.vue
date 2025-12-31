@@ -20,8 +20,7 @@
         <el-dropdown-item v-if="canDelete" command="remove"
           >删除</el-dropdown-item
         >
-        <!-- <el-dropdown-item divided command="copy">复制</el-dropdown-item> -->
-        <el-dropdown-item command="copy">复制</el-dropdown-item>
+        <el-dropdown-item divided command="copy">复制</el-dropdown-item>
       </el-dropdown-menu>
     </template>
   </el-dropdown>
