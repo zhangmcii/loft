@@ -62,9 +62,12 @@
               type="textarea"
               :autosize="{ minRows: 4, maxRows: 8 }"
               placeholder="书写片段，温润流年..."
-              maxlength="300"
+              maxlength="310"
               show-word-limit
+              :class="{ 'fade-in': showTextAnimation }"
             />
+            <!-- 辅助创作 -->
+            <CreativeAssist @contentGenerated="handleContentGenerated" />
             <!-- <div class="emoji-container">
               <Emoji emoName="Heo_100" :offset="[-5,8]" @selectEmoji="insertEmoji" />
             </div> -->
@@ -131,6 +134,7 @@
 <script>
 import Emoji from "@/utils/components/Emoji.vue";
 import MarkdownEditor from "@/utils/components/MarkdownEditor.vue";
+import CreativeAssist from "./CreativeAssist.vue";
 import postApi from "@/api/posts/postApi.js";
 import uploadApi from "@/api/upload/uploadApi.js";
 import { useCurrentUserStore } from "@/stores/user";
@@ -145,6 +149,7 @@ export default {
   components: {
     Emoji,
     MarkdownEditor,
+    CreativeAssist,
   },
   emits: ["newPost", "loadingBegin"],
   data() {
@@ -152,6 +157,7 @@ export default {
       showPublishPanel: false,
       activeType: "text",
       publishing: false,
+      showTextAnimation: false,
 
       // 说说内容
       textContent: "",
@@ -201,6 +207,17 @@ export default {
     handlePictureCardPreview(file) {
       this.previewUrl = file.url;
       this.previewVisible = true;
+    },
+
+    handleContentGenerated(content) {
+      this.showTextAnimation = false;
+      this.$nextTick(() => {
+        this.textContent = content;
+        this.showTextAnimation = true;
+        setTimeout(() => {
+          this.showTextAnimation = false;
+        }, 400);
+      });
     },
 
     async publishContent() {
@@ -417,6 +434,10 @@ export default {
   gap: 12px;
 }
 
+.fade-in {
+  animation: textFadeIn 0.4s ease-out;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -425,6 +446,15 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
   }
 }
 </style>
