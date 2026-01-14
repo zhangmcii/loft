@@ -2,6 +2,8 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import pinia from "./stores/index.js";
+import { blockDebug } from "@/utils/common.js";
+import { enableGrayscale } from "@/config/grayscale.js";
 
 import "@/asset/styles/init.css";
 
@@ -19,6 +21,11 @@ import vSlideIn from "@/directives/vSlideIn.js";
 
 // 解决 Added non-passive event listener to a scroll-blocking 'touchstart' event. 问题
 import "default-passive-events";
+
+// 变灰色
+enableGrayscale();
+
+// 全局loading
 loadingFadeOut();
 
 const app = createApp(App);
@@ -37,3 +44,8 @@ if (import.meta.env.DEV) {
 }
 
 app.mount("#app");
+
+// 生产环境下启用防调试
+if (import.meta.env.PROD) {
+  blockDebug();
+}

@@ -254,6 +254,31 @@ function waitImage(imageUrls) {
   });
 }
 
+/**
+ * @description: 禁止调试功能（仅在生产环境使用）
+ */
+function blockDebug() {
+  function block() {
+    if (
+      window.outerHeight - window.innerHeight > 200 ||
+      window.outerWidth - window.innerWidth > 200
+    ) {
+      document.body.innerHTML = "检测到非法调试,请关闭后刷新重试!";
+    }
+    setInterval(() => {
+      const constructor = function () {
+        return false;
+      };
+      constructor.constructor("debugger").call();
+    }, 50);
+  }
+  try {
+    block();
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 export {
   copy,
   loginReminder,
@@ -266,4 +291,5 @@ export {
   uploadFiles,
   beforePicUpload,
   waitImage,
+  blockDebug,
 };

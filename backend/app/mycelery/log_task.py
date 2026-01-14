@@ -11,14 +11,10 @@ from ..utils.time_util import DateUtils
 
 @shared_task(ignore_result=False)
 def log_visitor(is_register, client_ip, user_agent):
-    # 用户身份信息
-    client_info = get_client_info(client_ip)
-    client_info.update(user_agent)
-
     # 构建查询条件
-    log_filter = {"username": client_info.get("username")}
+    log_filter = {"username": user_agent.get("username")}
     if not is_register:
-        log_filter = {"ip": client_info.get("ip")}
+        log_filter = {"ip": client_ip}
 
     # 获取最近访问记录
     last_visit = (
@@ -33,6 +29,10 @@ def log_visitor(is_register, client_ip, user_agent):
 
     # 记录日志
     if should_log:
+        # 用户身份信息
+        client_info = get_client_info(client_ip)
+        client_info.update(user_agent)
+
         db.session.add(Log(**client_info))
         db.session.commit()
         logging.info("访客已记录日志")

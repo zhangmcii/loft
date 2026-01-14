@@ -225,7 +225,7 @@ export default {
     <div class="action-right">
       <div class="action-item comment" @click.stop>
         <van-icon
-          name="notes-o"
+          name="comment-o"
           @click="handleCommentClick"
           :size="iconSize"
           class="action-icon"

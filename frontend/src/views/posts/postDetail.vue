@@ -59,6 +59,11 @@ export default {
       activeHeadingId: "",
       // 滚动监听器
       scrollObserver: null,
+      loading: false,
+      // 控制骨架屏相关组件的显示状态
+      showSkeletonComponents: false,
+      // 骨架屏延时配置（毫秒）
+      skeletonDelay: 200,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -87,11 +92,19 @@ export default {
   },
   computed: {},
 
-  mounted() {
-    // 移除这里的调用，只在post.content变化时生成目录
-  },
+  mounted() {},
 
   watch: {
+    loading: {
+      handler(newVal) {
+        if (!newVal) {
+          // loading 变为 false 时，延时显示组件（与 skeleton 的 throttle trailing 对应）
+          setTimeout(() => {
+            this.showSkeletonComponents = true;
+          }, this.skeletonDelay);
+        }
+      },
+    },
     "post.content": {
       handler(newVal) {
         if (newVal) {
@@ -198,6 +211,7 @@ export default {
     },
 
     getPostById(postId) {
+      this.loading = true;
       postApi
         .getPost(postId)
         .then((res) => {
@@ -209,6 +223,9 @@ export default {
         .catch((error) => {
           console.error("获取文章详情失败", error);
           message.error("获取文章详情失败，请稍后重试");
+        })
+        .finally(() => {
+          this.loading = false;
         });
     },
     updateFontSize(size) {
@@ -231,44 +248,147 @@ export default {
     <!-- 阅读进度条 -->
     <ReadProgress target=".el-scrollbar__wrap" />
     <div class="post-detail-container">
-      <div class="post-main-content">
-        <PostHeader :post="post" class="post-header" />
+      <!-- 骨架屏：当文章内容为空时显示 -->
+      <el-skeleton
+        :loading="loading"
+        animated
+        :throttle="{
+          leading: skeletonDelay,
+          trailing: skeletonDelay,
+          initVal: true,
+        }"
+        class="skeleton-wrapper"
+      >
+        <template #template>
+          <div class="skeleton-header">
+            <el-skeleton-item
+              variant="circle"
+              style="width: 40px; height: 40px"
+            />
+            <el-skeleton-item variant="text" style="width: 120px" />
+          </div>
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; height: 24px; margin-bottom: 16px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 90%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 95%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 85%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 92%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 88%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 96%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 80%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 100%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 94%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 86%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
+            style="width: 82%; margin-bottom: 12px"
+          />
+        </template>
 
-        <PostContent
-          :postContent="post.content"
-          class="post-content"
-          :fontSize="fontSize"
-          ref="postContent"
-        />
-        <PostImage :postImages="post.post_images" class="post-images" />
-      </div>
+        <!-- 实际内容 -->
+        <template #default>
+          <div class="post-main-content">
+            <PostHeader :post="post" class="post-header" />
 
-      <div class="post-actions">
-        <PostAction
-          :post="post"
-          :showShare="true"
-          :showEdit="true"
-          :showDelete="true"
-        />
-      </div>
+            <PostContent
+              :postContent="post.content"
+              class="post-content"
+              :fontSize="fontSize"
+              ref="postContent"
+            />
+            <PostImage :postImages="post.post_images" class="post-images" />
+          </div>
 
-      <div class="post-comments">
-        <CommentCard :post-id="postId" :post-author="post.author" />
-      </div>
+          <div class="post-actions">
+            <PostAction
+              :post="post"
+              :showShare="true"
+              :showEdit="true"
+              :showDelete="true"
+            />
+          </div>
+
+          <div class="post-comments">
+            <CommentCard :post-id="postId" :post-author="post.author" />
+          </div>
+        </template>
+      </el-skeleton>
       <PostToc
+        v-if="showSkeletonComponents"
         :toc="toc"
         :activeId="activeHeadingId"
         @navigate="scrollToHeading"
       />
       <!-- 字体大小调整悬浮按钮 -->
       <FontSizeAdjuster
+        v-if="showSkeletonComponents"
         :defaultFontSize="fontSize"
         @update:fontSize="updateFontSize"
         @save="saveFontSizeSettings"
       />
 
       <!-- 搜索按钮 -->
-      <div class="search-button" @click="showSearch = !showSearch">
+      <div
+        v-if="showSkeletonComponents"
+        class="search-button"
+        @click="showSearch = !showSearch"
+      >
         <el-button
           type="primary"
           circle
@@ -349,8 +469,18 @@ export default {
   }
 }
 
+.skeleton-wrapper {
+  min-height: calc(100vh - 200px);
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px;
+  gap: 12px;
+}
+
 .post-detail-container {
-  // max-width: 800px;
   margin: 0 auto;
   padding: $spacing-md;
   background-color: #fff;

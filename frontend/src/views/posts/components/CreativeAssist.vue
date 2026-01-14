@@ -4,15 +4,6 @@
       <span class="assist-hint">🙂 没灵感？</span>
     </div>
     <div class="assist-buttons">
-      <!-- <el-button
-        size="small"
-        :loading="loadingStates.joke"
-        :disabled="isLoading"
-        @click="generateFromData(jokeData, 'joke', '已为你推荐一条笑话')"
-      >
-        <el-icon style="color: #ff9800; margin-right: 4px"><i-ep-Sunny /></el-icon>
-        笑话
-      </el-button> -->
       <el-button
         size="small"
         :loading="loadingStates.pickupLine"
@@ -42,39 +33,24 @@
       >
         疯狂星期四
       </el-button>
-      <!-- <el-button
-        size="small"
-        :loading="loadingStates.quote"
-        :disabled="isLoading"
-        @click="generateFromData(quoteData, 'quote', '已为你推荐一条励志语录')"
-      >
-        <el-icon style="color: #9c27b0; margin-right: 4px"><i-ep-Notebook /></el-icon>
-        励志语录
-      </el-button> -->
     </div>
   </div>
 </template>
 
 <script>
-import jokes from "@/api/joke/jokes.json";
 import pickupLines from "@/api/joke/pickupLines.json";
 import thursdayTexts from "@/api/joke/thursday.json";
-import quotes from "@/api/joke/quotes.json";
 
 export default {
   name: "CreativeAssist",
   emits: ["contentGenerated"],
   data() {
     return {
-      jokeData: jokes,
       pickupLineData: pickupLines,
       thursdayData: thursdayTexts,
-      quoteData: quotes,
       loadingStates: {
-        joke: false,
         pickupLine: false,
         thursday: false,
-        quote: false,
       },
     };
   },
