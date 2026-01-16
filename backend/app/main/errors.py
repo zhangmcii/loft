@@ -13,10 +13,18 @@ from . import main
 
 
 # jwt无效的自定义回调
+# 针对伪造的/错误的token
 @jwt.unauthorized_loader
 def missing_token_callback(error_msg):
     logging.warning(f"未授权访问: {request.path}, 错误: {error_msg}")
     return unauthorized("token无效")
+
+
+# 针对token过期
+@jwt.expired_token_loader
+def my_expired_token_callback(jwt_header, jwt_payload):
+    logging.warning(f"token已过期: {jwt_header}, 载荷: {jwt_payload}")
+    return unauthorized("身份已过期")
 
 
 @main.app_errorhandler(403)

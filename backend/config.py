@@ -8,7 +8,7 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or "hard to guess string"
 
     JWT_SECRET_KEY = "super-secret"
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=60 * 20)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=60 * 2)
 
     # 邮件配置
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.qq.com")

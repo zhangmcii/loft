@@ -36,7 +36,7 @@ def login():
     j = request.get_json()
     user = User.query.filter_by(username=j.get("uiAccountName")).one_or_none()
     if user and user.verify_password(j.get("uiPassword")):
-        token = create_access_token(identity=user, expires_delta=False)
+        token = create_access_token(identity=user)
         user.ping()
         return success(data=user.to_json(), token="Bearer " + token)
     return error(code=400, message="账号或密码错误")

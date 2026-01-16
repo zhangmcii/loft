@@ -44,10 +44,8 @@ function setInterceptors(...instance) {
     i.interceptors.response.use(
       function (response) {
         // 2xx 范围内的状态码都会触发该函数。
-        if (import.meta.env.DEV) {
-          console.log(response);
-          console.log("==>请求结束");
-        }
+        console.log(response);
+        console.log("==>请求结束");
 
         if (response.status == 200) {
           // 处理新的统一接口返回格式
@@ -57,6 +55,16 @@ function setInterceptors(...instance) {
               return response.data;
             } else {
               // 业务错误，显示错误消息
+              if (
+                response.data.code === 401 &&
+                response.data.message == "身份已过期"
+              ) {
+                errorManager.error("您的身份已过期, 请重新登录");
+                localStorage.removeItem("blog");
+                localStorage.removeItem("blogOtherUser");
+                router.push("/login");
+                return Promise.reject();
+              }
               errorManager.error(response.data.message || "请求失败");
               return Promise.reject(response.data.message);
             }
