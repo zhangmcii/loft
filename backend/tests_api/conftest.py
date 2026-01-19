@@ -50,7 +50,8 @@ def flask_pre_and_post_process(app):
 class AuthAction:
     def __init__(self, client):
         self._client = client
-        self._token = None
+        self._access_token = None
+        self._refresh_token = None
 
     def register(self, username="test", password="test"):
         return self._client.post(
@@ -79,18 +80,19 @@ class AuthAction:
         # 修正点：Flask test_client 的 response 没有 .json.get，需使用 .get_json()
         data = r.get_json()
         if data:
-            self._token = data.get("token")
+            self._access_token = data.get("access_token")
+            self._refresh_token = data.get("refresh_token")  # 新
         return r
 
-    def get_headers(self):
-        # 修正点：增加 Bearer 前缀（取决于你后端需求，通常需要）
-        # 如果不需要前缀，请去掉 f"Bearer "
+    def get_headers(self, token_type="access"):  # 新增参数
         headers = {
             "Accept": "application/json",
             "Content-type": "application/json",
         }
-        if self._token:
-            headers["Authorization"] = self._token
+        if token_type == "access" and self._access_token:
+            headers["Authorization"] = self._access_token
+        elif token_type == "refresh" and self._refresh_token:
+            headers["Authorization"] = self._refresh_token
         return headers
 
 

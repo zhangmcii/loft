@@ -6,14 +6,6 @@ class TestPraiseCommentCase:
 
     pre_fix = "/api/v1"
 
-    def get_api_headers(self, username, password):
-        return {
-            "Authorization": "Basic "
-            + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
-            "Accept": "application/json",
-            "Content-type": "application/json",
-        }
-
     def test_post_comment_and_praise(self, client, auth):
         """测试发表评论和点赞文章"""
         auth_instance = auth()
@@ -26,7 +18,7 @@ class TestPraiseCommentCase:
         login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
 
         # 发布一篇文章
         r = client.post(
@@ -87,7 +79,7 @@ class TestPraiseCommentCase:
         login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
 
         # 发布一篇文章
         r = client.post(

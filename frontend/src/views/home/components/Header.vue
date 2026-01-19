@@ -142,6 +142,8 @@ import emitter from "@/utils/emitter.js";
 import imageCfg from "@/config/image.js";
 import homeIcon from "@/asset/svg/homeIcon.svg?component";
 import BellCom from "./BellCom.vue";
+import authApi from "@/api/auth/authApi.js";
+
 export default {
   name: "BurgerMenu",
   components: {
@@ -196,8 +198,9 @@ export default {
   },
   methods: {
     handleCellClick(route) {
-      this.closeToggleMenu(); // 关闭弹出框
-      this.$router.push(route); // 路由跳转
+      // 关闭弹出框
+      this.closeToggleMenu();
+      this.$router.push(route);
     },
     closeToggleMenu() {
       if (this.showPopover) {
@@ -212,13 +215,30 @@ export default {
       this.accountLabel = this.isContactDropdownActive ? "关闭" : "账户";
     },
     log_out() {
-      this.closeToggleMenu();
-      this.currentUser.disconnectSocket();
-      this.currentUser.logOut();
-      ElMessage.success("已退出");
-      this.$router.push("/posts");
-      this.initImage();
+      showConfirmDialog({
+        title: "提示",
+        message: "是否退出登陆？",
+        width: "280px",
+        beforeClose: this.beforeClose,
+      });
     },
+
+    beforeClose(action) {
+      if (action !== "confirm") {
+        return Promise.resolve(true);
+      } else {
+        this.currentUser.disconnectSocket();
+        return authApi.logout().then((res) => {
+          if (res.code == 200) {
+            this.closeToggleMenu();
+            this.currentUser.logOut();
+            this.initImage();
+          }
+          return res;
+        });
+      }
+    },
+
     goHomePage() {
       if (this.isHomePage) {
         return;

@@ -9,7 +9,8 @@ export const useCurrentUserStore = defineStore("currentUser", {
     socket: null,
     activeChat: null,
     heartbeatInterval: null,
-    token: "",
+    access_token: "",
+    refresh_token: "",
     userInfo: {
       id: "1",
       username: "",
@@ -20,7 +21,6 @@ export const useCurrentUserStore = defineStore("currentUser", {
       image: "",
       about_me: "",
       location: "",
-      // token: '',
       // 已点赞的评论id
       likeIds: [],
       // 关注的用户
@@ -69,7 +69,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
     }/userBackground/static/image-pre3.webp-slim`,
   }),
   getters: {
-    isLogin: (state) => state.token != "",
+    isLogin: (state) => state.access_token != "",
     isCommentManage: (state) => state.userInfo.roleId >= 2,
     isConfirmed: (state) => state.userInfo.confirmed == true,
     isAdmin: (state) => state.userInfo.roleId == 3,
@@ -134,17 +134,19 @@ export const useCurrentUserStore = defineStore("currentUser", {
     },
     // 清空通知（可选）
     clearNotifications() {},
-    logOut() {
-      this.disconnectSocket();
-      this.$reset();
+    clearLocalData() {
       localStorage.removeItem("blog");
       localStorage.removeItem("blogOtherUser");
+    },
+    logOut() {
+      this.clearLocalData();
+      this.$reset();
     },
     connectSocket() {
       if (this.socket) return;
       this.socket = io(import.meta.env.DEV ? "" : import.meta.env.VITE_DOMAIN, {
         path: "/socket.io",
-        query: { token: this.token },
+        query: { access_token: this.access_token },
         transports: ["websocket"],
         withCredentials: true,
         reconnectionAttempts: 5,
@@ -184,7 +186,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
         if (this.socket?.connected) {
           this.socket.emit("heartbeat");
         }
-      }, 30000);
+      }, 60000);
     },
     disconnectSocket() {
       if (!this.socket) return;
@@ -258,6 +260,6 @@ export const useCurrentUserStore = defineStore("currentUser", {
   persist: {
     key: "blog",
     storage: localStorage,
-    pick: ["token", "userInfo", "notice"],
+    pick: ["access_token", "refresh_token", "userInfo", "notice"],
   },
 });

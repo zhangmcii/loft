@@ -20,12 +20,12 @@ def register_ws_events(socketio, app):
     def verify_token_in_websocket():
         """连接websocket时验证用户身份"""
         try:
-            token = request.args.get("token")
-            if not token:
+            access_token = request.args.get("access_token")
+            if not access_token:
                 logging.warning("WebSocket连接缺少token")
                 raise ConnectionRefusedError("未授权：缺少token")
 
-            raw_token = token.replace("Bearer ", "", 1)
+            raw_token = access_token.replace("Bearer ", "", 1)
             decoded_token = decode_token(raw_token)
             user_id = decoded_token["sub"]
             logging.info(f"WebSocket连接token验证成功，用户ID: {user_id}")

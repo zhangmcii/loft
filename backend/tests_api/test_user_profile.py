@@ -6,14 +6,6 @@ class TestUserProfileCase:
 
     pre_fix = "/api/v1"
 
-    def get_api_headers(self, username, password):
-        return {
-            "Authorization": "Basic "
-            + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
-            "Accept": "application/json",
-            "Content-type": "application/json",
-        }
-
     def test_get_user_profile(self, client, auth):
         """测试获取用户资料"""
         auth_instance = auth()
@@ -26,7 +18,7 @@ class TestUserProfileCase:
         login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
 
         # 获取当前用户信息
         r = client.get(self.pre_fix + "/users/1", headers=auth_instance.get_headers())
@@ -50,7 +42,7 @@ class TestUserProfileCase:
         login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
 
         # 更新用户资料
         update_data = {
@@ -85,7 +77,7 @@ class TestUserProfileCase:
         login_response = auth_user1.login(username="user1", password="password1")
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
         headers_user1 = auth_user1.get_headers()
 
         # 注册第二个用户并验证成功
@@ -97,7 +89,7 @@ class TestUserProfileCase:
         login_response = auth_user2.login(username="user2", password="password2")
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
         headers_user2 = auth_user2.get_headers()
 
         # 获取用户ID

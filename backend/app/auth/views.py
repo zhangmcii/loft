@@ -1,9 +1,17 @@
 import logging
 
-from flask import request
-from flask_jwt_extended import create_access_token, current_user, jwt_required
+from flask import current_app, request
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    current_user,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+)
 
 from .. import db
+from .. import redis as jwt_redis_blocklist
 from ..api.upload import get_random_user_avatars
 from ..decorators import admin_required
 from ..models import User
@@ -36,9 +44,12 @@ def login():
     j = request.get_json()
     user = User.query.filter_by(username=j.get("uiAccountName")).one_or_none()
     if user and user.verify_password(j.get("uiPassword")):
-        token = create_access_token(identity=user)
+        access_token = "Bearer " + create_access_token(identity=user)
+        refresh_token = "Bearer " + create_refresh_token(identity=user)
         user.ping()
-        return success(data=user.to_json(), token="Bearer " + token)
+        return success(
+            data=user.to_json(), access_token=access_token, refresh_token=refresh_token
+        )
     return error(code=400, message="账号或密码错误")
 
 
@@ -178,3 +189,34 @@ def change_password_admin():
         db.session.commit()
         return success()
     return error(message="用户不存在")
+
+
+@auth.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    """刷新token"""
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return success(data={"access_token": access_token})
+
+
+@auth.route("/revokeToken", methods=["DELETE"])
+@jwt_required(verify_type=False)
+def revoke_token():
+    token = get_jwt()
+    jti = token["jti"]
+    ttype = token["type"]
+    jwt_redis_blocklist.set(jti, "", ex=current_app.config["JWT_ACCESS_TOKEN_EXPIRES"])
+    return success(message=f"{ttype.capitalize()} token successfully revoked")
+
+
+@auth.route("/access_token_test")
+@jwt_required()
+def _test_access_token():
+    return success(message="这是access_token_test接口")
+
+
+@auth.route("/refresh_token_test")
+@jwt_required(refresh=True)
+def _test_refresh_token():
+    return success(message="这是refresh_token_test接口")

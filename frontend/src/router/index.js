@@ -9,14 +9,14 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   try {
     const blogData = JSON.parse(localStorage.getItem("blog") || "{}");
-    const { token = "", userInfo = {} } = blogData;
+    const { access_token = "", userInfo = {} } = blogData;
     const { roleId = 0 } = userInfo;
 
     const role = roleId === 3 ? "admin" : roleId;
 
     if (to.meta?.roles && !to.meta.roles.includes(role)) {
       next("/403");
-    } else if (to.meta?.requireAuth && !token) {
+    } else if (to.meta?.requireAuth && !access_token) {
       next("/login");
     } else {
       next();

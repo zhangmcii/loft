@@ -6,15 +6,6 @@ class TestNotificationCase:
 
     pre_fix = "/api/v1"
 
-    def get_api_headers(self, username, password):
-        """基础认证 Header (如有需要可以使用)"""
-        return {
-            "Authorization": "Basic "
-            + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
-            "Accept": "application/json",
-            "Content-type": "application/json",
-        }
-
     def test_comment_notification(self, client, auth):
         """测试评论通知"""
         # 1. 创建两个独立的认证实例

@@ -6,14 +6,6 @@ from base64 import b64encode
 class TestPasswordResetCase:
     """测试密码重置流程"""
 
-    def get_api_headers(self, username, password):
-        return {
-            "Authorization": "Basic "
-            + b64encode((username + ":" + password).encode("utf-8")).decode("utf-8"),
-            "Accept": "application/json",
-            "Content-type": "application/json",
-        }
-
     def test_change_password(self, client, auth):
         """测试修改密码"""
         auth_instance = auth()
@@ -26,7 +18,7 @@ class TestPasswordResetCase:
         login_response = auth_instance.login()
         assert login_response.status_code == 200
         assert login_response.json.get("code") == 200
-        assert login_response.json.get("token") is not None
+        assert login_response.json.get("access_token") is not None
 
         # 修改密码
         r = client.post(
@@ -48,7 +40,7 @@ class TestPasswordResetCase:
             "/auth/login", json={"uiAccountName": "test", "uiPassword": "new_password"}
         )
         assert r.json.get("code") == 200
-        assert "token" in r.json
+        assert "access_token" in r.json
 
     # def test_password_reset_flow(self, client, auth, monkeypatch):
     #     """测试忘记密码流程"""
@@ -113,4 +105,4 @@ class TestPasswordResetCase:
     #         'uiPassword': 'reset_password'
     #     })
     #     assert r.json.get('code') == 200
-    #     assert 'token' in r.json
+    #     assert 'access_token' in r.json

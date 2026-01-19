@@ -7,12 +7,9 @@ export default {
     param.uiPassword = password;
     return $http.post(`${url_prefix}/login`, param);
   },
-  logined() {
-    return $http.get("/logined");
+  logout() {
+    return $http.delete(`${url_prefix}/logout`);
   },
-  // getPermission(perm) {
-  //   return $http.get(`/can/${perm}`)
-  // },
   register(params) {
     return $http.post(`${url_prefix}/register`, params);
   },
@@ -36,5 +33,8 @@ export default {
   },
   helpChangePassword(params) {
     return $http.post(`${url_prefix}/helpChangePassword`, params);
+  },
+  refreshToken() {
+    return $http.post(`${url_prefix}/refresh`);
   },
 };

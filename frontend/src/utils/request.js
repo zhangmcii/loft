@@ -1,3 +1,4 @@
+import { useCurrentUserStore } from "@/stores/user";
 import errorManager from "@/utils/message";
 import router from "../router/index.js";
 import axios from "axios";
@@ -8,6 +9,14 @@ const $http = axios.create({
   timeout: 10000,
 });
 
+export function handleUnauthorized() {
+  const store = useCurrentUserStore();
+  if (store.access_token) {
+    store.logOut();
+    router.push("/login");
+  }
+}
+
 /**
  * 设置网路请求监听
  */
@@ -15,26 +24,28 @@ function setInterceptors(...instance) {
   instance.forEach((i) => {
     i.interceptors.request.use(
       function (config) {
-        // 从localStorage中获取token。注意，不可以从pinia中读取，因为刷新页面，此时组件可能还未初始化完
-        const token = JSON.parse(localStorage.getItem("blog"))?.token;
+        let token = "";
+        if (config.url == "/auth/refresh") {
+          // 从localStorage中获取token。注意，不可以从pinia中读取，因为刷新页面，此时组件可能还未初始化完
+          token = JSON.parse(localStorage.getItem("blog"))?.refresh_token;
+        } else {
+          token = JSON.parse(localStorage.getItem("blog"))?.access_token;
+        }
         if (token) {
           config.headers["Authorization"] = token;
         }
-        if (import.meta.env.DEV) {
-          console.log("==>请求开始");
-          console.log(`${config.baseURL}${config.url}`);
-          if (config.data) {
-            console.log("==>请求数据", config.data);
-          }
+
+        console.log("==>请求开始");
+        console.log(`${config.baseURL}${config.url}`);
+        if (config.data) {
+          console.log("==>请求数据", config.data);
         }
         return config;
       },
       function (error) {
         // 对请求错误做些什么
-        if (import.meta.env.DEV) {
-          console.log("==>请求开始");
-          console.log(error);
-        }
+        console.log("==>请求开始");
+        console.log(error);
 
         errorManager.error(error);
         return Promise.reject(error);
@@ -59,10 +70,8 @@ function setInterceptors(...instance) {
                 response.data.code === 401 &&
                 response.data.message == "身份已过期"
               ) {
-                errorManager.error("您的身份已过期, 请重新登录");
-                localStorage.removeItem("blog");
-                localStorage.removeItem("blogOtherUser");
-                router.push("/login");
+                errorManager.warning("您的身份已过期, 请重新登录");
+                handleUnauthorized();
                 return Promise.reject();
               }
               errorManager.error(response.data.message || "请求失败");
@@ -78,10 +87,8 @@ function setInterceptors(...instance) {
       },
       function (error) {
         // 超出 2xx 范围的状态码都会触发该函数。
-        if (import.meta.env.DEV) {
-          console.log(error);
-          console.log("==>请求结束");
-        }
+        console.log(error);
+        console.log("==>请求结束");
 
         if (error.response === undefined) {
           errorManager.error("服务器响应超时");

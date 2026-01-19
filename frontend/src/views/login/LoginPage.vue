@@ -66,7 +66,8 @@ export default {
                   this.hasRemember();
                   const u = res.data;
                   this.currentUser.setUserInfo(u);
-                  this.currentUser.token = res.token;
+                  this.currentUser.access_token = res.access_token;
+                  this.currentUser.refresh_token = res.refresh_token;
                   ElMessage({
                     message: "登录成功",
                     type: "success",
