@@ -10,6 +10,7 @@ from user_agents import parse
 
 from .models import Permission
 from .mycelery.log_task import log_visitor
+from .utils.response import forbidden
 
 
 class DecoratedMethodView(MethodView):
@@ -38,7 +39,7 @@ def permission_required(permission):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not current_user.can(permission):
-                abort(403)
+                return forbidden()
             return f(*args, **kwargs)
 
         return decorated_function

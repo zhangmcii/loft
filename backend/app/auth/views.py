@@ -1,4 +1,5 @@
 import logging
+import os
 
 from flask import current_app, request
 from flask_jwt_extended import (
@@ -22,7 +23,7 @@ from ..schemas import (
     ForgotPasswordRequest,
     RegisterRequest,
 )
-from ..utils.response import error, success
+from ..utils.response import error, success, unauthorized
 from ..utils.time_util import DateUtils
 from ..utils.validation import validate_json
 from . import auth
@@ -70,7 +71,9 @@ def register(validated_data):
             return error(message="该邮箱已被注册，请换一个")
 
     email = validated_data.email if validated_data.email else None
-    random_image = get_random_user_avatars()
+    random_image = (
+        "" if os.getenv("FLASK_CONFIG") == "testing" else get_random_user_avatars()
+    )
     logging.info(f"随机图像为：{random_image}")
     user = User(
         email=email,
@@ -234,4 +237,4 @@ def check_freshness():
     jwt_data = get_jwt()
     if jwt_data.get("fresh", False):
         return success(message="令牌新鲜")
-    return error(code=401, message="该操作需要重新登录以验证身份")
+    return unauthorized(message="该操作需要重新登录以验证身份")
