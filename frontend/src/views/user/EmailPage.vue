@@ -67,16 +67,24 @@ export default {
         });
     },
     bindEmail() {
-      authApi.checkCode(this.form).then((res) => {
-        if (res.code == 200) {
-          this.currentUser.userInfo.confirmed = res.data.isConfirmed;
-          this.currentUser.userInfo.roleId = res.data.roleId;
-          ElMessage.success("邮箱绑定成功！");
-          this.$router.push("/posts");
-        } else {
-          ElMessage.error("邮箱绑定失败");
-        }
-      });
+      authApi
+        .checkCode(this.form)
+        .then((res) => {
+          if (res.code == 200) {
+            this.currentUser.userInfo.confirmed = res.data.isConfirmed;
+            this.currentUser.userInfo.roleId = res.data.roleId;
+            ElMessage.success("邮箱绑定成功！");
+            this.$router.push("/posts");
+          } else {
+            ElMessage.error(res.message || "邮箱绑定失败");
+          }
+        })
+        .catch((err) => {
+          // 如果是因为需要fresh token，catch已经被request.js处理了
+          if (err.message !== "该操作需要重新登录以验证身份") {
+            ElMessage.error("邮箱绑定失败，请稍后重试");
+          }
+        });
     },
     submitForm() {
       this.loading = true;

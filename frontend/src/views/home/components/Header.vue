@@ -228,14 +228,25 @@ export default {
         return Promise.resolve(true);
       } else {
         this.currentUser.disconnectSocket();
-        return authApi.logout().then((res) => {
-          if (res.code == 200) {
+        // 同时撤销访问令牌和刷新令牌
+        return Promise.all([
+          authApi.revokeToken("access_token"),
+          authApi.revokeToken("refresh_token"),
+        ])
+          .then((res) => {
             this.closeToggleMenu();
             this.currentUser.logOut();
             this.initImage();
-          }
-          return res;
-        });
+            return res;
+          })
+          .catch((err) => {
+            console.error("撤销令牌失败:", err);
+            // 即使撤销失败也执行登出
+            this.closeToggleMenu();
+            this.currentUser.logOut();
+            this.initImage();
+            return err;
+          });
       }
     },
 

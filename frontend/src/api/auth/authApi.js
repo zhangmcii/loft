@@ -7,8 +7,10 @@ export default {
     param.uiPassword = password;
     return $http.post(`${url_prefix}/login`, param);
   },
-  logout() {
-    return $http.delete(`${url_prefix}/logout`);
+  revokeToken(tokenType = "access_token") {
+    return $http.delete(`${url_prefix}/revokeToken`, {
+      useRefreshToken: tokenType === "refresh_token",
+    });
   },
   register(params) {
     return $http.post(`${url_prefix}/register`, params);
@@ -34,7 +36,7 @@ export default {
   helpChangePassword(params) {
     return $http.post(`${url_prefix}/helpChangePassword`, params);
   },
-  refreshToken() {
-    return $http.post(`${url_prefix}/refresh`);
+  checkTokenFreshness() {
+    return $http.get(`${url_prefix}/checkFreshness`);
   },
 };

@@ -6,7 +6,6 @@ from flask_jwt_extended import (
     create_refresh_token,
     current_user,
     get_jwt,
-    get_jwt_identity,
     jwt_required,
 )
 
@@ -30,7 +29,7 @@ from . import auth
 
 
 @auth.before_app_request
-@jwt_required(optional=True)
+@jwt_required(optional=True, verify_type=False)
 def before_request():
     if current_user:
         current_user.ping()
@@ -44,11 +43,14 @@ def login():
     j = request.get_json()
     user = User.query.filter_by(username=j.get("uiAccountName")).one_or_none()
     if user and user.verify_password(j.get("uiPassword")):
-        access_token = "Bearer " + create_access_token(identity=user)
+        # 创建新鲜令牌
+        fresh_access_token = "Bearer " + create_access_token(identity=user, fresh=True)
         refresh_token = "Bearer " + create_refresh_token(identity=user)
         user.ping()
         return success(
-            data=user.to_json(), access_token=access_token, refresh_token=refresh_token
+            data=user.to_json(),
+            access_token=fresh_access_token,
+            refresh_token=refresh_token,
         )
     return error(code=400, message="账号或密码错误")
 
@@ -112,6 +114,7 @@ def apply_code():
 @jwt_required()
 @validate_json(BindEmailRequest)
 def confirm(validated_data):
+    """绑定邮箱"""
     email = validated_data.email
     code = validated_data.code
 
@@ -126,9 +129,10 @@ def confirm(validated_data):
 
 
 @auth.route("/changeEmail", methods=["POST"])
-@jwt_required()
+@jwt_required(fresh=True)
 @validate_json(ChangeEmailRequest)
 def change_email(validated_data):
+    """更换邮箱"""
     email = validated_data.new_email
     code = validated_data.code
     password = validated_data.password
@@ -149,7 +153,7 @@ def change_email(validated_data):
 
 
 @auth.route("/changePassword", methods=["POST"])
-@jwt_required()
+@jwt_required(fresh=True)
 @validate_json(ChangePasswordRequest)
 def change_password(validated_data):
     if current_user.verify_password(validated_data.old_password):
@@ -195,8 +199,7 @@ def change_password_admin():
 @jwt_required(refresh=True)
 def refresh():
     """刷新token"""
-    identity = get_jwt_identity()
-    access_token = create_access_token(identity=identity)
+    access_token = "Bearer " + create_access_token(identity=current_user)
     return success(data={"access_token": access_token})
 
 
@@ -213,10 +216,22 @@ def revoke_token():
 @auth.route("/access_token_test")
 @jwt_required()
 def _test_access_token():
+    """单元测试访问令牌"""
     return success(message="这是access_token_test接口")
 
 
 @auth.route("/refresh_token_test")
 @jwt_required(refresh=True)
 def _test_refresh_token():
+    """单元测试刷新令牌"""
     return success(message="这是refresh_token_test接口")
+
+
+@auth.route("/checkFreshness", methods=["GET"])
+@jwt_required()
+def check_freshness():
+    """检测当前令牌是否为新鲜令牌"""
+    jwt_data = get_jwt()
+    if jwt_data.get("fresh", False):
+        return success(message="令牌新鲜")
+    return error(code=401, message="该操作需要重新登录以验证身份")

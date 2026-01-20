@@ -59,6 +59,9 @@ export default {
       },
       loading: false,
       isChange: false,
+      // 新增状态标记
+      isCheckingFreshness: true,
+      allowOperation: false,
     };
   },
   setup() {
@@ -73,21 +76,75 @@ export default {
       },
     },
   },
+  async mounted() {
+    // 页面进入时立即检测令牌新鲜度
+    await this.checkTokenFreshnessOnEnter();
+  },
   methods: {
+    async checkTokenFreshnessOnEnter() {
+      this.isCheckingFreshness = true;
+      try {
+        const res = await authApi.checkTokenFreshness();
+        if (res.code === 200) {
+          this.allowOperation = true;
+        } else {
+          await this.showReauthConfirmDialog();
+        }
+      } catch (error) {
+        // 已经过期或令牌无效,统一处理为需要重新登录
+        await this.showReauthConfirmDialog();
+      } finally {
+        // 确保至少显示1秒加载状态,避免页面闪烁
+        setTimeout(() => {
+          this.isCheckingFreshness = false;
+        }, 1000);
+      }
+    },
+
+    async showReauthConfirmDialog() {
+      try {
+        await showConfirmDialog({
+          title: "提示",
+          message: "为确保账户安全,请重新登录后继续操作",
+          width: "280px",
+        });
+        // 用户点击确认
+        this.currentUser.logOut();
+        this.$router.push("/login");
+      } catch (error) {
+        // 用户点击取消,返回上一页
+        this.$router.back();
+      }
+    },
+
     submitForm() {
+      if (!this.allowOperation) {
+        this.showReauthConfirmDialog();
+        return;
+      }
+
       this.$refs.form.validate((valid) => {
         if (valid) {
           this.loading = true;
-          authApi.changePassword(this.form).then((res) => {
-            this.loading = false;
-            this.isChange = false;
-            if (res.code == 200) {
-              ElMessage.success("修改密码成功");
-              this.log_out();
-            } else {
-              ElMessage.error("修改密码失败");
-            }
-          });
+          authApi
+            .changePassword(this.form)
+            .then((res) => {
+              this.loading = false;
+              this.isChange = false;
+              if (res.code == 200) {
+                ElMessage.success("修改密码成功");
+                this.log_out();
+              } else {
+                ElMessage.error(res.message || "修改密码失败");
+              }
+            })
+            .catch((err) => {
+              this.loading = false;
+              // 如果是因为需要fresh token，catch已经被request.js处理了
+              if (err.message !== "该操作需要重新登录以验证身份") {
+                ElMessage.error("修改密码失败，请稍后重试");
+              }
+            });
         } else {
           ElMessage.error("请修正表单中的错误");
         }
@@ -103,7 +160,12 @@ export default {
 
 <template>
   <PageHeadBack>
-    <div class="password-change-container">
+    <div v-if="isCheckingFreshness" class="loading-state">
+      <el-loading fullscreen lock />
+      <div class="loading-text">正在验证您的身份...</div>
+    </div>
+
+    <div v-else class="password-change-container">
       <div class="password-header">
         <div class="password-icon">
           <i class="el-icon-lock"></i>
@@ -194,7 +256,7 @@ export default {
             <ButtonClick
               content="更新密码"
               type="primary"
-              :disabled="!isChange"
+              :disabled="!isChange || !allowOperation"
               :loading="loading"
               @do-search="submitForm"
               class="submit-btn"
@@ -375,5 +437,19 @@ export default {
   color: #606266;
   margin-bottom: 5px;
   font-size: 13px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.loading-text {
+  margin-top: 20px;
+  color: #909399;
+  font-size: 14px;
 }
 </style>

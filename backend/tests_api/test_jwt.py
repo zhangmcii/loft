@@ -1,5 +1,6 @@
 class TestJwt:
     def test_revoke_access_token(self, client, auth):
+        """ "撤销访问令牌"""
         auth_instance = auth()
         # 注册并验证成功
         register_response = auth_instance.register()
@@ -33,7 +34,7 @@ class TestJwt:
         assert expired_token_response.json.get("message") == "该token已被撤销"
 
     def test_revoke_refresh_token(self, client, auth):
-        # 退出登陆时，同时撤销刷新令牌
+        # 退出登陆时，撤销刷新令牌
         auth_instance = auth()
         # 注册并验证成功
         register_response = auth_instance.register()

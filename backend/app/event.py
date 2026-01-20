@@ -43,7 +43,7 @@ def register_ws_events(socketio, app):
 
     # 连接事件
     @socketio.on("connect")
-    def handle_connect():
+    def handle_connect(auth):
         username, user_id = verify_token_in_websocket()
         # 内存操作同步执行（无阻塞）
         connection.bind_socket_to_user(user_id, request.sid)

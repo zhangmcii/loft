@@ -5,7 +5,7 @@ from flask import request
 
 from .. import jwt
 from .. import redis as jwt_redis_blocklist
-from ..utils.response import bad_request, unauthorized
+from ..utils.response import bad_request, error, unauthorized
 from . import api
 
 
@@ -35,6 +35,12 @@ def my_revoked_token_callback(jwt_header, jwt_payload):
     """针对token被撤销"""
     logging.warning(f"token已被撤销")
     return unauthorized("该token已被撤销")
+
+
+@jwt.needs_fresh_token_loader
+def handle_needs_fresh_token_callback(jwt_header, jwt_payload):
+    """令牌新鲜度验证失败错误"""
+    return error(code=401, message="该操作需要重新登录以验证身份")
 
 
 @jwt.token_in_blocklist_loader

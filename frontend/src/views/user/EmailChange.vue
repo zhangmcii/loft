@@ -32,6 +32,9 @@ export default {
       showButton: true,
       loading: false,
       isChange: false,
+      // 新增状态标记
+      isCheckingFreshness: true,
+      allowOperation: false,
     };
   },
   computed: {
@@ -39,8 +42,58 @@ export default {
       return !(this.isEmailValid && this.form.code && this.form.password);
     },
   },
+  async mounted() {
+    // 页面进入时立即检测令牌新鲜度
+    await this.checkTokenFreshnessOnEnter();
+  },
   methods: {
-    applyCode() {
+    async checkTokenFreshnessOnEnter() {
+      this.isCheckingFreshness = true;
+      try {
+        const res = await authApi.checkTokenFreshness();
+        if (res.code === 200) {
+          this.allowOperation = true;
+        } else {
+          await this.showReauthConfirmDialog();
+        }
+      } catch (error) {
+        await this.showReauthConfirmDialog();
+      } finally {
+        // 确保至少显示1秒加载状态,避免页面闪烁
+        setTimeout(() => {
+          this.isCheckingFreshness = false;
+        }, 1000);
+      }
+    },
+
+    async showReauthConfirmDialog() {
+      try {
+        await showConfirmDialog({
+          title: "提示",
+          message: "为确保账户安全,请重新登录后继续操作",
+          width: "280px",
+        });
+        // 用户点击确认
+        this.currentUser.logOut();
+        this.$router.push("/login");
+      } catch (error) {
+        // 用户点击取消,返回上一页
+        this.$router.back();
+      }
+    },
+
+    async applyCode() {
+      // 发送验证码前额外检测令牌新鲜度(兜底策略)
+      try {
+        const res = await authApi.checkTokenFreshness();
+        if (res.code !== 200) {
+          await this.showReauthConfirmDialog();
+          return;
+        }
+      } catch (error) {
+        await this.showReauthConfirmDialog();
+        return;
+      }
       this.value = Date.now() + 1000 * 60;
       this.showButton = !this.showButton;
       const loadingInstance = this.$loading({
@@ -64,14 +117,27 @@ export default {
         });
     },
     changeEmail() {
-      authApi.changeEmail(this.form).then((res) => {
-        if (res.code == 200) {
-          ElMessage.success("邮箱更换成功!");
-          this.$router.push("/posts");
-        } else {
-          ElMessage.error("邮箱更换失败");
-        }
-      });
+      if (!this.allowOperation) {
+        this.showReauthConfirmDialog();
+        return;
+      }
+
+      authApi
+        .changeEmail(this.form)
+        .then((res) => {
+          if (res.code == 200) {
+            ElMessage.success("邮箱更换成功!");
+            this.$router.push("/posts");
+          } else {
+            ElMessage.error(res.message || "邮箱更换失败");
+          }
+        })
+        .catch((err) => {
+          // 如果是因为需要fresh token，catch已经被request.js处理了
+          if (err.message !== "该操作需要重新登录以验证身份") {
+            ElMessage.error("邮箱更换失败，请稍后重试");
+          }
+        });
     },
     submitForm() {
       this.loading = true;
@@ -95,7 +161,14 @@ export default {
 
 <template>
   <PageHeadBack>
-    <div class="email-change-container">
+    <!-- 加载状态 -->
+    <div v-if="isCheckingFreshness" class="loading-state">
+      <el-loading fullscreen lock />
+      <div class="loading-text">正在验证您的身份...</div>
+    </div>
+
+    <!-- 主表单 -->
+    <div v-else class="email-change-container">
       <div class="email-header">
         <div class="email-icon">
           <i class="el-icon-refresh"></i>
@@ -409,5 +482,19 @@ export default {
   color: #606266;
   margin-bottom: 5px;
   font-size: 13px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.loading-text {
+  margin-top: 20px;
+  color: #909399;
+  font-size: 14px;
 }
 </style>
