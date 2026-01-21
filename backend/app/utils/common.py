@@ -2,7 +2,9 @@ import os
 import socket
 
 
-def get_avatars_url(key):
+def get_avatars_url(key: str):
+    if key.startswith("http"):
+        return key
     return f"{os.getenv('QINIU_DOMAIN')}/{key}-slim"
 
 

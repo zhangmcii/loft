@@ -1005,3 +1005,27 @@ user_tag = db.Table(
     db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
     db.Column("tag_id", db.Integer, db.ForeignKey("tag.id")),
 )
+
+
+class ThirdPartyAccount(db.Model):
+    __tablename__ = "third_party_accounts"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    # github / qq / wechat
+    provider = db.Column(db.String(32), nullable=False)
+    # 同一个 appid 下唯一
+    openid = db.Column(db.String(128), nullable=False)
+    # 跨应用统一身份
+    unionid = db.Column(db.String(128), nullable=True)
+
+    nickname = db.Column(db.String(64))
+    avatar = db.Column(db.String(255))
+    raw_profile = db.Column(db.JSON)
+    created_at = db.Column(db.DateTime, default=DateUtils.now_time)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint("provider", "openid", name="uq_provider_openid"),
+    )

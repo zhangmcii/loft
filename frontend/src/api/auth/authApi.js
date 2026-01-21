@@ -39,4 +39,8 @@ export default {
   checkTokenFreshness() {
     return $http.get(`${url_prefix}/checkFreshness`);
   },
+  // GitHub OAuth
+  getGitHubAuthUrl() {
+    return $http.get(`${url_prefix}/bp/github/authorize`);
+  },
 };

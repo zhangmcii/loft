@@ -190,6 +190,12 @@ const routes = [
         ? import("@/views/login/LoginPageDev.vue")
         : import("@/views/login/LoginPage.vue"),
   },
+  // GitHub OAuth 回调页面
+  {
+    path: "/callback/github",
+    name: "githubCallback",
+    component: () => import("../views/login/GitHubCallback.vue"),
+  },
   // 清除本地缓存
   {
     path: "/clear",
