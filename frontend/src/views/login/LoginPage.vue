@@ -36,6 +36,8 @@ export default {
       isRemember: false,
       loading: false,
       imgPic: imageCfg.login,
+      oauthProviders: [],
+      oauthLoading: false,
     };
   },
   setup() {
@@ -49,6 +51,7 @@ export default {
   },
   mounted() {
     this.getAccount();
+    this.loadProviders();
   },
   methods: {
     login() {
@@ -118,6 +121,30 @@ export default {
     handleImageError() {
       this.imgPic = imageCfg.loginFail;
     },
+    async loadProviders() {
+      try {
+        const res = await authApi.oauthProviders();
+        this.oauthProviders = res.data?.providers || [];
+      } catch (error) {
+        console.warn("加载第三方登录配置失败", error);
+      }
+    },
+    async startOAuth(provider) {
+      this.oauthLoading = provider;
+      try {
+        const res = await authApi.oauthAuthorize(provider);
+        const url = res.data?.authorize_url;
+        if (url) {
+          window.location.href = url;
+        } else {
+          ElMessage.error(res.message || "获取授权链接失败");
+        }
+      } catch (error) {
+        ElMessage.error("获取授权链接失败");
+      } finally {
+        this.oauthLoading = false;
+      }
+    },
   },
 };
 </script>
@@ -185,7 +212,20 @@ export default {
     >登录</el-button
   >
 
-  <!-- <el-divider> 其他登录方式 </el-divider> -->
+  <el-divider v-if="oauthProviders.length">其他登录方式</el-divider>
+  <div class="oauth-providers" v-if="oauthProviders.length">
+    <el-button
+      v-for="item in oauthProviders"
+      :key="item.provider"
+      plain
+      class="oauth-btn"
+      :loading="oauthLoading === item.provider"
+      @click="startOAuth(item.provider)"
+    >
+      {{ item.name }}
+    </el-button>
+  </div>
+
   <div class="register-container">
     <el-text class="register-account">还没有账号?</el-text>
     <el-link class="register" @click="$router.push('/register')"
@@ -281,5 +321,14 @@ p {
   display: flex;
   justify-content: center;
   margin-top: 10px;
+}
+.oauth-providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+}
+.oauth-btn {
+  flex: 1 1 120px;
 }
 </style>

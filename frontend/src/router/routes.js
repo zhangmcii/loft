@@ -190,6 +190,11 @@ const routes = [
         ? import("@/views/login/LoginPageDev.vue")
         : import("@/views/login/LoginPage.vue"),
   },
+  {
+    path: "/oauth/callback",
+    name: "oauthCallback",
+    component: () => import("../views/login/OAuthCallback.vue"),
+  },
   // 清除本地缓存
   {
     path: "/clear",

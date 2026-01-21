@@ -39,4 +39,10 @@ export default {
   checkTokenFreshness() {
     return $http.get(`${url_prefix}/checkFreshness`);
   },
+  oauthProviders() {
+    return $http.get(`${url_prefix}/oauth/providers`);
+  },
+  oauthAuthorize(provider, params = {}) {
+    return $http.get(`${url_prefix}/oauth/authorize/${provider}`, { params });
+  },
 };
