@@ -1,7 +1,11 @@
 <script>
 import authApi from "@/api/auth/authApi.js";
 import { useCurrentUserStore } from "@/stores/user";
+import SocialOAuthButtons from "./components/SocialOAuthButtons.vue";
 export default {
+  components: {
+    SocialOAuthButtons,
+  },
   data() {
     var validateUser = (rule, value, callback) => {
       if (value === "") {
@@ -187,19 +191,11 @@ export default {
     >登录</el-button
   >
 
-  <el-divider v-if="oauthProviders.length">其他登录方式</el-divider>
-  <div class="oauth-providers" v-if="oauthProviders.length">
-    <el-button
-      v-for="item in oauthProviders"
-      :key="item.provider"
-      plain
-      class="oauth-btn"
-      :loading="oauthLoading === item.provider"
-      @click="startOAuth(item.provider)"
-    >
-      {{ item.name }}
-    </el-button>
-  </div>
+  <SocialOAuthButtons
+    :providers="oauthProviders"
+    :loading="oauthLoading"
+    @start="startOAuth"
+  />
 
   <div class="register-container">
     <el-text class="register-account">还没有账号?</el-text>
