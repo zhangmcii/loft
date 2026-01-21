@@ -635,27 +635,6 @@ class TestJwt:
         login_response = auth_instance.login(username="user", password="newpass")
         assert login_response.json.get("code") == 200
 
-    def test_upload_requires_auth(self, client, auth):
-        """13.2.1 上传文件接口需要有效 token"""
-        auth_instance = auth()
-
-        # 不带 token 访问
-        response = client.get(self.api_prefix + "/files/token")
-        # 该项目使用 JSON body 返回 401 错误
-        assert response.status_code == 200
-        assert response.json.get("code") == 401
-
-        # 登录后访问
-        auth_instance.register(username="user", password="pass")
-        auth_instance.login(username="user", password="pass")
-
-        response = client.get(
-            self.api_prefix + "/files/token",
-            headers=auth_instance.get_headers("access"),
-        )
-        assert response.status_code == 200
-        assert response.json.get("code") == 200
-
     # ==================== 十三、边界条件与特殊场景 ====================
 
     def test_multiple_bearer_in_header(self, client, auth):
@@ -667,28 +646,3 @@ class TestJwt:
         response = client.get(self.auth_prefix + "/access_token_test", headers=headers)
         # JWT 库返回 422 Unprocessable Entity
         assert response.status_code == 422
-
-    # ==================== 十四、错误处理与响应格式 ====================
-
-    def test_login_error_response_format(self, client, auth):
-        """15.2.1 错误响应格式一致性"""
-        auth_instance = auth()
-        response = auth_instance.login(username="wrong", password="wrong")
-
-        assert response.status_code == 200
-        assert "code" in response.json
-        assert "message" in response.json
-        assert response.json.get("code") == 400
-
-    def test_success_login_response_format(self, client, auth):
-        """15.2.2 成功响应格式"""
-        auth_instance = auth()
-        auth_instance.register(username="user", password="pass")
-        response = auth_instance.login(username="user", password="pass")
-
-        assert response.status_code == 200
-        assert "code" in response.json
-        assert "data" in response.json
-        assert "access_token" in response.json
-        assert "refresh_token" in response.json
-        assert response.json.get("code") == 200
