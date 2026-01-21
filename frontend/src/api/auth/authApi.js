@@ -39,4 +39,17 @@ export default {
   checkTokenFreshness() {
     return $http.get(`${url_prefix}/checkFreshness`);
   },
+  // OAuth 第三方登录
+  getOAuthProviders() {
+    return $http.get(`${url_prefix}/oauth/providers`);
+  },
+  oauthLogin(provider) {
+    return $http.get(`${url_prefix}/oauth/${provider}/login`);
+  },
+  oauthCallback(provider, params) {
+    // 将 params 作为查询参数传递
+    return $http.get(`${url_prefix}/oauth/${provider}/callback-api`, {
+      params,
+    });
+  },
 };

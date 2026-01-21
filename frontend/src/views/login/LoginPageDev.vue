@@ -29,20 +29,28 @@ export default {
       // 是否记住账号密码
       isRemember: false,
       loading: false,
+      // OAuth 相关
+      oauthProviders: [],
+      loadingProviders: false,
     };
   },
   setup() {
     const currentUser = useCurrentUserStore();
     return { currentUser };
   },
-  beforeRouteEnter(to, from, next) {
-    next((vm) => {
-      if (to.query?.username) {
-        vm.ruleForm.user = to.query.username;
-      } else {
-        vm.getAccount();
-      }
-    });
+  // beforeRouteEnter(to, from, next) {
+  //   next((vm) => {
+  //     if (to.query?.username) {
+  //       vm.ruleForm.user = to.query.username;
+  //     } else {
+  //       vm.getAccount();
+  //     }
+  //   });
+  // },
+
+  mounted() {
+    this.getAccount();
+    this.loadOAuthProviders();
   },
   computed: {
     formHasValue() {
@@ -102,6 +110,35 @@ export default {
         localStorage.removeItem("loginPassword");
       }
     },
+    // 加载 OAuth 提供商列表
+    loadOAuthProviders() {
+      this.loadingProviders = true;
+      authApi
+        .getOAuthProviders()
+        .then((res) => {
+          if (res.code === 200) {
+            this.oauthProviders = res.data || [];
+          }
+        })
+        .catch((err) => {
+          console.error("加载 OAuth 提供商失败:", err);
+        })
+        .finally(() => {
+          this.loadingProviders = false;
+        });
+    },
+    // OAuth 登录
+    handleOAuthLogin(provider) {
+      ElMessage.info(`正在跳转到 ${provider} 授权页面...`);
+      // 直接跳转到后端 OAuth 接口
+      window.location.href = `/auth/oauth/${provider}/login`;
+    },
+    // 获取 OAuth 图标
+    getOAuthIcon(provider) {
+      // 这里可以根据 provider 返回对应的图标
+      // 暂时返回 null，使用 Element Plus 默认图标
+      return null;
+    },
   },
 };
 </script>
@@ -157,6 +194,21 @@ export default {
     :loading="loading"
     >登录</el-button
   >
+  <!-- 第三方登录 -->
+  <div v-if="oauthProviders.length > 0" class="oauth-section">
+    <el-divider>其他登录方式</el-divider>
+    <div class="oauth-buttons">
+      <el-button
+        v-for="provider in oauthProviders"
+        :key="provider.provider"
+        :icon="getOAuthIcon(provider.provider)"
+        class="oauth-button"
+        @click="handleOAuthLogin(provider.provider)"
+      >
+        {{ provider.name }}
+      </el-button>
+    </div>
+  </div>
 
   <!-- <el-divider> 其他登录方式 </el-divider> -->
   <div class="register-container">
@@ -264,5 +316,21 @@ p {
   display: flex;
   justify-content: center;
   margin-top: 10px;
+}
+.oauth-section {
+  margin-top: 1.5rem;
+  width: 95%;
+}
+.oauth-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.oauth-button {
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
 }
 </style>

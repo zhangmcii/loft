@@ -1,3 +1,12 @@
+const oauth = [
+  {
+    path: "/oauth/callback/:provider",
+    name: "oauthCallback",
+    component: () => import("../views/oauth/OAuthCallback.vue"),
+    meta: { layout: "blank" },
+  },
+];
+
 const updateUser = [
   {
     path: "/editProfile",
@@ -174,6 +183,7 @@ const routes = [
         name: "register",
         component: () => import("../views/login/RegisterPage.vue"),
       },
+      ...oauth,
       ...updateUser,
       ...setting,
       ...error,

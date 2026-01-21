@@ -1,5 +1,7 @@
+"""
+认证路由模块
+"""
 import logging
-import os
 
 from flask import current_app, request
 from flask_jwt_extended import (
@@ -27,6 +29,7 @@ from ..utils.response import error, success, unauthorized
 from ..utils.time_util import DateUtils
 from ..utils.validation import validate_json
 from . import auth
+from .third_party_login import get_oauth_providers, oauth_callback, oauth_login
 
 
 @auth.before_app_request
@@ -238,3 +241,36 @@ def check_freshness():
     if jwt_data.get("fresh", False):
         return success(message="令牌新鲜")
     return unauthorized(message="该操作需要重新登录以验证身份")
+
+
+# ==================== OAuth 第三方登录路由 ====================
+
+
+@auth.route("/oauth/providers", methods=["GET"])
+def oauth_providers():
+    """获取可用的 OAuth 提供商列表"""
+    return get_oauth_providers()
+
+
+@auth.route("/oauth/<provider>/login", methods=["GET"])
+def oauth_login_route(provider):
+    """OAuth 登录 - 重定向到第三方授权页面"""
+    return oauth_login(provider)
+
+
+@auth.route("/oauth/<provider>/callback", methods=["GET"])
+def oauth_callback_route(provider):
+    """OAuth 回调 - 重定向到前端回调页面"""
+    # 重定向到前端回调页面，带上所有查询参数
+    from flask import url_for
+
+    callback_url = f"/oauth/callback/{provider}?{request.query_string.decode()}"
+    return redirect(callback_url)
+
+
+@auth.route("/oauth/<provider>/callback-api", methods=["GET", "POST"])
+def oauth_callback_api_route(provider):
+    """OAuth 回调 API - 前端回调页面调用此接口处理登录"""
+    from .third_party_login import oauth_callback_api
+
+    return oauth_callback_api(provider)
