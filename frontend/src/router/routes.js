@@ -30,6 +30,12 @@ const updateUser = [
 ];
 const setting = [
   {
+    path: "/settings",
+    name: "settings",
+    component: () => import("../views/user/Settings.vue"),
+    meta: { requireAuth: true },
+  },
+  {
     path: "/bindEmail",
     name: "bindEmail",
     component: () => import("../views/user/EmailPage.vue"),

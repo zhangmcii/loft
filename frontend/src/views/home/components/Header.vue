@@ -53,80 +53,12 @@
               clickable
               @click="handleCellClick(`/user/${currentUser.userInfo.username}`)"
             />
-            <div v-if="currentUser.isCommentManage">
-              <van-cell
-                title="评论管理"
-                icon="chat-o"
-                clickable
-                @click="handleCellClick('/commentManagement')"
-              />
-              <van-cell
-                title="标签管理"
-                icon="medal-o"
-                clickable
-                @click="handleCellClick('/tag')"
-              />
-              <van-cell
-                title="操作日志"
-                icon="shield-o"
-                clickable
-                @click="handleCellClick('/operateLog')"
-              />
-              <van-cell
-                title="管理背景库"
-                icon="photo-o"
-                clickable
-                @click="handleCellClick('/uploadBg')"
-              />
-              <van-cell
-                title="管理图像库"
-                icon="user-o"
-                clickable
-                @click="handleCellClick('/uploadAva')"
-              />
-              <van-cell
-                title="找回其他用户密码"
-                icon="warning-o"
-                clickable
-                @click="handleCellClick('/PasswordChangeAdmin')"
-              ></van-cell>
-            </div>
             <van-cell
-              :title="accountLabel"
-              :icon="accountLabel == '账户' ? 'notes-o' : ''"
-              is-link
-              arrow-direction="down"
-              @click.prevent="toggleContactDropdown"
-            />
-            <div v-if="isContactDropdownActive">
-              <van-cell
-                title="修改密码"
-                title-style="margin-left:10px"
-                clickable
-                @click="handleCellClick('/changePassword')"
-              ></van-cell>
-              <van-cell
-                title="修改邮箱"
-                title-style="margin-left:10px"
-                clickable
-                @click="handleCellClick('/changeEmail')"
-                v-if="currentUser.isConfirmed"
-              ></van-cell>
-              <van-cell
-                title="绑定邮箱"
-                title-style="margin-left:10px"
-                clickable
-                @click="handleCellClick('/bindEmail')"
-                v-else
-              ></van-cell>
-            </div>
-            <van-cell
-              title="退出登录"
-              icon="peer-pay"
+              title="设置"
+              icon="setting-o"
               clickable
-              @click="log_out"
-              href="/posts"
-            ></van-cell>
+              @click="handleCellClick('/settings')"
+            />
           </template>
         </van-popover>
       </div>

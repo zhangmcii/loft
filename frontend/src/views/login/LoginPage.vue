@@ -78,7 +78,7 @@ export default {
                     type: "success",
                     duration: 1700,
                   });
-                  this.$router.push({ path: "/posts" });
+                  this.$router.replace({ path: "/posts" });
                 } else {
                   ElMessage({
                     message: res.message || "账号或密码错误",

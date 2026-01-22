@@ -14,6 +14,12 @@ router.beforeEach((to, _from, next) => {
 
     const role = roleId === 3 ? "admin" : roleId;
 
+    // 已登录用户访问登录页时重定向到首页
+    if (to.path === "/login" && access_token) {
+      next("/posts");
+      return;
+    }
+
     if (to.meta?.roles && !to.meta.roles.includes(role)) {
       next("/403");
     } else if (to.meta?.requireAuth && !access_token) {

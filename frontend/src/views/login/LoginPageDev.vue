@@ -76,7 +76,7 @@ export default {
                 this.currentUser.access_token = res.access_token;
                 this.currentUser.refresh_token = res.refresh_token;
                 ElMessage.success("登录成功");
-                this.$router.push({ path: "/posts" });
+                this.$router.replace({ path: "/posts" });
               } else {
                 ElMessage.error(res.message || "账号或密码错误");
               }
