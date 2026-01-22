@@ -512,7 +512,7 @@ class Post(db.Model):
     # 发布时间
     timestamp = db.Column(db.DateTime, index=True, default=DateUtils.now_time)
     # 更新时间
-    # updated_at = db.Column(db.DateTime)
+    # updated_at = db.Column(db.DateTime, default=DateUtils.now_time, onupdate=DateUtils.now_time)
 
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
@@ -1012,20 +1012,36 @@ class ThirdPartyAccount(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # github / qq / wechat
-    provider = db.Column(db.String(32), nullable=False)
-    # 同一个 appid 下唯一
-    openid = db.Column(db.String(128), nullable=False)
-    # 跨应用统一身份
-    unionid = db.Column(db.String(128), nullable=True)
+    # === 身份主键（来自 AuthUser） ===
+    provider = db.Column(db.String(32), nullable=False)  # 对应 AuthUser.source
+    uuid = db.Column(db.String(128), nullable=False)  # 对应 AuthUser.uuid
 
+    # === 第三方展示字段（快照） ===
+    username = db.Column(db.String(64))
     nickname = db.Column(db.String(64))
     avatar = db.Column(db.String(255))
-    raw_profile = db.Column(db.JSON)
+    email = db.Column(db.String(128))
+    mobile = db.Column(db.String(32))
+    # 0 未知 ;1 男 ; 2 女
+    gender = db.Column(db.SmallInteger, nullable=True)
+    location = db.Column(db.String(64))
+    company = db.Column(db.String(128))
+    blog = db.Column(db.String(255))
+    remark = db.Column(db.String(255))
+
+    # === 原始数据 ===
+    raw_user_info = db.Column(db.JSON)
+
     created_at = db.Column(db.DateTime, default=DateUtils.now_time)
+    updated_at = db.Column(
+        db.DateTime,
+        default=DateUtils.now_time,
+        onupdate=DateUtils.now_time,
+    )
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     __table_args__ = (
-        db.UniqueConstraint("provider", "openid", name="uq_provider_openid"),
+        db.UniqueConstraint("provider", "uuid", name="uq_provider_uuid"),
+        db.Index("idx_provider_uuid", "provider", "uuid"),
     )

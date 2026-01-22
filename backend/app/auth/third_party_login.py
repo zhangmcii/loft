@@ -1,12 +1,3 @@
-"""
-面向 Flask 的第三方登录入口。
-
-设计目标：
-- 复用 senweaver-oauth，所有平台共享一套流程；
-- 是否启用某个平台仅由配置决定（缺少 client_id / client_secret 即视为关闭）；
-- 回调后落地到本地用户体系（User / ThirdPartyAccount），并签发 JWT；
-- 提供给前端的接口均为统一 JSON 结构。
-"""
 from __future__ import annotations
 
 import json
@@ -17,40 +8,43 @@ import secrets
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
-from flask import current_app, redirect, request, url_for
+from flask import redirect, request, url_for
 from flask_jwt_extended import create_access_token, create_refresh_token
 from senweaver_oauth import AuthConfig
 from senweaver_oauth.builder import AuthRequestBuilder
-from senweaver_oauth.enums.auth_source import AuthDefaultSource, AuthSource
 
 from .. import db
 from ..models import ThirdPartyAccount, User
 from ..utils.response import error, success
 from . import auth
 
-logger = logging.getLogger(__name__)
+# 第三方授权平台
+APP_NAMES = ["qq", "weibo", "github", "google"]
+
 
 # 平台配置：仅在存在 client_id & client_secret 时才会启用
-OAUTH_CONFIGS: Dict[str, Dict] = {
-    "github": {
-        "display_name": "GitHub",
-        "client_id": os.getenv("GITHUB_CLIENT_ID", ""),
-        "client_secret": os.getenv("GITHUB_CLIENT_SECRET", ""),
-        "redirect_uri": os.getenv("GITHUB_REDIRECT_URI"),  # 可为空，后端自动生成
-    },
-    # 新平台按此格式扩展即可
-    # "qq": {
-    #     "display_name": "qq",
-    #     "client_id": os.getenv("QQ_CLIENT_ID", ""),
-    #     "client_secret": os.getenv("QQ_CLIENT_SECRET", ""),
-    #     "redirect_uri": os.getenv("QQ_REDIRECT_URI"),  # 可为空，后端自动生成
-    # },
-}
+def _read_config(app_names: list[str]) -> Dict[str, Dict]:
+    result = {}
+    for name in app_names:
+        pre_fix = name.upper()
+        result[name] = {
+            "display_name": name,
+            "client_id": os.getenv(f"{pre_fix}_CLIENT_ID", ""),
+            "client_secret": os.getenv(f"{pre_fix}_CLIENT_SECRET", ""),
+            # 可为空，后端自动生成
+            "redirect_uri": os.getenv(f"{pre_fix}_REDIRECT_URI"),
+        }
+    return result
+
+
+OAUTH_CONFIGS = _read_config(APP_NAMES)
+
 
 # 回跳到前端的页面（例如 https://your-frontend.com/oauth/callback）
-FRONTEND_OAUTH_REDIRECT = os.getenv(
-    "FRONTEND_OAUTH_REDIRECT", "http://192.168.1.7:5172/oauth/callback"
-)
+_host = os.getenv("FLASK_RUN_HOST")
+_port = "80" if os.getenv("FLASK_CONFIG") == "docker" else "5172"
+
+FRONTEND_OAUTH_REDIRECT = f"http://{_host}:{_port}/oauth/callback"
 
 
 def _enabled_providers() -> List[str]:
@@ -105,23 +99,8 @@ def _safe_profile(raw_profile) -> Optional[Dict]:
     try:
         return json.loads(json.dumps(raw_profile, default=str))
     except Exception as exc:  # noqa: BLE001
-        logger.warning("原始第三方资料序列化失败: %s", exc)
+        logging.warning("原始第三方资料序列化失败: %s", exc)
         return None
-
-
-def _extract_openid(auth_user) -> str:
-    """
-    senweaver-oauth 不同平台字段名可能不同，这里做一个兜底提取。
-    """
-    candidates = [
-        getattr(auth_user, "uuid", None),
-        getattr(auth_user, "openid", None),
-        getattr(auth_user, "id", None),
-    ]
-    for value in candidates:
-        if value:
-            return str(value)
-    raise ValueError("第三方登录缺少 openid/uuid")
 
 
 def _generate_username(base_name: str) -> str:
@@ -139,21 +118,40 @@ def _generate_username(base_name: str) -> str:
 
 def _get_or_create_user(provider: str, auth_user) -> User:
     """将第三方账号落地到 User + ThirdPartyAccount"""
-    openid = _extract_openid(auth_user)
-    unionid = getattr(auth_user, "unionid", None)
-    nickname = auth_user.nickname or auth_user.username or provider
+    # provider = auth_user.source (已在调用方传入 provider)
+    uuid = getattr(auth_user, "uuid", None)
+    if not uuid:
+        raise ValueError("第三方登录缺少 uuid")
+
+    # 从 AuthUser 标准字段提取用户信息
+    username = auth_user.username
+    nickname = auth_user.nickname
     avatar = getattr(auth_user, "avatar", None)
-    raw_profile = _safe_profile(getattr(auth_user, "raw_user_info", None))
+    email = getattr(auth_user, "email", None)
+    mobile = getattr(auth_user, "mobile", None)
+    gender = auth_user.gender.value if auth_user.gender else None
+    location = getattr(auth_user, "location", None)
+    company = getattr(auth_user, "company", None)
+    blog = getattr(auth_user, "blog", None)
+    remark = getattr(auth_user, "remark", None)
+    raw_user_info = _safe_profile(getattr(auth_user, "raw_user_info", None))
 
     account = ThirdPartyAccount.query.filter_by(
-        provider=provider, openid=openid
+        provider=provider, uuid=uuid
     ).one_or_none()
 
     if account:
         # 已绑定用户，更新快照信息
         account.nickname = nickname
         account.avatar = avatar
-        account.raw_profile = raw_profile
+        account.email = email
+        account.mobile = mobile
+        account.gender = gender
+        account.location = location
+        account.company = company
+        account.blog = blog
+        account.remark = remark
+        account.raw_user_info = raw_user_info
         db.session.add(account)
         user = User.query.get(account.user_id)
         if user and (not user.image and avatar):
@@ -162,7 +160,7 @@ def _get_or_create_user(provider: str, auth_user) -> User:
         return user
 
     # 创建用户
-    username = _generate_username(nickname)
+    username = _generate_username(username)
     user = User(
         username=username,
         nickname=nickname,
@@ -171,15 +169,23 @@ def _get_or_create_user(provider: str, auth_user) -> User:
         password=secrets.token_urlsafe(32),
     )
     db.session.add(user)
-    db.session.flush()  # 获取 user.id
+    # 获取 user.id
+    db.session.flush()
 
     account = ThirdPartyAccount(
         provider=provider,
-        openid=openid,
-        unionid=unionid,
+        uuid=uuid,
+        username=username,
         nickname=nickname,
         avatar=avatar,
-        raw_profile=raw_profile,
+        email=email,
+        mobile=mobile,
+        gender=gender,
+        location=location,
+        company=company,
+        blog=blog,
+        remark=remark,
+        raw_user_info=raw_user_info,
         user_id=user.id,
     )
     db.session.add(account)
@@ -215,7 +221,7 @@ def oauth_authorize(provider: str):
         auth_url = auth_request.authorize()
         return success(data={"authorize_url": auth_url, "provider": provider})
     except Exception as exc:  # noqa: BLE001
-        logger.exception("创建授权请求失败: %s", exc)
+        logging.exception("创建授权请求失败: %s", exc)
         return error(code=400, message=str(exc))
 
 
@@ -230,7 +236,7 @@ def oauth_callback(provider: str):
     params = dict(request.args)
     try:
         auth_request, meta = _get_auth_request(provider)
-        logger.info(
+        logging.info(
             "处理第三方回调 provider=%s redirect_uri=%s params=%s",
             provider,
             meta["redirect_uri"],
@@ -280,6 +286,6 @@ def oauth_callback(provider: str):
             message="登录成功",
         )
     except Exception as exc:  # noqa: BLE001
-        logger.exception("处理第三方登录失败: %s", exc)
+        logging.exception("处理第三方登录失败: %s", exc)
         db.session.rollback()
         return error(code=500, message="处理第三方登录失败")
