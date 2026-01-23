@@ -54,6 +54,12 @@ const setting = [
     meta: { requireAuth: true },
   },
   {
+    path: "/setPassword",
+    name: "setPassword",
+    component: () => import("../views/user/PasswordSet.vue"),
+    meta: { requireAuth: true },
+  },
+  {
     path: "/PasswordChangeAdmin",
     name: "PasswordChangeAdmin",
     component: () => import("../views/user/PasswordChangeAdmin.vue"),

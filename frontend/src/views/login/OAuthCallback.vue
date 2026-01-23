@@ -26,9 +26,54 @@ function parseUser(raw) {
 }
 
 onMounted(() => {
-  const { access_token, refresh_token, user, error, message, provider } =
-    route.query;
+  const {
+    access_token,
+    refresh_token,
+    user,
+    error,
+    message,
+    provider,
+    action,
+    status,
+  } = route.query;
 
+  // 处理绑定回调
+  if (action === "bind") {
+    if (status === "success") {
+      state.value = {
+        status: "success",
+        title: "绑定成功",
+        subTitle: `${provider} 账号绑定成功，正在跳转...`,
+      };
+      // 更新当前用户的绑定状态
+      if (store.userInfo) {
+        // 触发用户信息更新（bound_providers会在下次获取用户信息时更新）
+        store.setUserInfo({
+          ...store.userInfo,
+          bound_providers: [
+            ...(store.userInfo.bound_providers || []),
+            provider,
+          ],
+        });
+      }
+    } else {
+      state.value = {
+        status: "error",
+        title: "绑定失败",
+        subTitle: decodeURIComponent(message || "授权失败"),
+      };
+    }
+
+    // 跳转回设置页面
+    const elapsed =
+      (typeof performance !== "undefined" ? performance.now() : Date.now()) -
+      startedAt;
+    const delay = Math.max(1500 - elapsed, 0);
+    setTimeout(() => router.replace("/settings"), delay);
+    return;
+  }
+
+  // 处理登录回调
   if (error || message) {
     state.value = {
       status: "error",

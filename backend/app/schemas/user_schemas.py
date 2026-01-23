@@ -44,7 +44,7 @@ class RegisterRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     """修改密码请求校验模型"""
 
-    old_password: str = Field(..., min_length=3, description="原密码")
+    old_password: str = Field(None, min_length=3, description="原密码（可选，当token新鲜时不需要）")
     new_password: str = Field(..., min_length=3, max_length=16, description="新密码")
 
     @field_validator("new_password")

@@ -52,6 +52,10 @@ export const useCurrentUserStore = defineStore("currentUser", {
         lrc: "",
       },
       tags: [],
+      // 第三方账号绑定状态
+      bound_providers: [],
+      // 是否有密码
+      has_password: true,
     },
     notice: {
       Notification_data: [],

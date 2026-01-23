@@ -159,11 +159,17 @@ def change_email(validated_data):
 @jwt_required(fresh=True)
 @validate_json(ChangePasswordRequest)
 def change_password(validated_data):
-    if current_user.verify_password(validated_data.old_password):
-        current_user.password = validated_data.new_password
-        db.session.commit()
-        return success()
-    return error(message="原密码错误")
+    # 如果提供了旧密码，则验证旧密码
+    if validated_data.old_password is not None:
+        if not current_user.verify_password(validated_data.old_password):
+            return error(message="原密码错误")
+
+    # 设置新密码
+    current_user.password = validated_data.new_password
+    # 用户具备密码登陆能力
+    current_user.has_password = True
+    db.session.commit()
+    return success()
 
 
 @auth.route("/resetPassword", methods=["POST"])
@@ -179,6 +185,7 @@ def reset_password(validated_data):
         if not user:
             return error(message="此邮箱尚未绑定")
         user.password = password
+        user.has_password = True
         db.session.commit()
         return success()
     return error(message="验证码错误")
@@ -204,6 +211,41 @@ def refresh():
     """刷新token"""
     access_token = "Bearer " + create_access_token(identity=current_user)
     return success(data={"access_token": access_token})
+
+
+@auth.route("/setPassword", methods=["POST"])
+@jwt_required()
+def set_password():
+    """
+    设置密码（用于has_password=false的用户）
+
+    请求参数:
+        new_password: 新密码
+
+    返回:
+        success: 设置成功
+    """
+    try:
+        data = request.get_json()
+        new_password = data.get("new_password")
+
+        if not new_password:
+            return error(code=400, message="新密码不能为空")
+
+        if len(new_password) < 3:
+            return error(code=400, message="密码长度不能少于3个字符")
+
+        # 设置密码
+        current_user.password = new_password
+        # 更新has_password标记
+        current_user.has_password = True
+        db.session.commit()
+
+        return success(message="密码设置成功")
+    except Exception as e:
+        logging.exception("设置密码失败: %s", e)
+        db.session.rollback()
+        return error(code=500, message="设置密码失败")
 
 
 @auth.route("/revokeToken", methods=["DELETE"])

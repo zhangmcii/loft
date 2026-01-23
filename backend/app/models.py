@@ -152,6 +152,8 @@ class User(db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(255))
+    # 用户是否具备密码登录能力
+    has_password = db.Column(db.Boolean, default=True)
     confirmed = db.Column(db.Boolean, default=False)
     # 用户资料
     nickname = db.Column(db.String(64))
@@ -403,6 +405,11 @@ class User(db.Model):
                     interest["movies"].append(image.to_json())
                 elif image.type == ImageType.BOOK:
                     interest["books"].append(image.to_json())
+
+        # 获取已绑定的第三方平台列表
+        bound_accounts = ThirdPartyAccount.query.filter_by(user_id=self.id).all()
+        bound_providers = [account.provider for account in bound_accounts]
+
         json_user = {
             # 后端接口
             # 'url': url_for('api.get_user', id=self.id),
@@ -446,6 +453,8 @@ class User(db.Model):
             "social_account": self.social_account,
             "music": self.music,
             "tags": [tag.name for tag in self.tags],
+            "bound_providers": bound_providers,
+            "has_password": self.has_password,
         }
         return json_user
 

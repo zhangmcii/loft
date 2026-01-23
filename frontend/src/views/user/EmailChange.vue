@@ -2,6 +2,7 @@
 import authApi from "@/api/auth/authApi.js";
 import ButtonClick from "@/utils/components/ButtonClick.vue";
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
+import { ElLoading } from "element-plus";
 
 export default {
   components: {
@@ -49,6 +50,11 @@ export default {
   methods: {
     async checkTokenFreshnessOnEnter() {
       this.isCheckingFreshness = true;
+      const loading = ElLoading.service({
+        lock: true,
+        text: "正在验证您的身份...",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
       try {
         const res = await authApi.checkTokenFreshness();
         if (res.code === 200) {
@@ -61,6 +67,7 @@ export default {
       } finally {
         // 确保至少显示1秒加载状态,避免页面闪烁
         setTimeout(() => {
+          loading.close();
           this.isCheckingFreshness = false;
         }, 1000);
       }
@@ -162,10 +169,7 @@ export default {
 <template>
   <PageHeadBack>
     <!-- 加载状态 -->
-    <div v-if="isCheckingFreshness" class="loading-state">
-      <el-loading fullscreen lock />
-      <div class="loading-text">正在验证您的身份...</div>
-    </div>
+    <div v-if="isCheckingFreshness" class="loading-state"></div>
 
     <!-- 主表单 -->
     <div v-else class="email-change-container">
@@ -490,11 +494,5 @@ export default {
   align-items: center;
   justify-content: center;
   min-height: 300px;
-}
-
-.loading-text {
-  margin-top: 20px;
-  color: #909399;
-  font-size: 14px;
 }
 </style>

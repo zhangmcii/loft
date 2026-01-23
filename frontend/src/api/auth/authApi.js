@@ -36,6 +36,9 @@ export default {
   helpChangePassword(params) {
     return $http.post(`${url_prefix}/helpChangePassword`, params);
   },
+  setPassword(params) {
+    return $http.post(`${url_prefix}/setPassword`, params);
+  },
   checkTokenFreshness() {
     return $http.get(`${url_prefix}/checkFreshness`);
   },
@@ -44,5 +47,11 @@ export default {
   },
   oauthAuthorize(provider, params = {}) {
     return $http.get(`${url_prefix}/oauth/authorize/${provider}`, { params });
+  },
+  oauthBind(provider) {
+    return $http.post(`${url_prefix}/oauth/bind/${provider}`);
+  },
+  oauthUnbind(provider) {
+    return $http.post(`${url_prefix}/oauth/unbind/${provider}`);
   },
 };

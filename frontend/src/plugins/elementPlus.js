@@ -5,7 +5,7 @@ import {
    * 导出来源：https://github.com/element-plus/element-plus/blob/dev/packages/element-plus/component.ts#L111-L211
    * */
   // ElAffix,
-  //   ElAlert,
+  ElAlert,
   //   ElAutocomplete,
   //   ElAutoResizer,
   ElAvatar,
@@ -121,7 +121,7 @@ import {
 
 const components = [
   // ElAffix,
-  //   ElAlert,
+  ElAlert,
   //   ElAutocomplete,
   //   ElAutoResizer,
   ElAvatar,

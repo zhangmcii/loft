@@ -18,6 +18,7 @@ import {
   Badge,
   Field,
   RadioGroup,
+  Switch,
 } from "vant";
 
 const components = [
@@ -40,6 +41,7 @@ const components = [
   Badge,
   Field,
   RadioGroup,
+  Switch,
 ];
 
 /** 按需引入`vant` */
