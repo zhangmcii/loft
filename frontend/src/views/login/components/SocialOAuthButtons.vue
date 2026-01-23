@@ -19,6 +19,7 @@ import githubIcon from "@/asset/svg/github.svg?component";
 import googleIcon from "@/asset/svg/google.svg?component";
 import qqIcon from "@/asset/svg/qqchat.svg?component";
 import wechatIcon from "@/asset/svg/wechat.svg?component";
+import weiboIcon from "@/asset/svg/weibo.svg?component";
 
 const iconMap = {
   github: githubIcon,
@@ -27,6 +28,7 @@ const iconMap = {
   wechat: wechatIcon,
   wechat_open: wechatIcon,
   wechat_mini: wechatIcon,
+  weibo: weiboIcon,
 };
 
 const renderProviders = computed(() =>
