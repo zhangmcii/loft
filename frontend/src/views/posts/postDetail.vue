@@ -301,6 +301,10 @@ export default {
           />
           <el-skeleton-item
             variant="text"
+            style="width: 85%; margin-bottom: 12px"
+          />
+          <el-skeleton-item
+            variant="text"
             style="width: 100%; margin-bottom: 12px"
           />
           <el-skeleton-item
@@ -363,12 +367,11 @@ export default {
               :showDelete="true"
             />
           </div>
-
-          <div class="post-comments">
-            <CommentCard :post-id="postId" :post-author="post.author" />
-          </div>
         </template>
       </el-skeleton>
+      <div class="post-comments">
+        <CommentCard :post-id="postId" :post-author="post.author" />
+      </div>
       <PostToc
         v-if="showSkeletonComponents"
         :toc="toc"
