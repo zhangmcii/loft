@@ -50,10 +50,10 @@
           v-for="provider in oauthProviders"
           :key="provider.provider"
           :title="getProviderTitle(provider.provider)"
-          :icon="getProviderIcon(provider.provider)"
           :label="getProviderLabel(provider.provider)"
           :class="{ 'is-bound': isProviderBound(provider.provider) }"
         >
+          <!-- :icon="getProviderIcon(provider.provider)" -->
           <template #right-icon>
             <el-switch
               :model-value="isProviderBound(provider.provider)"
@@ -104,12 +104,6 @@
           is-link
           @click="goTo('/PasswordChangeAdmin')"
         />
-      </div>
-
-      <!-- 通用设置 -->
-      <div class="cell-group">
-        <van-cell title="主题" icon="setting-o" is-link />
-        <van-cell title="语言" icon="gem-o" is-link />
       </div>
 
       <!-- 其他设置 -->
@@ -192,16 +186,16 @@ export default {
       };
       return providerMap[provider] || provider.toUpperCase();
     },
-    getProviderIcon(provider) {
-      const iconMap = {
-        github: "github",
-        google: "google",
-        qq: "qq",
-        wechat: "wechat",
-        weibo: "weibo",
-      };
-      return iconMap[provider] || "link-o";
-    },
+    // getProviderIcon(provider) {
+    //   const iconMap = {
+    //     github: "github",
+    //     google: "google",
+    //     qq: "qq",
+    //     wechat: "wechat",
+    //     weibo: "weibo",
+    //   };
+    //   return iconMap[provider] || "link-o";
+    // },
     getProviderLabel(provider) {
       if (this.isProviderBound(provider)) {
         return "已绑定";

@@ -9,6 +9,7 @@ from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
+import requests
 from flask import redirect, request, url_for
 from flask_jwt_extended import (
     create_access_token,
@@ -19,8 +20,9 @@ from flask_jwt_extended import (
 )
 from senweaver_oauth import AuthConfig
 from senweaver_oauth.builder import AuthRequestBuilder
+from senweaver_oauth.cache import DefaultCacheStore, RedisCacheStore
 
-from .. import db
+from .. import db, redis
 from ..models import ThirdPartyAccount, User
 from ..utils.response import error, success
 from . import auth
@@ -49,9 +51,41 @@ OAUTH_CONFIGS = _read_config(APP_NAMES)
 
 # 回跳到前端的页面（例如 https://your-frontend.com/oauth/callback）
 _host = os.getenv("FLASK_RUN_HOST")
-_port = "80" if os.getenv("FLASK_CONFIG") == "docker" else "5172"
-
+_port = "5172"
 FRONTEND_OAUTH_REDIRECT = f"http://{_host}:{_port}/oauth/callback"
+
+if os.getenv("FLASK_CONFIG") == "docker":
+    FRONTEND_OAUTH_REDIRECT = f"https://191718.com/oauth/callback"
+
+
+# 初始化 Redis 缓存存储（用于 OAuth state，解决多进程共享问题）
+# 使用现有的 flask_redis 实例
+_oauth_redis_cache = None
+
+
+def _get_oauth_cache_store() -> RedisCacheStore:
+    """
+    获取 OAuth Redis 缓存存储实例（单例模式）
+
+    Returns:
+        RedisCacheStore: Redis 缓存存储实例
+    """
+    global _oauth_redis_cache
+    if _oauth_redis_cache is None:
+        # 使用现有的 flask_redis 客户端
+        # flask_redis 的 redis 对象本身就是 Redis 客户端
+        redis_client = redis
+        if redis_client is None:
+            raise RuntimeError("Redis 客户端未初始化，请确保 flask_redis 已正确配置")
+
+        _oauth_redis_cache = RedisCacheStore(
+            redis_client=redis_client,
+            prefix="oauth:state:",
+            ttl=300,  # state 有效期 5 分钟
+        )
+        # # 设置为默认缓存实例
+        DefaultCacheStore.set_instance(_oauth_redis_cache)
+    return _oauth_redis_cache
 
 
 def _enabled_providers() -> List[str]:
@@ -78,6 +112,10 @@ def _get_auth_request(provider: str) -> Tuple[AuthRequestBuilder, Dict]:
         "auth.oauth_callback", provider=provider, _external=True
     )
 
+    # nginx只转发/api 开头的请求到后端
+    if os.getenv("FLASK_CONFIG") == "docker":
+        redirect_uri = redirect_uri.replace("auth", "api/auth", 1)
+
     auth_config = AuthConfig(
         client_id=config["client_id"],
         client_secret=config["client_secret"],
@@ -88,6 +126,9 @@ def _get_auth_request(provider: str) -> Tuple[AuthRequestBuilder, Dict]:
     # senweaver-oauth 在内部会对传入的字符串执行 upper()
     # 因此这里统一传字符串，避免直接传 AuthSource 对象导致缺少 upper 方法
     source_name = config.get("source") or provider
+
+    # 获取 Redis 缓存存储（用于 OAuth state，解决多进程共享问题）
+    _get_oauth_cache_store()
 
     auth_request = (
         AuthRequestBuilder.builder()
@@ -183,10 +224,8 @@ def _get_or_create_user(provider: str, auth_user) -> User:
 
     account = ThirdPartyAccount(
         provider=provider,
-        uuid=uuid,
-        username=username,
-        **profile,  # 展开所有 profile 字段
         user_id=user.id,
+        **profile,
     )
     db.session.add(account)
     return user
@@ -253,10 +292,8 @@ def _bind_third_party_account(
         # 创建新的绑定记录
         account = ThirdPartyAccount(
             provider=provider,
-            uuid=uuid,
-            username=profile["username"],
-            **profile,  # 展开所有 profile 字段
             user_id=user.id,
+            **profile,
         )
 
     # 更新快照信息
@@ -299,6 +336,37 @@ def oauth_authorize(provider: str):
         return error(code=400, message=str(exc))
 
 
+def _handle_oauth_error(
+    provider: str, error_code: int, error_message: str, is_bind: bool = False
+):
+    """
+    统一处理 OAuth 错误，根据是否有前端重定向地址决定返回方式
+
+    Args:
+        provider: 第三方平台名称
+        error_code: HTTP 错误码
+        error_message: 错误消息
+        is_bind: 是否为绑定模式
+
+    Returns:
+        redirect 或 error 响应
+    """
+    if FRONTEND_OAUTH_REDIRECT:
+        # 如果有前端重定向地址，跳转到前端并传递错误信息
+        query = urlencode(
+            {
+                "provider": provider,
+                "status": "error",
+                "message": error_message,
+                **({"action": "bind"} if is_bind else {}),
+            }
+        )
+        return redirect(f"{FRONTEND_OAUTH_REDIRECT}?{query}")
+
+    # 否则直接返回 JSON 错误
+    return error(code=error_code, message=error_message)
+
+
 @auth.route("/oauth/callback/<provider>", methods=["GET"])
 def oauth_callback(provider: str):
     """
@@ -317,7 +385,53 @@ def oauth_callback(provider: str):
             params,
         )
 
-        auth_user_response = auth_request.login(params)
+        try:
+            auth_user_response = auth_request.login(params)
+        except requests.exceptions.ConnectionError as e:
+            # 网络连接错误（服务器无法访问外网）
+            logging.error(
+                f"OAuth 网络连接失败 provider={provider}, error={str(e)}",
+                exc_info=True,
+            )
+            return _handle_oauth_error(
+                provider,
+                503,
+                f"{provider.title()} 服务连接失败，请稍后重试或检查服务器网络配置",
+            )
+        except requests.exceptions.Timeout as e:
+            # 请求超时
+            logging.error(f"OAuth 请求超时 provider={provider}, error={str(e)}")
+            return _handle_oauth_error(
+                provider,
+                504,
+                f"{provider.title()} 服务响应超时，请稍后重试",
+            )
+        except AttributeError as e:
+            # QQ 适配器的特殊 bug
+            if "'dict' object has no attribute 'text'" in str(e):
+                logging.error(f"QQ OAuth 库内部错误: {e}")
+                return _handle_oauth_error(
+                    provider,
+                    500,
+                    f"{provider.title()} OAuth 处理失败，请稍后重试或使用其他登录方式",
+                )
+            raise
+
+        # 检查响应是否包含网络错误（即使 code=200，message 中也可能包含错误）
+        if auth_user_response.message and (
+            "timed out" in auth_user_response.message.lower()
+            or "connection to" in auth_user_response.message.lower()
+            or "max retries exceeded" in auth_user_response.message.lower()
+            or "network unreachable" in auth_user_response.message.lower()
+        ):
+            # 网络错误
+            logging.error(f"OAuth 网络错误从响应中检测到: {auth_user_response.message}")
+            return _handle_oauth_error(
+                provider,
+                503,
+                f"{provider.title()} 服务连接失败，请稍后重试或检查服务器网络配置",
+            )
+
         if auth_user_response.code != 200 or not auth_user_response.data:
             return error(
                 code=auth_user_response.code or 400,
@@ -413,10 +527,35 @@ def oauth_callback(provider: str):
                 refresh_token=refresh_token,
                 message="登录成功",
             )
+    except requests.exceptions.ConnectionError as e:
+        # 网络连接错误（服务器无法访问外网）- 在最外层捕获兜底
+        logging.error(
+            f"OAuth 网络连接失败(外层捕获) provider={provider}, error={str(e)}",
+            exc_info=True,
+        )
+        return _handle_oauth_error(
+            provider,
+            503,
+            f"服务器无法连接 {provider.title()} 服务，请稍后重试或联系管理员检查网络配置",
+            is_bind_mode,
+        )
+    except requests.exceptions.Timeout as e:
+        logging.error(f"OAuth 请求超时(外层捕获) provider={provider}, error={str(e)}")
+        return _handle_oauth_error(
+            provider,
+            504,
+            f"连接 {provider.title()} 服务超时，请稍后重试",
+            is_bind_mode,
+        )
     except Exception as exc:  # noqa: BLE001
         logging.exception("处理第三方登录失败: %s", exc)
         db.session.rollback()
-        return error(code=500, message="处理第三方登录失败")
+        return _handle_oauth_error(
+            provider,
+            500,
+            "处理第三方登录失败，请稍后重试",
+            is_bind_mode,
+        )
 
 
 @auth.route("/oauth/bind/<provider>", methods=["POST"])

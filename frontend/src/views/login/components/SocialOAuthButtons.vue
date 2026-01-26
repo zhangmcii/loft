@@ -73,7 +73,9 @@ function handleClick(provider) {
   width: 100%;
   margin: 10px 0 4px;
 }
-
+:deep(.el-divider__text) {
+  font-weight: 0;
+}
 .oauth-row {
   display: flex;
   justify-content: center;

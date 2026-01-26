@@ -16,6 +16,17 @@ function backend_to_remote() {
     fi
     docker save -o flasky_backend.tar nizhenshi/flasky_backend
 
+    # 传输.env.production
+    ENV_FILE=".env.prod"
+    LOCAL_ENV_FILE="./backend/$ENV_FILE"
+    REMOTE_ENV_DIR="/home/ubuntu/user/loft/"
+    scp $LOCAL_ENV_FILE $ROMOTE_USER@$ROMOTE_HOST:$REMOTE_ENV_DIR
+    if [[ $? -eq 0 ]];then
+      echo "环境变量文件传输成功 $LOCAL_FILE"
+    else
+      echo "环境变量文件传输失败"
+    fi
+
     # 传输tar文件到远程服务器
     LOCAL_FILE=$backend_tar
     REMOTE_FILE="/home/ubuntu/user/"
@@ -31,9 +42,12 @@ function backend_to_remote() {
     fi
 
     # 远程运行容器命令
-    remote_cmd_backend="docker rm -f flasky_backend;docker rmi nizhenshi/flasky_backend;docker load -i flasky_backend.tar;docker run --name flasky_backend -v /var/log/loft:/home/flasky/logs -d -p 4289:5000  -p 4290:5001 --network database_n -e FLASK_CONFIG=docker  -e DATABASE_URL=mysql+pymysql://flasky:1234@mysql/flasky -e MAIL_USERNAME=zmc_li@foxmail.com -e MAIL_PASSWORD=idycznxncyvhdeef -e REDIS_URL=redis://:1234@myredis:6379/0  -e REDIS_HOST=myredis -e QINIU_ACCESS_KEY=PpQuM1ZtcXQFQRDnDgvVBRhw2NBu8Ew3ZE-izAPW -e QINIU_SECRET_KEY=BbyCwZuZZxtpBb1QtZuTA7syKd-JlZPatjK7hcfv -e QINIU_BUCKET_NAME=b-article-2 -e QINIU_DOMAIN=https://www.191718.com nizhenshi/flasky_backend:latest;"
+    remote_del_old_container="docker rm -f flasky_backend;docker rmi nizhenshi/flasky_backend;"
+    remote_load_new_container="docker load -i flasky_backend.tar;"
+    remote_run_new_container="docker run --name flasky_backend --env-file $REMOTE_ENV_DIR$ENV_FILE -v /var/log/loft:/home/flasky/logs -d -p 4289:5000  -p 4290:5001 --network database_n nizhenshi/flasky_backend:latest;"
+    remote_cmd_backend="$remote_del_old_container $remote_load_new_container $remote_run_new_container"
     echo "remote_cmd_backend:" $remote_cmd_backend
-    ssh $ROMOTE_USER@$ROMOTE_HOST "cd $REMOTE_FILE;$remote_cmd_backend"
+    ssh $ROMOTE_USER@$ROMOTE_HOST "cd $REMOTE_ENV_DIR;chmod 600 $ENV_FILE;cd $REMOTE_FILE;$remote_cmd_backend"
     if [[ $? -eq 0 ]];then
       echo "执行成功"
     else
