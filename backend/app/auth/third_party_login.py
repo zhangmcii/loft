@@ -7,7 +7,7 @@ import re
 import secrets
 from datetime import timedelta
 from typing import Dict, List, Optional, Tuple
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import requests
 from flask import redirect, request, url_for
@@ -330,7 +330,15 @@ def oauth_authorize(provider: str):
     try:
         auth_request, _ = _get_auth_request(provider)
         auth_url = auth_request.authorize()
-        return success(data={"authorize_url": auth_url, "provider": provider})
+
+        # 查询参数进行ENCODE编码
+        parsed = urlparse(auth_url)
+        query_params = parse_qs(parsed.query, keep_blank_values=True)
+        encoded_query = urlencode(query_params, doseq=True)
+        encoded_url = parsed._replace(query=encoded_query).geturl()
+        logging.info(f"zmc_11:{encoded_url}")
+
+        return success(data={"authorize_url": encoded_url, "provider": provider})
     except Exception as exc:  # noqa: BLE001
         logging.exception("创建授权请求失败: %s", exc)
         return error(code=400, message=str(exc))
@@ -396,7 +404,7 @@ def oauth_callback(provider: str):
             return _handle_oauth_error(
                 provider,
                 503,
-                f"{provider.title()} 服务连接失败，请稍后重试或检查服务器网络配置",
+                f"{provider.title()} 服务连接失败，请稍后重试或检查网络配置",
             )
         except requests.exceptions.Timeout as e:
             # 请求超时
@@ -429,7 +437,7 @@ def oauth_callback(provider: str):
             return _handle_oauth_error(
                 provider,
                 503,
-                f"{provider.title()} 服务连接失败，请稍后重试或检查服务器网络配置",
+                f"{provider.title()} 服务连接失败，请稍后重试或检查网络配置",
             )
 
         if auth_user_response.code != 200 or not auth_user_response.data:
