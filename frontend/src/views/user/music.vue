@@ -7,6 +7,7 @@
       @mouseleave="showMusicPlayer = false"
     >
       <img
+        v-if="avatar"
         :src="avatar"
         alt="用户图像"
         :class="{ 'avatar-spin': isPlaying }"
@@ -15,6 +16,7 @@
           transformOrigin: 'center',
         }"
       />
+      <div v-else class="avatar-placeholder" />
 
       <transition name="fade">
         <div
@@ -62,7 +64,8 @@ const props = defineProps({
   // 头像图片URL
   avatar: {
     type: String,
-    required: true,
+    required: false,
+    default: "",
   },
   musics: {
     type: Object,
@@ -151,6 +154,13 @@ watch(
   object-fit: cover;
 }
 
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
+}
+
 .music-player-overlay {
   position: absolute;
   top: 0;
@@ -236,19 +246,6 @@ watch(
   }
   100% {
     transform: rotate(360deg);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.6s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 

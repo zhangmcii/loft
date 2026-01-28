@@ -30,67 +30,17 @@ export default {
     return {
       isUserPage: true,
       activeInterest: "movie",
-      but: false,
-      user: {
-        username: "张三",
-        name: "赫赫",
-        location: "上海",
-        email: "zmc@qq.com",
-        about_me: "",
-        member_since: "2024-9-20 12:14:00",
-        last_seen: "2024-9-20 12:14:00",
-        admin: false,
-        followers_count: 0,
-        followed_count: 0,
-        is_followed_by_current_user: false,
-        is_following_current_user: false,
-        image: "/src/asset/image1.png",
-        interest: {
-          books: [],
-          movies: [],
-        },
-        social_account: {},
-        tags: [],
-      },
-      userName: "",
-      posts: [{}],
+      user: null,
+      posts: [],
       currentPage: 1,
       posts_count: 0,
       loading: {
-        userData: false,
+        userData: true,
         follow: false,
-        skeleton: true,
         switch: false,
-        fullScreen: false,
       },
-      uploadToken: "",
-      imageUrls: [],
-      uploading: false,
-      imageKey: [],
-
-      drawer: false,
-      imgList: [],
-      skeletonThrottle: {
-        leading: 300,
-        trailing: 300,
-        initVal: false,
-      },
-      activeName: "first",
-      // 原始文件
-      originalFiles: [],
-      // 压缩后的文件
-      compressedImages: [],
       dialogShow: false,
-      svg: `
-        <path class="path" d="
-          M 30 15
-          L 28 17
-          M 25.61 25.61
-          A 15 15, 0, 0, 1, 15 30
-          A 15 15, 0, 1, 1, 27.99 7.5
-          L 15 15
-        " style="stroke-width: 4px; fill: rgba(0, 0, 0, 0)"/>
-      `,
+      contentLoaded: false,
     };
   },
   setup() {
@@ -100,15 +50,19 @@ export default {
   },
   computed: {
     location() {
-      if (this.user.location && !isNaN(this.user.location)) {
+      if (!this.user || !this.user.location) return "";
+      if (!isNaN(this.user.location)) {
         return cityUtil.getCodeToName(this.user.location, this.areaList);
       }
       return "";
     },
     member_since() {
-      return dayjs(this.user.member_since).format("YYYY-MM-DD");
+      return this.user
+        ? dayjs(this.user.member_since).format("YYYY-MM-DD")
+        : "";
     },
     from_now() {
+      if (!this.user || !this.user.last_seen) return "";
       // 防止上线时间与当前时间过于接近而显示"几秒后"
       const time = dayjs(this.user.last_seen)
         .subtract(5, "second")
@@ -116,10 +70,13 @@ export default {
       return date.dateShow(time);
     },
     isCurrentUser() {
-      return this.user.username == this.currentUser.userInfo.username;
+      return (
+        this.user && this.user.username == this.currentUser.userInfo.username
+      );
     },
     isFollowCurrentUser() {
       return (
+        this.user &&
         this.currentUser.userInfo.username &&
         !this.isCurrentUser &&
         this.user.is_following_current_user
@@ -127,6 +84,7 @@ export default {
     },
     isFollowEachOther() {
       return (
+        this.user &&
         this.currentUser.userInfo.username &&
         !this.isCurrentUser &&
         this.user.is_following_current_user &&
@@ -135,6 +93,7 @@ export default {
     },
     isFollowOtherUser() {
       return (
+        this.user &&
         this.currentUser.userInfo.username &&
         !this.isCurrentUser &&
         this.user.is_followed_by_current_user
@@ -149,6 +108,7 @@ export default {
       return this.isUserPage ? "#ffffff" : "#000000";
     },
     socialCount() {
+      if (!this.user || !this.user.social_account) return true;
       return Object.values(this.user.social_account).every(
         (value) => value === "" || value === null || value === undefined
       );
@@ -165,6 +125,10 @@ export default {
       (newUserName, oldUserName) => {
         if (this.$route.name === "user" && newUserName !== oldUserName) {
           this.isUserPage = true;
+          // 重置加载状态
+          this.user = null;
+          this.loading.userData = true;
+          this.contentLoaded = false;
           this.getUser();
         }
       }
@@ -226,8 +190,8 @@ export default {
       return true;
     },
     getUser() {
-      this.loading.fullScreen = true;
       this.loading.userData = true;
+      this.contentLoaded = false;
 
       // 检查是否是查看当前登录用户的资料
       const isViewingSelf =
@@ -240,53 +204,47 @@ export default {
 
       userApi
         .getUserByUsername(param)
-        .then((res) => {
-          this.loading.userData = false;
-
+        .then(async (res) => {
           // 适配新的统一接口返回格式
           let userData;
           if (res.code === 200) {
-            // 新格式
             userData = res.data;
           } else {
             throw new Error("获取用户数据失败");
           }
 
+          // 一次性赋值，避免多次局部更新
           this.user = userData;
 
           // 更新对应的存储
           if (isViewingSelf) {
             this.currentUser.setUserInfo(userData);
-            // 确保背景图片URL也被更新
             if (userData.bg_image) {
               this.currentUser.bg_image = userData.bg_image;
             }
           } else {
             this.otherUser.userInfo = userData;
-            // 确保背景图片URL也被更新
             if (userData.bg_image) {
               this.otherUser.bg_image = userData.bg_image;
             }
           }
 
-          // 清空并重新添加图片列表
-          this.imgList = [];
-          this.imgList.push(this.user.image);
+          // 背景图片加载（不阻塞内容显示）
+          if (this.bgImage) {
+            waitImage([this.bgImage]);
+          }
 
-          // 让私信和关注按钮与用户数据同时出现
-          setTimeout(() => {
-            this.loading.skeleton = false;
-            this.setMainProperty();
-            // 背景图片加载时显示loading
-            waitImage([this.bgImage]).then(() => {
-              this.loading.fullScreen = false;
-            });
-          }, this.skeletonThrottle.trailing);
+          // 关闭加载状态
+          this.loading.userData = false;
+          this.setMainProperty();
+
+          // 标记内容已加载，触发清晰度过渡
+          this.$nextTick(() => {
+            this.contentLoaded = true;
+          });
         })
         .catch((err) => {
           this.loading.userData = false;
-          this.loading.skeleton = false;
-          this.loading.fullScreen = false;
           ElMessage.error("获取用户数据失败");
           console.error(err);
         });
@@ -374,9 +332,6 @@ export default {
     },
     handleCurrentChange() {
       this.getPosts(this.$route.params.userName, this.currentPage);
-    },
-    showDrawer() {
-      this.drawer = !this.drawer;
     },
     openChat() {
       if (!this.currentUser.isLogin) {

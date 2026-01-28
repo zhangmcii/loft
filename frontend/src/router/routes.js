@@ -32,7 +32,7 @@ const setting = [
   {
     path: "/settings",
     name: "settings",
-    component: () => import("../views/user/Settings.vue"),
+    component: () => import("../views/home/Settings.vue"),
     meta: { requireAuth: true },
   },
   {
@@ -185,6 +185,11 @@ const routes = [
         path: "/register",
         name: "register",
         component: () => import("../views/login/RegisterPage.vue"),
+      },
+      {
+        path: "/about",
+        name: "about",
+        component: () => import("../views/About.vue"),
       },
       ...updateUser,
       ...setting,
