@@ -1,306 +1,545 @@
-# 🌟 The-Reverie-Loft(随想阁楼)
+<div align="center">
 
-> 一个基于 Vue3 + Flask 的移动端优先的社交博客平台
+# Loft
 
-[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)[![Vue.js](https://img.shields.io/badge/Vue-3.x-brightgreen)](https://vuejs.org/)[![Flask](https://img.shields.io/badge/Flask-3.x-blue)](https://flask.palletsprojects.com/)
+### 一个现代化、功能丰富的社交平台
+
+**基于 Vue3 + Flask 构建的开源社交系统**
+
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D.svg)](https://vuejs.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.x-000000.svg)](https://flask.palletsprojects.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1.svg)](https://www.mysql.com/)
+[![Redis](https://img.shields.io/badge/Redis-7.x-DC382D.svg)](https://redis.io/)
+
+[功能演示](#-功能特性) • [快速上手](#-快速上手) • [配置指南](#-配置指南) • [部署文档](#-部署指南) • [FAQ](#-常见问题)
+
+![Loft Screenshot](docs/screenshot-placeholder.png)
+*现代化社交平台界面设计*
+
+</div>
+
+---
 
 ## 📖 项目简介
 
-The-Reverie-Loft(随想阁楼) 是一个专为移动端设计的社交平台，提供完整的社交功能体验。项目采用前后端分离架构，前端使用 Vue3 构建移动端界面，后端基于 Flask 提供稳定的 API 服务。
+Loft 是一个全栈开源社交平台项目，采用现代化的技术栈构建，提供丰富的社交功能和优秀的用户体验。
 
-### 移动端界面
-![登录页面](./docs/登录页面.png)
-![用户首页](./docs/用户首页.png)
-![个人资料1](./docs/个人资料1.png)
-![个人资料2](./docs/个人资料2.png)
-![聊天](./docs/聊天.png)
-![文章详情](./docs/文章详情.png)
-![评论详情](./docs/评论详情.png)
-![通知面板](./docs/通知面板.png)
-![发布文章](./docs/发布文章.png)
-![管理员日志页](./docs/管理员日志页.png)
-![绑定邮箱页面](./docs/绑定邮箱页面.png)
+### ✨ 核心功能
 
-## ✨ 功能特性
+- 👤 **用户系统**：注册、登录、个人资料管理
+- 📱 **第三方登录**：支持 GitHub、Google、QQ、微博 OAuth
+- 💬 **实时聊天**：基于 WebSocket 的即时通讯
+- 📝 **内容发布**：支持文字、图片动态发布
+- 👍 **互动功能**：点赞、评论、关注
+- 🔐 **权限管理**：基于 JWT 的安全认证
+- 📊 **数据分析**：操作日志、用户行为统计
+- 🎨 **响应式设计**：完美支持 PC 和移动端
 
-- 🔐 **用户系统**
-  
-  - 用户注册与登录
-  - 个人资料管理
-  - 头像上传
-  - 密码找回（支持邮箱验证码）
-- 📝 **内容发布**
-  
-  - 图文动态发布
-  - 多图片上传
-  - 富文本编辑
-- 💬 **社交互动**
-  
-  - 点赞
-  - 评论与回复
-  - 关注与粉丝
-  - 私信聊天
-- 🔔 **实时通知**
-  
-  - 消息推送（@提及、评论、点赞、私信）
-  - 互动提醒
+### 🛠️ 技术栈
 
-  
-- 🔐 **安全与管理**
-  - JWT 权限验证
-  - 用户角色管理（普通用户、内容管理员、管理员）
-  - 评论敏感词过滤
-  - 图文请求次数限制
-  - 邮件告警
+| 层级 | 技术 | 说明 |
+|------|------|------|
+| **前端** | Vue 3 + Vite | 现代化构建工具与响应式框架 |
+| | Element Plus | 优雅美观的 UI 组件库 |
+| | Vue Router | 前端路由管理 |
+| | Pinia | 状态管理 |
+| **后端** | Flask 3 | 轻量级 Python Web 框架 |
+| | SQLAlchemy | ORM 数据库操作 |
+| | Flask-JWT-Extended | JWT 认证 |
+| | Flask-SocketIO | WebSocket 实时通信 |
+| **数据库** | MySQL 8+ | 关系型数据存储 |
+| | Redis | 缓存、会话、消息队列 |
+| **部署** | Docker | 容器化部署 |
+| | Nginx | 反向代理与静态文件服务 |
 
+---
 
-## 🛠 技术栈
+## 🚀 快速上手
 
-### 前端技术
+### 前置要求
 
-- **框架**: Vue 3.x
-- **构建工具**: Vite
-- **UI 组件**: Element Plus / Vant / undraw UI
-- **状态管理**: Pinia
-- **路由**: Vue Router 4
-- **HTTP 客户端**: Axios
-- **样式**: SCSS
+- [Docker](https://www.docker.com/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/) 2.0+
+- [Git](https://git-scm.com/)
 
-### 后端技术
+### ⚡ 三步启动项目
 
-- **框架**: Flask 3.x
-- **数据库**: MySQL
-- **ORM**: SQLAlchemy
-- **认证**: JWT
-- **任务队列**: Celery + Redis
-- **文件存储**: 本地存储 / 云存储
-
-### 开发工具
-
-- **代码规范**:ESLint + Prettier + flake8 + black + isort
-- **版本控制**: Git
-- **包管理**: npm
-- **容器化**: Docker
-
-## 📁 目录结构
-
-```
-loft_1/  
-├── frontend/                 # 前端项目目录  
-│   ├── src/  
-│   │   ├── api/             # API 接口封装  
-│   │   ├── asset/           # 静态资源  
-│   │   ├── config/          # 配置文件  
-│   │   ├── directives/      # Vue 指令  
-│   │   ├── plugins/         # 插件配置  
-│   │   ├── router/          # 路由配置  
-│   │   ├── stores/          # Pinia 状态管理  
-│   │   ├── utils/           # 工具函数  
-│   │   └── views/           # 页面组件  
-│   ├── public/              # 公共静态文件  
-│   ├── dist/                # 构建输出目录  
-│   ├── package.json         # 前端依赖配置  
-│   └── vite.config.js       # Vite 配置  
-│  
-├── backend/                  # 后端项目目录  
-│   ├── app/  
-│   │   ├── api/             # API 路由  
-│   │   ├── auth/            # 认证模块  
-│   │   ├── main/            # 主要业务接口(现已使用api/)  
-│   │   ├── mycelery/        # Celery 任务  
-│   │   ├── schemas/         # 表单验证  
-│   │   ├── templates/       # 模板文件  
-│   │   └── utils/           # 工具函数  
-│   │   └── models.py        # 数据模型  
-│   ├── migrations/          # 数据库迁移文件  
-│   ├── requirements/        # Python 依赖  
-│   ├── tests_api/           # API 测试  
-│   └── deploy/              # 部署配置  
-│  
-└── docs/                    # README.md中的预览图片
-└── deploy.sh                # docker部署
-└── start.sh                 # 前后端启动脚本
-└── .pre-commit-config.yaml  # 代码规范工具
-└── README.md                # 项目说明文档  
-```
-
-## 🚀 环境准备
-
-### 📋 系统要求
-
-- **Node.js** >= 16.0.0
-- **Python** >= 3.8
-- **MySQL** >= 8.0
-- **Redis** >= 6.0
-
-### ⚙️ 配置文件
-
-#### 1. 后端环境配置
-
-在 `backend/` 目录下创建 `.env` 文件：
+#### 第一步：克隆仓库
 
 ```bash
-# 数据库配置  
-DATABASE_URL=mysql://username:password@localhost:3306/loft_db  
-
-# Redis 配置  
-REDIS_URL=redis://localhost:6379/0  
-
-# JWT 密钥  
-JWT_SECRET_KEY=your-super-secret-jwt-key  
-
-# 邮件配置 (QQ邮箱示例)  
-MAIL_SERVER=smtp.qq.com  
-MAIL_PORT=587  
-MAIL_USE_TLS=True  
-MAIL_USERNAME=your-email@qq.com  
-MAIL_PASSWORD=your-qq-auth-code  # QQ邮箱授权码，不是登录密码  
-
-# 七牛云配置 (如果使用)  
-QINIU_ACCESS_KEY=your-qiniu-access-key  
-QINIU_SECRET_KEY=your-qiniu-secret-key  
-QINIU_BUCKET_NAME=your-bucket-name  
-QINIU_DOMAIN=your-qiniu-domain  
-
-# 应用配置  
-FLASK_ENV=development  
-SECRET_KEY=your-flask-secret-key  
+git clone https://github.com/your-username/loft.git
+cd loft
 ```
 
-#### 2. 前端环境配置
-
-在 `frontend/` 目录下创建 `.env` 文件：
+#### 第二步：配置环境变量
 
 ```bash
-# 平台本地运行端口号
-VITE_PORT=5172
-VITE_BASE=/
+# 复制环境变量模板
+cp .env.example .env
 
-# 图片域名
-VITE_QINIU_DOMAIN=QINIU_DOMAIN
-# 七牛云bucket名称
-VITE_QINIU_BUCKET=QINIU_BUCKET
-
-# 后端代理地址
-VITE_APP_BASE_API = '/api'
-
-# ICP 备案号
-VITE_ICP=xxxx
+# 🚨 重要：使用编辑器打开 .env 文件，填写所有必填项
+# 推荐使用 VSCode: code .env
+# 或 Vim: vim .env
 ```
 
-## 🏃‍♂️ 启动方式
+**关键配置项：**
+- `SECRET_KEY` 和 `JWT_SECRET_KEY`：务必修改为随机字符串
+- 数据库密码：替换所有的 `your-mysql-password`
+- QQ 邮箱授权码：在 QQ 邮箱设置中生成
+- 七牛云凭证：注册七牛云并创建存储空间
+- OAuth 应用：至少配置一个第三方登录
 
-### 🔧 后端启动
+#### 第三步：一键启动
 
 ```bash
-# 1. 进入后端目录  
-cd backend  
+# 启动所有服务（MySQL + Redis + Flask + Nginx）
+docker-compose up -d
 
-# 2. 创建虚拟环境  
-python -m venv venv  
+# 查看启动状态
+docker-compose ps
 
-# 3. 激活虚拟环境  
-# Windows  
-venv\Scripts\activate  
-# macOS/Linux  
-source venv/bin/activate  
-
-# 4. 安装依赖  
-pip install -r requirements/base.txt  
-
-# 5. 数据库迁移  
-flask db upgrade  
-
-# 6. 启动 Redis (另开终端)  
-redis-server  
-
-# 7. 启动 Celery 异步任务 (另开终端)  
-celery -A app.make_celery worker --loglevel INFO -P eventlet # windows
-celery -A app.make_celery worker --loglevel INFO    # mac
-
-# 8. 启动后端服务  
-python flasky.py  
+# 查看实时日志
+docker-compose logs -f
 ```
 
-后端服务将在 `http://localhost:8082` 启动
+🎉 **恭喜！** 项目启动成功后，访问 `https://localhost` 即可体验。
 
-### 🎨 前端启动
+---
+
+## 🔧 配置指南
+
+### 📋 环境变量清单
+
+| 变量名 | 说明 | 是否必填 | 申请/配置指引 |
+|--------|------|----------|---------------|
+| `SECRET_KEY` | Flask 应用密钥 | ✅ | `openssl rand -hex 32` 生成 |
+| `JWT_SECRET_KEY` | JWT 令牌密钥 | ✅ | `openssl rand -hex 32` 生成 |
+| `FLASKY_ADMIN_MAIL` | 管理员邮箱 | ✅ | 设置为你的邮箱 |
+| **MySQL 配置** | | | |
+| `DATABASE_URL` | 生产数据库连接 | ✅ | 格式见下方示例 |
+| `DEV_DATABASE_URL` | 开发数据库连接 | ✅ | 本地开发使用 |
+| **QQ 邮箱** | | | |
+| `MAIL_USERNAME` | QQ 邮箱地址 | ✅ | 你的 QQ 邮箱 |
+| `MAIL_PASSWORD` | 邮箱授权码 | ✅ | [QQ邮箱设置](https://mail.qq.com/) → 账户 → SMTP |
+| **七牛云** | | | |
+| `QINIU_ACCESS_KEY` | 七牛云 AK | ✅ | [七牛云控制台](https://portal.qiniu.com/) |
+| `QINIU_SECRET_KEY` | 七牛云 SK | ✅ | 密钥管理 |
+| `QINIU_BUCKET_NAME` | 存储空间名 | ✅ | 创建 Bucket |
+| `QINIU_DOMAIN` | 七牛云域名 | ✅ | 自定义域名或测试域名 |
+| **OAuth 登录** | | | |
+| `GITHUB_CLIENT_ID` | GitHub OAuth ID | ⭐ | [GitHub开发者](https://github.com/settings/developers) |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth 密钥 | ⭐ | 创建 OAuth App |
+| `GOOGLE_CLIENT_ID` | Google OAuth ID | ⭐ | [Google Cloud](https://console.cloud.google.com/apis/credentials) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth 密钥 | ⭐ | 需要配置 OAuth 同意屏幕 |
+
+**⭐ 说明：** OAuth 配置为可选，但建议至少配置一个，否则用户只能账号注册。
+
+### 🔍 配置示例
 
 ```bash
-# 1. 进入前端目录  
-cd frontend  
+# MySQL 配置示例
+# 格式: mysql+pymysql://用户名:密码@主机:端口/数据库名?charset=utf8mb4
+DATABASE_URL=mysql+pymysql://root:your-strong-password@mysql:3306/loft_prod?charset=utf8mb4
 
-# 2. 安装依赖  
-npm install  
+# Redis 配置（Docker 部署）
+# 使用容器名: redis
+REDIS_HOST=redis
 
-# 3. 启动开发服务器  
-npm run dev  
-
+# 七牛云域名示例
+QINIU_DOMAIN=https://your-bucket-name.bkt.clouddn.com
 ```
 
-前端服务将在 `http://localhost:5172` 启动
+---
 
-### 如何成为超级管理员身份？
-配置backend/config.py中的FLASKY_ADMIN变量
-当你绑定的邮箱与后端配置的邮箱相同时，该账号将具有管理员的权限。
-拥有管理员的权限， 你将可以对所有的评论审核，增加/删除tag标签，帮助未绑定邮箱的用户找回密码！
-![管理员邮箱配置](./docs/管理员邮箱配置.png)
-![管理员页面](./docs/管理员页面.png)
+## 📦 部署指南
+
+### 🐳 Docker 部署架构
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Nginx (端口 80/443)                  │
+│  ┌──────────────┬──────────────┬──────────────────┐    │
+│  │  静态文件    │  API 代理    │  WebSocket 代理  │    │
+│  │  (Vue构建)   │  (/api/*)    │  (/socket.io/*)  │    │
+│  └──────────────┴──────────────┴──────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+        ┌─────▼─────┐   ┌────▼─────┐   ┌─────▼──────┐
+        │ Flask App │   │  MySQL   │   │   Redis    │
+        │ (Python)  │   │ (数据库)  │   │  (缓存)    │
+        └───────────┘   └──────────┘   └────────────┘
+```
+
+### 📁 目录映射说明
+
+启动 Docker 容器后，以下目录会自动创建并映射：
+
+```bash
+# 在宿主机上创建的数据持久化目录
+./data/
+├── mysql/          # MySQL 数据文件
+│   ├── data/       # 数据库文件
+│   └── logs/       # 数据库日志
+├── redis/          # Redis 数据
+│   └── data/       # AOF 持久化文件
+├── logs/           # 应用日志
+│   ├── backend/    # Flask 应用日志
+│   └── nginx/      # Nginx 访问和错误日志
+└── ssl/            # SSL 证书（可选）
+    ├── cert.pem    # 证书文件
+    └── key.pem     # 私钥文件
+```
+
+### 🔒 SSL 证书配置
+
+#### 方法一：使用 Let's Encrypt（推荐）
+
+```bash
+# 安装 certbot
+sudo apt install certbot python3-certbot-nginx
+
+# 获取证书（自动配置 Nginx）
+sudo certbot --nginx -d your-domain.com
+
+# 证书自动续期
+crontab -e
+# 添加: 0 12 * * * certbot renew --quiet
+```
+
+#### 方法二：手动配置已有证书
+
+```bash
+# 1. 将证书文件复制到 ssl 目录
+cp your-cert.pem ./data/ssl/cert.pem
+cp your-key.pem ./data/ssl/key.pem
+
+# 2. 修改 docker-compose.yml 中的 Nginx 配置
+# 取消 SSL 相关配置的注释
+
+# 3. 重启服务
+docker-compose restart nginx
+```
+
+
+### 🌐 Nginx 配置说明
+
+项目使用 Docker 内的 Nginx，配置文件位于 `docker/nginx/nginx.conf`。主要配置项：
+
+```nginx
+# 需要修改的配置项
+server {
+    listen 80;
+    server_name your-domain.com;  # ⭐ 修改为你的域名
+    
+    # 前端静态文件
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # API 代理
+    location /api/ {
+        proxy_pass http://backend:5000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # WebSocket 代理
+    location /socket.io/ {
+        proxy_pass http://backend:5000/socket.io/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+### 🔄 更新部署
+
+```bash
+# 拉取最新代码
+git pull origin main
+
+# 重建并启动服务（会保留数据库数据）
+docker-compose up -d --build
+
+# 查看更新日志
+docker-compose logs -f --tail=100
+```
+
+---
+
+## ❓ 常见问题
+
+### 1. ❌ 容器无法连接 MySQL 数据库
+
+**错误现象：**
+```
+SQLAlchemy Error: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server")
+```
+
+**排查步骤：**
+
+1. **检查 MySQL 容器状态**
+   ```bash
+   docker-compose ps mysql
+   docker-compose logs mysql
+   ```
+
+2. **验证数据库密码**
+   ```bash
+   # 进入 MySQL 容器
+   docker-compose exec mysql mysql -uroot -p
+   # 输入你在 .env 中设置的密码
+   ```
+
+3. **检查网络连接**
+   ```bash
+   # 进入 Flask 容器
+   docker-compose exec backend bash
+   # 在容器内测试连接
+   nc -zv mysql 3306
+   ```
+
+4. **确认 .env 配置**
+   - 检查 `DATABASE_URL` 中的密码是否正确
+   - 确认使用 `mysql` 作为主机名（Docker 网络）
+   - 格式：`mysql+pymysql://root:密码@mysql:3306/数据库名`
+
+**解决方案：**
+```bash
+# 如果修改了密码，需要重建数据库容器
+docker-compose down mysql
+docker volume rm loft_mysql_data  # 注意：这会删除数据！
+docker-compose up -d mysql
+```
+
+---
+
+### 2. ❌ 七牛云上传返回 401 Unauthorized
+
+**错误现象：**
+```json
+{"error": "bad token", "code": 401}
+```
+
+**排查步骤：**
+
+1. **检查密钥配置**
+   ```bash
+   # 确认 .env 中的密钥没有多余空格
+   QINIU_ACCESS_KEY=your-access-key  # ✅ 正确
+   QINIU_ACCESS_KEY = your-access-key  # ❌ 错误（等号两边不能有空格）
+   ```
+
+2. **验证密钥有效性**
+   ```bash
+   # 安装七牛云命令行工具
+   npm install -g qiniu-cli
+   
+   # 登录测试
+   qiniu account your-ak your-sk
+   qiniu listbucket your-bucket-name
+   ```
+
+3. **检查存储空间和域名**
+   - 确认 `QINIU_BUCKET_NAME` 与控制台一致
+   - 确认 `QINIU_DOMAIN` 已配置并可访问
+   - 域名必须以 `http://` 或 `https://` 开头
+
+**解决方案：**
+```bash
+# 重新生成七牛云密钥
+# 1. 登录七牛云控制台
+# 2. 个人中心 → 密钥管理 → 创建新密钥
+# 3. 更新 .env 文件
+# 4. 重启服务
+docker-compose restart backend
+```
+
+---
+
+### 3. ❌ QQ 邮箱授权码失效（535 Error）
+
+**错误现象：**
+```
+SMTPAuthenticationError: (535, b'Error: authentication failed')
+```
+
+**原因分析：**
+QQ 邮箱授权码有效期有限，或 SMTP 服务未开启。
+
+**解决方案：**
+
+1. **重新生成授权码**
+   ```
+   登录 QQ 邮箱 → 设置 → 账户 →
+   POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务 →
+   生成授权码
+   ```
+
+2. **验证 SMTP 配置**
+   ```python
+   # 使用 Python 测试脚本
+   import smtplib
+   from email.mime.text import MIMEText
+   
+   smtp = smtplib.SMTP_SSL('smtp.qq.com', 465)
+   smtp.login('your-qq@qq.com', 'your-authorization-code')
+   ```
+
+3. **更新 .env 并重启**
+   ```bash
+   # 修改 .env 中的 MAIL_PASSWORD
+docker-compose restart backend
+   ```
+
+---
+
+### 4. ❌ OAuth 登录跳转失败（redirect_uri_mismatch）
+
+**错误现象：**
+```
+OAuth Error: redirect_uri_mismatch
+```
+
+**排查步骤：**
+
+1. **检查回调地址配置**
+   ```bash
+   # 各平台的回调地址格式：
+   GitHub: https://your-domain.com/api/auth/oauth/callback/github
+   Google: https://your-domain.com/api/auth/oauth/callback/google
+   QQ:     https://your-domain.com/api/auth/oauth/callback/qq
+   微博:   https://your-domain.com/api/auth/oauth/callback/weibo
+   ```
+
+2. **确认域名配置**
+   - 检查 `FRONTEND_OAUTH_REDIRECT` 是否设置为你的域名
+   - 检查 OAuth 平台配置的域名是否包含协议（http/https）
+
+**解决方案：**
+
+```bash
+# 更新 .env 中的回调域名
+FRONTEND_OAUTH_REDIRECT=https://your-domain.com/oauth/callback
+
+# 重启服务
+docker-compose restart backend
+
+# 在 OAuth 平台重新配置回调地址
+# 注意：
+# - 不要遗漏 /api 前缀
+# - 确保使用 https（生产环境）
+```
+
+---
+
+### 5. ❌ WebSocket 连接失败（502 Bad Gateway）
+
+**错误现象：**
+浏览器控制台：
+```
+WebSocket connection to 'wss://your-domain.com/socket.io/...' failed: 502
+```
+
+**排查步骤：**
+
+1. **检查 Nginx 配置**
+   ```bash
+   # 确认 nginx.conf 中包含 WebSocket 代理配置
+   location /socket.io/ {
+       proxy_pass http://backend:5000/socket.io/;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection "upgrade";
+   }
+   ```
+
+2. **验证 SocketIO 服务**
+   ```bash
+   # 查看 Flask 应用日志
+   docker-compose logs backend | grep socketio
+   
+   # 进入容器测试
+   docker-compose exec backend bash
+   curl http://localhost:5000/socket.io/
+   ```
+
+3. **检查防火墙/安全组**
+   - 确认服务器安全组开放 80/443 端口
+   - 检查是否有 CDN/Web 应用防火墙拦截 WebSocket
+
+**解决方案：**
+
+```bash
+# 重建 nginx 容器
+docker-compose down nginx
+docker-compose up -d nginx
+
+# 如果使用 Cloudflare 等 CDN，需要开启 WebSocket 支持
+# Cloudflare: 网络 → WebSockets → 开启
+```
+
+---
 
 ## 🤝 贡献指南
 
-我们欢迎所有形式的贡献！请遵循以下步骤：
+欢迎提交 Issue 和 Pull Request！
 
-### 提交代码
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
-1. **Fork 项目** 到你的 GitHub 账户
-2. **创建功能分支**: `git checkout -b feature/amazing-feature`
-3. **提交更改**: `git commit -m 'Add some amazing feature'`
-4. **推送分支**: `git push origin feature/amazing-feature`
-5. **创建 Pull Request**
-
-### 提交 Issue
-
-如果你发现了 bug 或有功能建议，请：
-
-1. 检查是否已有相关 Issue
-2. 提供详细的描述和复现步骤
-
-### 开发环境设置
+### 开发环境搭建
 
 ```bash
-# 安装开发依赖  
-cd frontend && npm install  
-cd backend && pip install -r requirements/dev.txt  
+# 后端开发
+cd backend
+pip install -r requirements/dev.txt
+python flasky.py run
 
-# 后端测试
-cd backend/tests_api
-pytest -v        # 
-
-# 代码格式化  
-pre-commit install
-pre-commit run --all-files
+# 前端开发
+cd frontend
+npm install
+npm run dev
 ```
 
-## 📄 开源协议
+---
 
-本项目基于 [MIT License](LICENSE) 开源协议。
+## 📄 许可证
 
+本项目基于 MIT 许可证开源 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-## 🙏 致谢
+---
 
-在本项目的开发过程中，参考了以下项目和资料，特此致谢：
+## ⭐ Star 历史
 
-- **用户资料设计灵感**  
-  - [leleo-home-page](https://github.com/leleo886/leleo-home-page) 
+[![Star History Chart](https://api.star-history.com/svg?repos=your-username/loft&type=Date)](https://star-history.com/#your-username/loft&Date)
 
-- **网站引导页部分实现借鉴**  
-  - [Blog-Index](https://github.com/EsunR/Blog-Index)
+---
 
-- **设计思路**  
-  - Miguel Grinberg 著，《Flask Web开发：基于 Python 的 Web 应用开发实战（第二版）》
+## 📞 联系方式
 
-## 📞 联系
+- 📧 项目维护者: your-email@example.com
+- 🐛 Bug 反馈: [提交 Issue](https://github.com/your-username/loft/issues)
 
-- 问题反馈: https://github.com/nizhensh-i/The-Reverie-Loft/issues
-- 邮箱: zmc_li@foxmail.com
+---
+
+<div align="center">
+
+**如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！**
+
+Made with ❤️ by [Your Name](https://github.com/your-username)
+
+</div>
