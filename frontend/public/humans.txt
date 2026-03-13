@@ -1,0 +1,14 @@
+/* TEAM */
+    Developer: nizhensh-i
+    GitHub: https://github.com/nizhensh-i
+    Location: China
+
+/* SITE TECHNOLOGY */
+    Frontend: Vue 3, Vite, Pinia, Element Plus
+    Backend: Flask 3.x, SQLAlchemy, Socket.IO
+    Infrastructure: MySQL, Redis, Docker, Nginx
+
+/* SITE NOTES */
+    Loft: A Modern, Feature-Rich Social Platform
+    Source: https://github.com/nizhensh-i/The-Reverie-Loft
+    Built with ❤️

@@ -155,7 +155,7 @@ const routes = [
       {
         path: "/postDetail/:id",
         name: "postDetail",
-        component: () => import("../views/posts/PostDetail.vue"),
+        component: () => import("../views/posts/postDetail.vue"),
       },
       {
         path: "/pubImage",
@@ -178,7 +178,7 @@ const routes = [
       {
         path: "/follow/:action/:userName",
         name: "follow",
-        component: () => import("../views/user/FollowList.vue"),
+        component: () => import("../views/user/followList.vue"),
       },
 
       {
@@ -228,7 +228,7 @@ const routes = [
   {
     path: "/welcome",
     name: "welcome",
-    component: () => import("../views/welcome/BlogIndex.vue"),
+    component: () => import("../views/welcome/Blogindex.vue"),
   },
 ];
 

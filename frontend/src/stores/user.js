@@ -165,6 +165,7 @@ export const useCurrentUserStore = defineStore("currentUser", {
       localStorage.removeItem("blogOtherUser");
     },
     logOut() {
+      this.cleanup();
       this.clearLocalData();
       this.$reset();
     },

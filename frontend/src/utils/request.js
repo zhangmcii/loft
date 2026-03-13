@@ -2,6 +2,7 @@ import { useCurrentUserStore } from "@/stores/user";
 import errorManager from "@/utils/message";
 import router from "../router/index.js";
 import axios from "axios";
+import { refreshAccessToken } from "@/utils/tokenService.js";
 
 // ============ 常量定义 ============
 const REFRESH_URL = "/auth/refresh";
@@ -68,23 +69,6 @@ function processQueue(error, newToken = null) {
   pendingQueue = [];
 }
 
-async function refreshToken() {
-  const res = await axios.post(REFRESH_URL, null, {
-    headers: { Authorization: getToken("refresh_token") },
-    baseURL: import.meta.env.VITE_APP_BASE_API ?? "/",
-    timeout: 10000,
-  });
-
-  if (res.data.code !== 200) {
-    throw new Error(res.data.message || "刷新token失败");
-  }
-
-  const accessToken = res.data.data.access_token;
-  const store = useCurrentUserStore();
-  store.access_token = accessToken;
-  return accessToken;
-}
-
 function retryRequest(config, token) {
   config.headers.Authorization = token;
   return $http(config);
@@ -107,8 +91,10 @@ function handleTokenExpired(config) {
   }
 
   isRefreshing = true;
-  return refreshToken()
+  return refreshAccessToken()
     .then((newToken) => {
+      const store = useCurrentUserStore();
+      store.access_token = newToken;
       processQueue(null, newToken);
       return retryRequest(config, newToken);
     })

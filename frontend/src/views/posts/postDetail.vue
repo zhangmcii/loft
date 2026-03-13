@@ -44,6 +44,7 @@ export default {
         author: "--",
         nick_name: "",
         commentCount: 20,
+        comment_count: 20,
         disabled: false,
         image: "",
         praise_num: 0,
@@ -66,6 +67,7 @@ export default {
       showSkeletonComponents: false,
       // 骨架屏延时配置（毫秒）
       skeletonDelay: 500,
+      skeletonTimer: null,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -97,23 +99,21 @@ export default {
   watch: {
     loading: {
       handler(newVal) {
+        if (newVal) {
+          if (this.skeletonTimer) {
+            clearTimeout(this.skeletonTimer);
+            this.skeletonTimer = null;
+          }
+          this.showSkeletonComponents = false;
+          return;
+        }
         if (!newVal) {
           // loading 变为 false 时，延时显示组件（与 skeleton 的 throttle trailing 对应）
-          setTimeout(() => {
+          this.skeletonTimer = setTimeout(() => {
             this.showSkeletonComponents = true;
           }, this.skeletonDelay);
         }
       },
-    },
-    "post.content": {
-      handler(newVal) {
-        if (newVal) {
-          this.$nextTick(() => {
-            this.generateToc();
-          });
-        }
-      },
-      deep: true,
     },
   },
 
@@ -121,44 +121,15 @@ export default {
     if (this.scrollObserver) {
       this.scrollObserver.disconnect();
     }
+    if (this.skeletonTimer) {
+      clearTimeout(this.skeletonTimer);
+      this.skeletonTimer = null;
+    }
   },
 
   methods: {
-    // 生成目录
-    generateToc() {
-      const contentEl = this.$refs.postContent?.$el;
-      if (!contentEl) {
-        this.toc = [];
-        return;
-      }
-
-      const headings = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
-      const toc = [];
-      // 用于去重
-      const seenTexts = new Set();
-
-      headings.forEach((heading) => {
-        const text = heading.textContent.trim();
-
-        // 跳过空标题和重复标题
-        if (!text || seenTexts.has(text)) {
-          return;
-        }
-
-        seenTexts.add(text);
-        const id = text.toLowerCase().replace(/\s+/g, "-");
-        heading.id = id;
-
-        toc.push({
-          level: parseInt(heading.tagName.substring(1)),
-          text: text,
-          id: id,
-        });
-      });
-
-      this.toc = toc;
-
-      // 初始化滚动监听
+    handleTocReady(toc) {
+      this.toc = Array.isArray(toc) ? toc : [];
       this.setupScrollObserver();
     },
 
@@ -167,7 +138,10 @@ export default {
         this.scrollObserver.disconnect();
       }
 
-      const contentEl = this.$refs.postContent?.$el;
+      const contentEl =
+        this.$refs.postContent?.$el?.querySelector(".v-show-content") ||
+        this.$refs.postContent?.$el ||
+        null;
       if (!contentEl) return;
 
       const headings = contentEl.querySelectorAll("h1, h2, h3, h4, h5, h6");
@@ -215,7 +189,12 @@ export default {
         .getPost(postId)
         .then((res) => {
           if (res.code === 200) {
-            this.post = res.data;
+            const nextPost = res.data || {};
+            this.post = {
+              ...nextPost,
+              comment_count:
+                nextPost.comment_count ?? nextPost.commentCount ?? 0,
+            };
           }
         })
         .catch((error) => {
@@ -315,6 +294,7 @@ export default {
                 class="post-content"
                 :fontSize="fontSize"
                 ref="postContent"
+                @toc-ready="handleTocReady"
               />
               <PostImage :postImages="post.post_images" class="post-images" />
             </div>

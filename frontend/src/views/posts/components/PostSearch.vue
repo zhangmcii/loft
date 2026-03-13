@@ -44,7 +44,16 @@ export default {
       this.$refs.searchInput?.focus();
     });
   },
+  beforeUnmount() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+  },
   methods: {
+    getContentDom() {
+      return this.contentRef?.$el?.querySelector(".v-show-content") || null;
+    },
     search() {
       this.isSearching = true;
       this.clearHighlights();
@@ -57,15 +66,14 @@ export default {
         return;
       }
 
-      const contentDom = this.contentRef.$el?.querySelector(".v-show-content");
+      const contentDom = this.getContentDom();
       if (!contentDom) {
         this.isSearching = false;
         return;
       }
 
       try {
-        // 使用更简单可靠的方法查找和高亮所有匹配项
-        this.simpleHighlightMatches(contentDom);
+        this.highlightMatches(contentDom);
 
         // 更新匹配数量
         this.totalMatches = this.searchResults.length;
@@ -82,79 +90,86 @@ export default {
       this.isSearching = false;
     },
 
-    simpleHighlightMatches(container) {
-      // 清空之前的搜索结果
+    highlightMatches(container) {
       this.searchResults = [];
 
       const searchTerm = this.searchText.trim();
       if (!searchTerm) return;
 
-      // 获取所有文本内容
-      const allText = container.innerText || container.textContent;
-      if (!allText) return;
-
-      // 创建一个临时的HTML元素来存储内容
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = container.innerHTML;
-
-      // 使用简单的字符串替换来高亮文本
       const escapedSearchTerm = this.escapeRegExp(searchTerm);
-      const regex = new RegExp(`(${escapedSearchTerm})`, "gi");
+      const regex = new RegExp(escapedSearchTerm, "gi");
 
-      // 递归处理所有文本节点
-      this.processTextNodes(tempDiv, regex);
+      const textNodes = this.collectTextNodes(container);
+      textNodes.forEach((node) => {
+        this.highlightTextNode(node, regex);
+      });
 
-      // 更新原始容器的内容
-      container.innerHTML = tempDiv.innerHTML;
-
-      // 收集所有高亮元素
-      const highlights = container.querySelectorAll(".search-highlight");
-      this.searchResults = Array.from(highlights);
+      this.searchResults = Array.from(
+        container.querySelectorAll(".search-highlight")
+      );
     },
 
-    processTextNodes(node, regex) {
-      // 如果是文本节点
-      if (node.nodeType === 3) {
-        const text = node.nodeValue;
-        if (text.trim() === "") return;
-
-        // 检查是否有匹配
-        if (regex.test(text)) {
-          // 重置正则表达式的lastIndex
-          regex.lastIndex = 0;
-
-          // 创建一个包含高亮的HTML片段
-          const highlightedText = text.replace(
-            regex,
-            '<span class="search-highlight">$1</span>'
-          );
-
-          // 创建一个临时元素来保存高亮的HTML
-          const tempSpan = document.createElement("span");
-          tempSpan.innerHTML = highlightedText;
-
-          // 替换原始节点
-          const parent = node.parentNode;
-          parent.replaceChild(tempSpan, node);
+    collectTextNodes(container) {
+      const nodes = [];
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode: (node) => {
+            if (!node.nodeValue || !node.nodeValue.trim()) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            const parent = node.parentNode;
+            if (!parent) return NodeFilter.FILTER_REJECT;
+            if (parent.closest(".search-highlight")) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            if (/^(script|style)$/i.test(parent.tagName)) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+          },
         }
+      );
+
+      let current = walker.nextNode();
+      while (current) {
+        nodes.push(current);
+        current = walker.nextNode();
       }
-      // 如果是元素节点且不是已经高亮的元素
-      else if (
-        node.nodeType === 1 &&
-        !node.classList?.contains("search-highlight") &&
-        node.childNodes &&
-        !/(script|style)/i.test(node.tagName)
-      ) {
-        // 创建一个副本，因为我们可能会修改childNodes集合
-        const childNodes = Array.from(node.childNodes);
-        childNodes.forEach((child) => {
-          this.processTextNodes(child, regex);
-        });
+      return nodes;
+    },
+
+    highlightTextNode(node, regex) {
+      const text = node.nodeValue;
+      if (!text) return;
+      regex.lastIndex = 0;
+      if (!regex.test(text)) return;
+      regex.lastIndex = 0;
+
+      const fragment = document.createDocumentFragment();
+      let lastIndex = 0;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const before = text.slice(lastIndex, match.index);
+        if (before) {
+          fragment.appendChild(document.createTextNode(before));
+        }
+        const mark = document.createElement("span");
+        mark.className = "search-highlight";
+        mark.textContent = match[0];
+        fragment.appendChild(mark);
+        lastIndex = match.index + match[0].length;
       }
+      const after = text.slice(lastIndex);
+      if (after) {
+        fragment.appendChild(document.createTextNode(after));
+      }
+      node.parentNode?.replaceChild(fragment, node);
     },
 
     clearHighlights() {
-      const contentDom = this.contentRef.$el?.querySelector(".v-show-content");
+      const contentDom = this.getContentDom();
       if (!contentDom) return;
 
       try {
@@ -182,15 +197,6 @@ export default {
         });
       } catch (error) {
         console.error("清除高亮出错:", error);
-
-        // 如果出错，尝试恢复原始内容
-        try {
-          if (this.originalContent && contentDom) {
-            contentDom.innerHTML = this.originalContent;
-          }
-        } catch (e) {
-          console.error("恢复原始内容出错:", e);
-        }
       }
 
       // 清空搜索结果

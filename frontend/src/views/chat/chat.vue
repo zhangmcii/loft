@@ -52,6 +52,8 @@ const otherUser = useOtherUserStore();
 const isTyping = ref(false);
 let typingTimer = null;
 let typingTimeoutTimer = null;
+let handleNewMessage = null;
+let handleTyping = null;
 
 const config = reactive({
   user: {
@@ -79,23 +81,35 @@ onMounted(async () => {
     return;
   }
 
-  currentUser.socket.on("new_message", (msg) => {
+  handleNewMessage = (msg) => {
     if (currentUser.activeChat === msg.sender_id) {
       query.real_time_receive = true;
       config.data.push(msg);
     }
     query.real_time_receive = false;
-  });
+  };
+  currentUser.socket.on("new_message", handleNewMessage);
 
-  currentUser.socket.on("chat:typing", (data) => {
+  handleTyping = (data) => {
     if (data.sender_id === otherUser.userInfo.id) {
       showTypingIndicator();
     }
-  });
+  };
+  currentUser.socket.on("chat:typing", handleTyping);
 });
 
 onUnmounted(() => {
   clearTypingTimers();
+  if (currentUser.socket) {
+    if (handleNewMessage) {
+      currentUser.socket.off("new_message", handleNewMessage);
+      handleNewMessage = null;
+    }
+    if (handleTyping) {
+      currentUser.socket.off("chat:typing", handleTyping);
+      handleTyping = null;
+    }
+  }
 });
 
 function loadMore(finish) {

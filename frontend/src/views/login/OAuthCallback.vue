@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCurrentUserStore } from "@/stores/user";
 
@@ -8,6 +8,7 @@ const router = useRouter();
 const store = useCurrentUserStore();
 const startedAt =
   typeof performance !== "undefined" ? performance.now() : Date.now();
+let redirectTimer = null;
 
 const state = ref({
   status: "info", // info | success | error
@@ -69,7 +70,7 @@ onMounted(() => {
       (typeof performance !== "undefined" ? performance.now() : Date.now()) -
       startedAt;
     const delay = Math.max(1500 - elapsed, 0);
-    setTimeout(() => router.replace("/settings"), delay);
+    redirectTimer = setTimeout(() => router.replace("/settings"), delay);
     return;
   }
 
@@ -117,7 +118,14 @@ onMounted(() => {
     (typeof performance !== "undefined" ? performance.now() : Date.now()) -
     startedAt;
   const delay = Math.max(1500 - elapsed, 0);
-  setTimeout(() => router.replace("/posts"), delay);
+  redirectTimer = setTimeout(() => router.replace("/posts"), delay);
+});
+
+onUnmounted(() => {
+  if (redirectTimer) {
+    clearTimeout(redirectTimer);
+    redirectTimer = null;
+  }
 });
 
 // 返回登录页

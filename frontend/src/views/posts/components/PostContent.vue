@@ -27,6 +27,7 @@ const SVG_ICONS = {
 };
 
 export default {
+  emits: ["toc-ready"],
   props: {
     postContent: {
       type: String,
@@ -61,6 +62,7 @@ export default {
       truncationObserver: null,
       truncationObservedEl: null,
       truncationRaf: null,
+      tocRaf: null,
     };
   },
   watch: {
@@ -85,6 +87,14 @@ export default {
     if (this.codeBlockProcessRaf) {
       cancelAnimationFrame(this.codeBlockProcessRaf);
       this.codeBlockProcessRaf = null;
+    }
+    if (this.tocRaf) {
+      cancelAnimationFrame(this.tocRaf);
+      this.tocRaf = null;
+    }
+    const contentDom = this.getContentDom();
+    if (contentDom) {
+      this.unbindTruncationImageListeners(contentDom);
     }
     this.teardownTruncationObserver();
   },
@@ -146,6 +156,7 @@ export default {
         const doFullRebuild = this.needsFullRebuild;
         this.needsFullRebuild = false;
         this.processCodeBlocks(doFullRebuild);
+        this.scheduleTocEmit();
       });
     },
     updateFontSize(size) {
@@ -172,6 +183,7 @@ export default {
       if (!this.preview) {
         if (contentDom) {
           this.clearTruncationStyles(contentDom);
+          this.unbindTruncationImageListeners(contentDom);
         }
         this.teardownTruncationObserver();
         return;
@@ -239,12 +251,24 @@ export default {
       const schedule = () => this.scheduleTruncationApply();
 
       imgs.forEach((img) => {
-        if (img._truncationLoaded) return;
-        img._truncationLoaded = true;
-        img.addEventListener("load", schedule);
-        img.addEventListener("error", schedule);
+        if (img._truncationHandler) return;
+        img._truncationHandler = schedule;
+        img.addEventListener("load", img._truncationHandler);
+        img.addEventListener("error", img._truncationHandler);
         if (img.complete) {
           schedule();
+        }
+      });
+    },
+
+    unbindTruncationImageListeners(contentDom) {
+      const imgs = contentDom.querySelectorAll("img");
+      if (imgs.length === 0) return;
+      imgs.forEach((img) => {
+        if (img._truncationHandler) {
+          img.removeEventListener("load", img._truncationHandler);
+          img.removeEventListener("error", img._truncationHandler);
+          delete img._truncationHandler;
         }
       });
     },
@@ -373,6 +397,48 @@ export default {
       } finally {
         this.isProcessingCodeBlocks = false;
       }
+    },
+
+    scheduleTocEmit() {
+      if (this.tocRaf) {
+        cancelAnimationFrame(this.tocRaf);
+      }
+      this.tocRaf = requestAnimationFrame(() => {
+        this.tocRaf = null;
+        this.emitToc();
+      });
+    },
+
+    emitToc() {
+      const contentDom = this.getContentDom();
+      if (!contentDom) return;
+
+      const headings = contentDom.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      if (!headings.length) {
+        this.$emit("toc-ready", []);
+        return;
+      }
+
+      const toc = [];
+      const seenSlugCounts = new Map();
+      headings.forEach((heading) => {
+        const text = heading.textContent.trim();
+        if (!text) return;
+
+        const baseId = text.toLowerCase().replace(/\s+/g, "-");
+        const count = (seenSlugCounts.get(baseId) || 0) + 1;
+        seenSlugCounts.set(baseId, count);
+        const id = count === 1 ? baseId : `${baseId}-${count}`;
+        heading.id = id;
+
+        toc.push({
+          level: parseInt(heading.tagName.substring(1)),
+          text,
+          id,
+        });
+      });
+
+      this.$emit("toc-ready", toc);
     },
 
     // 处理图片点击事件，使用 Element Plus 的图片查看器

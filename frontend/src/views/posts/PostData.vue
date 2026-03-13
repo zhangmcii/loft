@@ -41,6 +41,8 @@ export default {
       },
       showDot: false,
       followPost: [],
+      followPostHandler: null,
+      postDeletedHandler: null,
     };
   },
   computed: {
@@ -59,15 +61,17 @@ export default {
   mounted() {
     this.resetPosts(this.activeName);
     // 关注的用户发布了新文章
-    emitter.on("followPost", (newPost) => {
+    this.followPostHandler = (newPost) => {
       this.showDot = true;
       this.followPost = [...newPost];
       console.log("newPost", this.followPost);
-    });
+    };
+    emitter.on("followPost", this.followPostHandler);
     // 监听文章删除事件，刷新页面
-    emitter.on("postDeleted", () => {
+    this.postDeletedHandler = () => {
       this.resetPosts(this.activeName);
-    });
+    };
+    emitter.on("postDeleted", this.postDeletedHandler);
   },
   methods: {
     changeTab(tabName) {
@@ -132,8 +136,14 @@ export default {
   },
   beforeUnmount() {
     // 清理事件监听
-    emitter.off("followPost");
-    emitter.off("postDeleted");
+    if (this.followPostHandler) {
+      emitter.off("followPost", this.followPostHandler);
+      this.followPostHandler = null;
+    }
+    if (this.postDeletedHandler) {
+      emitter.off("postDeleted", this.postDeletedHandler);
+      this.postDeletedHandler = null;
+    }
   },
 };
 </script>

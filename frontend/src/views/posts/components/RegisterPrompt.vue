@@ -67,6 +67,7 @@ export default {
     return {
       currentUsers: 127,
       weeklyPosts: 36,
+      updateTimer: null,
     };
   },
   created() {
@@ -76,10 +77,11 @@ export default {
       this.updateStats();
     }, STATS_CONFIG.UPDATE_INTERVAL);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // 清理定时器
     if (this.updateTimer) {
       clearInterval(this.updateTimer);
+      this.updateTimer = null;
     }
   },
   methods: {
