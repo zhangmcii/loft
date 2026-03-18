@@ -2,11 +2,10 @@ import { useCurrentUserStore } from "@/stores/user";
 import errorManager from "@/utils/message";
 import router from "../router/index.js";
 import axios from "axios";
-import { refreshAccessToken } from "@/utils/tokenService.js";
+import { refreshAccessToken, TOKEN_KEY } from "@/utils/tokenService.js";
 
 // ============ 常量定义 ============
 const REFRESH_URL = "/auth/refresh";
-const TOKEN_KEY = "blog";
 const EXPIRED_MESSAGE = "身份已过期";
 const FRESH_REQUIRED_MESSAGE = "该操作需要重新登录以验证身份";
 

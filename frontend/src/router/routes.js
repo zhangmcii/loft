@@ -230,6 +230,10 @@ const routes = [
     name: "welcome",
     component: () => import("../views/welcome/Blogindex.vue"),
   },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/404",
+  },
 ];
 
 export default routes;

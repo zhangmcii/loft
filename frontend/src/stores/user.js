@@ -210,6 +210,11 @@ export const useCurrentUserStore = defineStore("currentUser", {
     },
     async connectSocket() {
       if (this.socket) return;
+      // 防止重复创建心跳定时器
+      if (this.heartbeatInterval) {
+        clearInterval(this.heartbeatInterval);
+        this.heartbeatInterval = null;
+      }
       const token = await this.ensureSocketAuth();
       if (!token) {
         console.warn("⚠️ 缺少有效token，跳过WebSocket连接");

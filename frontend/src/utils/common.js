@@ -245,8 +245,11 @@ function waitImage(imageUrls) {
     });
 
     Promise.race([Promise.all(imagePromises), timeoutPromise])
-      .then(() => {
-        resolve(); // 加载完成，loading 结束
+      .then((result) => {
+        if (result === "timeout") {
+          console.warn("图片加载超时");
+        }
+        resolve(); // 加载完成或超时，loading 结束
       })
       .catch((err) => {
         console.error("壁纸加载失败:", err);

@@ -7,7 +7,6 @@ import CommentCard from "@/views/comment/ComCard.vue";
 import PostHeader from "@/views/posts/components/PostHeader.vue";
 import PostContent from "@/views/posts/components/PostContent.vue";
 import ReadProgress from "@/utils/components/ReadProgress.vue";
-import FontSizeAdjuster from "@/views/posts/components/FontSizeAdjuster.vue";
 import PostSearch from "@/views/posts/components/PostSearch.vue";
 import PostToc from "@/views/posts/components/PostToc.vue";
 import postApi from "@/api/posts/postApi.js";
@@ -24,7 +23,6 @@ export default {
     PostHeader,
     PostContent,
     ReadProgress,
-    FontSizeAdjuster,
     PostSearch,
     PostToc,
   },
@@ -43,7 +41,6 @@ export default {
         timestamp: "",
         author: "--",
         nick_name: "",
-        commentCount: 20,
         comment_count: 20,
         disabled: false,
         image: "",
@@ -56,6 +53,12 @@ export default {
       fontSize: 14,
       // 是否显示搜索框
       showSearch: false,
+      toolboxVisible: false,
+      toolboxFontSize: 14,
+      showFloatingButtons: true,
+      lastScrollTop: 0,
+      scrollRaf: null,
+      scrollEl: null,
       // 文章目录
       toc: [],
       // 当前激活的标题ID
@@ -80,6 +83,7 @@ export default {
       if (savedFontSize) {
         vm.fontSize = parseInt(savedFontSize);
       }
+      vm.toolboxFontSize = vm.fontSize;
     });
   },
   // 通知栏上可能会频繁切换跳转的文章
@@ -93,6 +97,9 @@ export default {
         }
       }
     );
+  },
+  mounted() {
+    this.bindScrollListener();
   },
   computed: {},
 
@@ -121,6 +128,7 @@ export default {
     if (this.scrollObserver) {
       this.scrollObserver.disconnect();
     }
+    this.teardownScrollListener();
     if (this.skeletonTimer) {
       clearTimeout(this.skeletonTimer);
       this.skeletonTimer = null;
@@ -212,6 +220,70 @@ export default {
       this.fontSize = size;
       localStorage.setItem("article-font-size", size.toString());
     },
+    search() {
+      this.toolboxVisible = !this.toolboxVisible;
+      this.showSearch = !this.showSearch;
+    },
+    toggleToolbox() {
+      this.toolboxVisible = !this.toolboxVisible;
+      if (this.toolboxVisible) {
+        this.toolboxFontSize = this.fontSize;
+      }
+    },
+    saveToolboxFontSize() {
+      this.saveFontSizeSettings(this.toolboxFontSize);
+      this.toolboxVisible = false;
+    },
+    resetToolboxFontSize() {
+      this.toolboxFontSize = 16;
+    },
+    bindScrollListener() {
+      this.$nextTick(() => {
+        const wrap =
+          this.$refs.pageScrollRef?.$el?.querySelector(".el-scrollbar__wrap") ||
+          null;
+        if (!wrap) return;
+        this.scrollEl = wrap;
+        this.lastScrollTop = wrap.scrollTop || 0;
+        wrap.addEventListener("scroll", this.handleScroll, { passive: true });
+      });
+    },
+    teardownScrollListener() {
+      if (this.scrollRaf) {
+        cancelAnimationFrame(this.scrollRaf);
+        this.scrollRaf = null;
+      }
+      if (this.scrollEl) {
+        this.scrollEl.removeEventListener("scroll", this.handleScroll);
+        this.scrollEl = null;
+      }
+    },
+    handleScroll(event) {
+      if (this.toolboxVisible) {
+        this.showFloatingButtons = true;
+        return;
+      }
+      const target = event.target;
+      const currentTop = target.scrollTop || 0;
+      if (this.scrollRaf) {
+        cancelAnimationFrame(this.scrollRaf);
+      }
+      this.scrollRaf = requestAnimationFrame(() => {
+        this.scrollRaf = null;
+        const delta = currentTop - this.lastScrollTop;
+        const threshold = 10;
+        if (Math.abs(delta) < threshold) {
+          this.lastScrollTop = currentTop;
+          return;
+        }
+        if (currentTop < 10) {
+          this.showFloatingButtons = true;
+        } else {
+          this.showFloatingButtons = delta < 0;
+        }
+        this.lastScrollTop = currentTop;
+      });
+    },
   },
 };
 </script>
@@ -286,26 +358,45 @@ export default {
 
           <!-- 实际内容 -->
           <template #default>
-            <div class="post-main-content">
-              <PostHeader :post="post" class="post-header" />
+            <div class="post-detail-layout">
+              <div class="post-main-column">
+                <div class="post-main-content">
+                  <PostHeader :post="post" class="post-header" />
 
-              <PostContent
-                :postContent="post.content"
-                class="post-content"
-                :fontSize="fontSize"
-                ref="postContent"
-                @toc-ready="handleTocReady"
-              />
-              <PostImage :postImages="post.post_images" class="post-images" />
-            </div>
+                  <PostContent
+                    :postContent="post.content"
+                    class="post-content"
+                    :fontSize="fontSize"
+                    ref="postContent"
+                    @toc-ready="handleTocReady"
+                  />
+                  <PostImage
+                    :postImages="post.post_images"
+                    class="post-images"
+                  />
+                </div>
 
-            <div class="post-actions">
-              <PostAction
-                :post="post"
-                :showShare="true"
-                :showEdit="true"
-                :showDelete="true"
-              />
+                <div class="post-actions">
+                  <PostAction
+                    :post="post"
+                    :showShare="true"
+                    :showEdit="true"
+                    :showDelete="true"
+                  />
+                </div>
+              </div>
+
+              <aside
+                v-if="showSkeletonComponents && toc.length > 0"
+                class="post-aside"
+              >
+                <PostToc
+                  :toc="toc"
+                  :activeId="activeHeadingId"
+                  mode="inline"
+                  @navigate="scrollToHeading"
+                />
+              </aside>
             </div>
           </template>
         </el-skeleton>
@@ -316,31 +407,71 @@ export default {
           v-if="showSkeletonComponents"
           :toc="toc"
           :activeId="activeHeadingId"
+          class="post-toc-drawer"
+          :class="{ 'float-hidden': !showFloatingButtons }"
+          mode="drawer"
           @navigate="scrollToHeading"
         />
-        <!-- 字体大小调整悬浮按钮 -->
-        <FontSizeAdjuster
-          v-if="showSkeletonComponents"
-          :defaultFontSize="fontSize"
-          @update:fontSize="updateFontSize"
-          @save="saveFontSizeSettings"
-        />
 
-        <!-- 搜索按钮 -->
+        <!-- 工具箱按钮 -->
         <div
           v-if="showSkeletonComponents"
-          class="search-button"
-          @click="showSearch = !showSearch"
+          class="toolbox-button"
+          :class="{ 'float-hidden': !showFloatingButtons }"
+          @click="toggleToolbox"
         >
-          <el-button
-            type="primary"
-            circle
-            size="large"
-            :class="{ active: showSearch }"
-          >
-            <el-icon><i-ep-Search /></el-icon>
+          <el-button type="primary" circle size="large">
+            <el-icon><i-ep-Tools /></el-icon>
           </el-button>
         </div>
+
+        <el-drawer
+          v-model="toolboxVisible"
+          title="工具箱"
+          direction="rtl"
+          size="300px"
+          :destroy-on-close="false"
+          :modal="true"
+        >
+          <div class="toolbox-content">
+            <div class="toolbox-section">
+              <div class="toolbox-title">字体调整</div>
+              <div class="toolbox-preview">
+                <div class="preview-title">预览效果</div>
+                <div
+                  class="preview-text"
+                  :style="{ fontSize: toolboxFontSize + 'px' }"
+                >
+                  这是预览文本，调整滑块可以改变字体大小，使阅读更加舒适。
+                </div>
+              </div>
+              <div class="toolbox-control">
+                <div class="control-label">
+                  <span>字体大小: {{ toolboxFontSize }}px</span>
+                  <el-button link @click="resetToolboxFontSize">重置</el-button>
+                </div>
+                <el-slider
+                  v-model="toolboxFontSize"
+                  :min="12"
+                  :max="24"
+                  :step="1"
+                  show-stops
+                />
+                <div class="control-buttons">
+                  <el-button @click="toolboxVisible = false">取消</el-button>
+                  <el-button type="primary" @click="saveToolboxFontSize"
+                    >保存设置</el-button
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="toolbox-section">
+              <div class="toolbox-title">文本搜索</div>
+              <el-button type="primary" @click="search">搜索</el-button>
+            </div>
+          </div>
+        </el-drawer>
 
         <!-- 搜索组件 -->
         <PostSearch
@@ -372,6 +503,49 @@ export default {
   }
 }
 
+.post-detail-layout {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.post-main-column {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.post-aside {
+  flex: 0 0 300px;
+  position: sticky;
+  top: 20px;
+  align-self: flex-start;
+  max-height: calc(100vh - 100px);
+  overflow: auto;
+}
+
+.post-toc-drawer {
+  display: none;
+}
+
+.toolbox-button {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  z-index: 999;
+  transition: all 0.3s ease;
+
+  .el-button {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+}
+
+.float-hidden {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
 .post-main-content {
   margin-bottom: $spacing-lg;
   @extend .slide-up;
@@ -400,6 +574,20 @@ export default {
   margin-top: $spacing-md;
 }
 
+@include mobile {
+  .post-detail-layout {
+    display: block;
+  }
+
+  .post-aside {
+    display: none;
+  }
+
+  .post-toc-drawer {
+    display: block;
+  }
+}
+
 // 骨架屏样式
 .skeleton-wrapper {
   // min-height: calc(100vh - 200px);
@@ -424,63 +612,73 @@ export default {
   height: 24px;
 }
 
-// 目录容器
-.toc-container {
-  position: sticky;
-  top: 20px;
-  max-height: calc(100vh - 100px);
-  padding: 16px;
-  margin-bottom: 20px;
-  overflow-y: auto;
-  background: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.toolbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+  padding: 0 16px;
+}
 
-  .toc-title {
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-    font-weight: bold;
-    border-bottom: 1px solid #eaeaea;
+.toolbox-section {
+  padding-bottom: 8px;
+}
+
+.toolbox-title {
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.toolbox-preview {
+  max-height: 180px;
+  padding: 16px;
+  margin-bottom: 16px;
+  overflow: auto;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+
+  .preview-title {
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #606266;
   }
 
-  .toc-item {
-    margin-bottom: 8px;
-    color: #555;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      color: #409eff;
-      transform: translateX(4px);
-    }
+  .preview-text {
+    line-height: 1.8;
+    color: #303133;
   }
 }
 
-// 搜索按钮
-.search-button {
-  position: fixed;
-  right: 20px;
-  bottom: 80px;
-  z-index: 999;
-  transition: all 0.3s ease;
+.toolbox-control {
+  .control-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
 
-  .el-button {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    &.active {
-      background-color: #409eff;
-      transform: rotate(90deg);
-    }
-
-    &:hover {
-      transform: scale(1.1);
-
-      &.active {
-        transform: rotate(90deg) scale(1.1);
-      }
+    span {
+      font-size: 14px;
+      color: #606266;
     }
   }
+
+  .control-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+  }
+}
+
+.toolbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbox-hint {
+  color: #909399;
 }
 
 // 其他样式

@@ -1,20 +1,22 @@
 <script>
 import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 import PageScroll from "@/utils/components/PageScroll.vue";
+import ICP from "@/utils/components/ICP.vue";
 import homeIcon from "@/asset/svg/homeIcon.svg?component";
+
 export default {
+  name: "About",
   components: {
     PageHeadBack,
     homeIcon,
     PageScroll,
+    ICP,
   },
   data() {
     return {
-      currentYear: new Date().getFullYear(),
-      creator: {
-        name: "阁楼主人",
-        title: "全栈开发者",
-        bio: "用代码解决问题，也顺手记录生活。",
+      appInfo: {
+        name: "随想阁楼",
+        version: "1.0.0",
       },
     };
   },
@@ -24,284 +26,128 @@ export default {
 <template>
   <PageHeadBack>
     <PageScroll max-height="calc(100vh - 45px - 47px)">
-      <div class="about-container">
-        <div class="about-content">
-          <!-- 个人介绍区域 -->
-          <div class="intro-section">
-            <div class="avatar">
-              <homeIcon />
-            </div>
-            <h1 class="name">{{ creator.name }}</h1>
-            <p class="title">{{ creator.title }}</p>
-            <p class="bio">{{ creator.bio }}</p>
+      <div class="about-page">
+        <!-- 头部区域 -->
+        <div class="about-header">
+          <div class="app-logo">
+            <homeIcon class="logo-icon" />
           </div>
-
-          <!-- 项目介绍 -->
-          <div class="project-section">
-            <h2 class="section-title">关于本站</h2>
-            <div class="section-content">
-              <p class="description">
-                这是一个个人作品，一个安静的角落，用来记录技术探索、生活感悟和创作思考。
-              </p>
-              <p class="description">
-                没有商业目标，没有增长压力，只是单纯地享受创造的过程，和偶尔相遇的共鸣。
-              </p>
-            </div>
-          </div>
-
-          <!-- 联系我 -->
-          <div class="contact-section">
-            <h2 class="section-title">联系我</h2>
-            <div class="contact-links">
-              <el-link
-                href="mailto:zmc_li@foxmail.com"
-                :underline="false"
-                class="contact-link"
-              >
-                <el-icon class="link-icon"><i-ep-Message /></el-icon>
-                <span class="link-text">zmc_li@foxmail.com</span>
-              </el-link>
-            </div>
-          </div>
-
-          <!-- 版权信息 -->
-          <div class="footer-section">
-            <p class="copyright">
-              &copy; {{ currentYear }}
-              <a
-                href="https://github.com/nizhensh-i"
-                target="_blank"
-                :underline="false"
-              >
-                随想阁楼</a
-              >
-            </p>
-            <p class="motto">Stay hungry, stay foolish.</p>
-          </div>
+          <h1 class="app-name">{{ appInfo.name }}</h1>
+          <p class="app-version">版本 {{ appInfo.version }}</p>
         </div>
+
+        <!-- 关于我们文案 -->
+        <div class="about-content">
+          <p class="about-text">
+            这是一个个人作品，一个安静的角落，用来记录技术探索、生活感悟和创作思考。
+          </p>
+          <p class="about-text">
+            没有商业目标，没有增长压力，只是单纯地享受创造的过程，和偶尔相遇的共鸣。
+          </p>
+          <p class="about-text">
+            如果你有任何建议或问题，欢迎通过邮件联系：
+            <a href="mailto:zmc_li@foxmail.com" class="contact-link"
+              >zmc_li@foxmail.com</a
+            >
+          </p>
+        </div>
+
+        <!-- 底部信息 -->
+        <ICP />
       </div>
     </PageScroll>
   </PageHeadBack>
 </template>
 
 <style lang="scss" scoped>
-// 变量定义
-$max-width: 600px;
-$bg-color: #fff;
-$text-color: #333;
-$text-secondary: #999;
-$text-muted: #666;
-$border-color: #eee;
-
-.about-container {
-  background: $bg-color;
+.about-page {
+  min-height: calc(100vh - 45px - 47px);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
 }
 
-.about-content {
-  max-width: $max-width;
-  width: 100%;
-  padding: 20px;
-  margin: 0 auto;
-}
-
-// PC端样式 (≥768px)
-@media (min-width: 768px) {
-  .about-container {
-    padding: 0;
-  }
-
-  .about-content {
-    margin: 0;
-    max-width: none;
-    width: auto;
-  }
-}
-
-// 大屏PC端 (≥1200px)
-@media (min-width: 1200px) {
-  .about-content {
-    padding-left: 180px;
-    padding-right: 80px;
-  }
-}
-
-// 个人介绍
-.intro-section {
+/* 头部区域 */
+.about-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px 32px;
   text-align: center;
-  margin-bottom: 48px;
+}
 
-  .avatar {
-    margin-bottom: 18px;
+.app-logo {
+  margin-bottom: 16px;
 
-    .avatar-circle {
-      width: 80px;
-      height: 80px;
-      background: $text-color;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-
-      .avatar-text {
-        font-size: 36px;
-        color: white;
-        font-weight: 300;
-      }
-    }
-  }
-
-  .name {
-    font-size: 28px;
-    font-weight: 400;
-    margin: 0 0 8px;
-    color: $text-color;
-    letter-spacing: 1px;
-  }
-
-  .title {
-    font-size: 14px;
-    color: $text-secondary;
-    margin: 0 0 16px;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-  }
-
-  .bio {
-    font-size: 15px;
-    color: $text-muted;
-    line-height: 1.7;
-    margin: 0 auto;
-    max-width: 400px;
+  .logo-icon {
+    width: 72px;
+    height: 72px;
+    color: #333;
   }
 }
 
-// 区块标题
-.section-title {
-  font-size: 14px;
+.app-name {
+  font-size: 20px;
   font-weight: 500;
-  margin: 0 0 20px;
-  color: $text-secondary;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid $border-color;
+  color: #1a1a1a;
+  margin: 0 0 6px;
 }
 
-// 项目介绍
-.project-section {
-  margin-bottom: 40px;
+.app-version {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+}
 
-  .section-content {
+/* 内容区域 */
+.about-content {
+  flex: 1;
+  padding: 0 24px;
+}
+
+.about-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #333;
+  margin: 0 0 16px;
+
+  &:last-child {
+    margin-top: 50px;
     margin-bottom: 0;
-
-    .description {
-      font-size: 16px;
-      line-height: 1.8;
-      color: #444;
-      margin: 0 0 16px;
-      font-weight: 350;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
   }
 }
 
-// 联系方式
-.contact-section {
-  margin-bottom: 40px;
+.contact-link {
+  color: #0066cc;
+  text-decoration: none;
 
-  .contact-links .contact-link {
-    display: block;
-    padding: 12px 0;
-    color: #555;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: $text-color;
-    }
-
-    .link-icon {
-      margin-right: 8px;
-      font-size: 16px;
-      color: $text-secondary;
-      vertical-align: middle;
-    }
-
-    .link-text {
-      font-size: 15px;
-      vertical-align: middle;
-      font-weight: 350;
-    }
+  &:hover {
+    text-decoration: underline;
   }
 }
 
-// 底部
-.footer-section {
-  padding-top: 32px;
-  border-top: 1px solid $border-color;
-  margin-bottom: 40px;
-  text-align: center;
-
-  .copyright {
-    font-size: 13px;
-    color: $text-secondary;
-    margin: 0 0 8px;
-    font-weight: 350;
-
-    a {
-      color: $text-secondary;
-    }
+/* PC端适配 */
+@media (min-width: 768px) {
+  .about-page {
+    max-width: 600px;
+    margin: 0 auto;
   }
 
-  .motto {
-    font-size: 15px;
-    color: $text-muted;
-    font-style: italic;
-    margin: 0;
-    font-weight: 350;
+  .about-header {
+    padding-top: 64px;
   }
-}
 
-// 手机设备 (< 768px)
-@media (max-width: 767px) {
-  .about-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .app-logo .logo-icon {
+    width: 80px;
+    height: 80px;
   }
 
   .about-content {
-    margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 32px;
   }
 
-  .intro-section {
-    margin-bottom: 40px;
-
-    .avatar .avatar-circle {
-      width: 64px;
-      height: 64px;
-
-      .avatar-text {
-        font-size: 28px;
-      }
-    }
-
-    .name {
-      font-size: 24px;
-    }
-  }
-
-  .project-section,
-  .contact-section {
-    margin-bottom: 32px;
-  }
-
-  .footer-section {
-    margin-bottom: 32px;
-    padding-top: 24px;
+  .about-text {
+    font-size: 15px;
   }
 }
 </style>

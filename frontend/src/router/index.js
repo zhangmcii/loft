@@ -29,6 +29,8 @@ router.beforeEach((to, _from, next) => {
     }
   } catch (error) {
     console.error("路由守卫解析用户数据失败:", error);
+    // 清理可能被破坏的存储数据
+    localStorage.removeItem("blog");
     if (to.meta?.requireAuth) {
       next("/login");
     } else {

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const TOKEN_KEY = "blog";
+export const TOKEN_KEY = "blog";
 const REFRESH_URL = "/auth/refresh";
 
 let refreshPromise = null;

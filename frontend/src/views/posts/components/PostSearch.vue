@@ -300,7 +300,7 @@ export default {
       </el-input>
     </div>
 
-    <div v-if="totalMatches > 0" class="search-results-info">
+    <div class="search-results-info">
       <span>{{ currentIndex + 1 }}/{{ totalMatches }} 个结果</span>
       <div class="search-navigation">
         <el-button
@@ -325,10 +325,6 @@ export default {
       <el-button type="danger" circle size="small" @click="closeSearch">
         <el-icon><i-ep-Close /></el-icon>
       </el-button>
-    </div>
-
-    <div v-else-if="searchText && !isSearching" class="no-results">
-      未找到匹配结果
     </div>
   </div>
 </template>
@@ -420,8 +416,8 @@ export default {
 @media (max-width: 768px) {
   .post-search-container {
     top: 60px;
-    right: 20px;
-    width: calc(100% - 40px);
+    right: 15px;
+    width: calc(100% - 55px);
   }
 }
 </style>

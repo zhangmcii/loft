@@ -108,9 +108,14 @@
         </div>
 
         <!-- 其他设置 -->
-        <!-- <div class="cell-group">
-        <van-cell title="意见反馈" icon="question-o" is-link />
-      </div> -->
+        <div class="cell-group">
+          <van-cell
+            title="关于"
+            icon="info-o"
+            is-link
+            @click="goTo('/about')"
+          />
+        </div>
 
         <div class="logout-button">
           <el-button type="danger" round @click="handleLogout"

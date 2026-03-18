@@ -5,7 +5,6 @@ import notificationApi from "@/api/notification/notificationApi.js";
 import postApi from "@/api/posts/postApi.js";
 import { useCurrentUserStore } from "@/stores/user";
 import SkeletonUtil from "@/utils/components/SkeletonUtil.vue";
-import ICP from "@/utils/components/ICP.vue";
 import PublishEntry from "@/views/posts/components/PublishEntry.vue";
 import RegisterPrompt from "@/views/posts/components/RegisterPrompt.vue";
 import PageScroll from "@/utils/components/PageScroll.vue";
@@ -17,7 +16,6 @@ export default {
     PostImage,
     PublishEntry,
     SkeletonUtil,
-    ICP,
     RegisterPrompt,
     PageScroll,
   },
@@ -246,7 +244,6 @@ export default {
           </div>
         </el-tab-pane>
       </el-tabs>
-      <ICP />
     </div>
   </PageScroll>
 </template>

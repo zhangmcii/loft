@@ -1,6 +1,4 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-
 const beginYear = "2024";
 const currentYear = new Date().getFullYear();
 const author = {
@@ -12,33 +10,12 @@ const icp = {
   code: import.meta.env.VITE_ICP,
   link: "http://beian.miit.gov.cn/",
 };
-
-const isFixed = ref(false);
-
-function checkFooterPosition() {
-  const bodyHeight = document.body.scrollHeight;
-  const windowHeight = window.innerHeight;
-  isFixed.value = bodyHeight <= windowHeight;
-}
-
-onMounted(() => {
-  window.addEventListener("resize", checkFooterPosition);
-  window.addEventListener("load", checkFooterPosition);
-  checkFooterPosition();
-});
-
-onUnmounted(() => {
-  window.removeEventListener("resize", checkFooterPosition);
-  window.removeEventListener("load", checkFooterPosition);
-});
 </script>
 
 <template>
-  <div id="copyright-icp-footer" class="footer" :class="{ fixed: isFixed }">
-    <div class="footer-divider"></div>
+  <div id="copyright-icp-footer" class="footer">
     <div class="footer-content">
       <div class="footer-links">
-        <router-link to="/about" class="footer-link">关于我们</router-link>
         <router-link to="/terms" class="footer-link">用户协议</router-link>
         <router-link to="/privacy" class="footer-link">隐私政策</router-link>
       </div>
@@ -61,19 +38,19 @@ onUnmounted(() => {
         </li>
         <li v-if="author.name" class="copyright-item">
           {{ `Copyright © ${beginYear}-${currentYear} ` }}
-          <a v-if="!author.link">{{ author.name }}</a>
+          <a v-if="!author.link">{{ author.name }} ></a>
           <a
             v-else-if="author.link && author.title"
             :href="author.link"
             :title="author.title"
             target="_blank"
-            >{{ author.name }}</a
+            >{{ author.name }} ></a
           >
           <a
             v-else-if="author.link && !author.title"
             :href="author.link"
             target="_blank"
-            >{{ author.name }}</a
+            >{{ author.name }} ></a
           >
         </li>
       </ul>
@@ -84,30 +61,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .footer {
   width: 100%;
-  // padding: 20px 0 16px;
-  // margin-top: 40px;
   transition: all 0.3s ease;
-
-  &.fixed {
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(5px);
-  }
-
-  @media (max-width: 768px) {
-    // padding: 16px 0 12px;
-    // margin-top: 30px;
-  }
-}
-
-.footer-divider {
-  height: 1px;
-  margin-bottom: 16px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(0, 0, 0, 0.08),
-    transparent
-  );
 }
 
 .footer-content {
@@ -136,13 +90,11 @@ onUnmounted(() => {
   text-decoration: none;
   transition: all 0.3s ease;
 
-  &:hover,
-  &.router-link-active {
-    color: #0069c2;
-  }
+  color: #0066cc;
+  text-decoration: none;
 
-  &.router-link-active {
-    font-weight: 500;
+  &:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 768px) {

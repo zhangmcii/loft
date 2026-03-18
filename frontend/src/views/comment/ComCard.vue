@@ -217,8 +217,8 @@ const submit = ({ content, parentId, reply, finish, mentionList }) => {
       }
     })
     .catch((error) => {
-      if (error.response && error.response.status === 429) {
-        ElMessage.info("操作太快了，慢点点~");
+      if (error === "请求频率超限") {
+        ElMessage.warning("操作太快了，慢点点~");
       } else {
         ElMessage.error("评论失败，请稍后重试");
       }
@@ -301,7 +301,6 @@ const more = () => {
           query.current++;
         } else {
           ElMessage.error(res.message || "加载评论失败");
-          finish(); // 即使失败也要调用finish
         }
       })
       .catch((error) => {

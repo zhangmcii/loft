@@ -9,6 +9,10 @@ export default {
       type: String,
       default: "",
     },
+    mode: {
+      type: String,
+      default: "drawer",
+    },
   },
   data() {
     return {
@@ -31,42 +35,65 @@ export default {
 </script>
 
 <template>
-  <div class="toc">
-    <el-button
-      v-if="toc.length > 0"
-      class="font-size-button"
-      circle
-      type="primary"
-      size="large"
-      @click="toggleVisible"
-    >
-      <span class="font-icon">目录</span>
-    </el-button>
-
-    <el-drawer
-      v-model="show"
-      title="目录"
-      direction="rtl"
-      size="280px"
-      :destroy-on-close="false"
-      :modal="true"
-    >
-      <div class="toc-content">
-        <div
-          v-for="item in toc"
-          :key="item.id"
-          class="toc-item"
-          :class="{ active: activeId === item.id }"
-          :style="{
-            paddingLeft: `${(item.level - 1) * 12}px`,
-            fontSize: `${18 - item.level * 1}px`,
-          }"
-          @click="scrollToHeading(item.id)"
-        >
-          {{ item.text }}
+  <div class="toc" :class="`toc--${mode}`">
+    <template v-if="mode === 'inline'">
+      <div v-if="toc.length > 0" class="toc-panel">
+        <div class="toc-title">目录</div>
+        <div class="toc-content">
+          <div
+            v-for="item in toc"
+            :key="item.id"
+            class="toc-item"
+            :class="{ active: activeId === item.id }"
+            :style="{
+              paddingLeft: `${(item.level - 1) * 12}px`,
+              fontSize: `${18 - item.level * 1}px`,
+            }"
+            @click="scrollToHeading(item.id)"
+          >
+            {{ item.text }}
+          </div>
         </div>
       </div>
-    </el-drawer>
+    </template>
+
+    <template v-else>
+      <el-button
+        v-if="toc.length > 0"
+        class="font-size-button"
+        circle
+        type="primary"
+        size="large"
+        @click="toggleVisible"
+      >
+        <span class="font-icon">目录</span>
+      </el-button>
+
+      <el-drawer
+        v-model="show"
+        title="目录"
+        direction="rtl"
+        size="280px"
+        :destroy-on-close="false"
+        :modal="true"
+      >
+        <div class="toc-content">
+          <div
+            v-for="item in toc"
+            :key="item.id"
+            class="toc-item"
+            :class="{ active: activeId === item.id }"
+            :style="{
+              paddingLeft: `${(item.level - 1) * 12}px`,
+              fontSize: `${18 - item.level * 1}px`,
+            }"
+            @click="scrollToHeading(item.id)"
+          >
+            {{ item.text }}
+          </div>
+        </div>
+      </el-drawer>
+    </template>
   </div>
 </template>
 
@@ -79,6 +106,26 @@ export default {
 
   .font-icon {
     font-size: 13px;
+  }
+}
+
+.toc--inline {
+  position: static;
+  top: auto;
+  right: auto;
+
+  .toc-panel {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .toc-title {
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid #eaeaea;
   }
 }
 
