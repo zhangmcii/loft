@@ -1,13 +1,13 @@
 <template>
   <div class="publish-entry">
-    <!-- 浮动发布按钮 -->
-    <div class="publish-fab" @click="showPublishPanel = true">
-      <el-button type="primary" circle size="large">
-        <el-icon><i-ep-Edit /></el-icon>
-      </el-button>
+    <div class="publish-inline-entry" @click="showPublishPanel = true">
+      <div class="entry-copy">
+        <span class="entry-title">写点什么</span>
+        <span class="entry-hint">记录此刻，或展开一篇完整内容</span>
+      </div>
+      <span class="entry-action">打开</span>
     </div>
 
-    <!-- 发布面板 -->
     <el-drawer
       v-model="showPublishPanel"
       title="发布内容"
@@ -20,6 +20,7 @@
       <div class="publish-options">
         <div class="publish-header">
           <h3>选择发布类型</h3>
+          <p class="publish-note">用最合适的方式把这一次内容写下来。</p>
         </div>
 
         <div class="publish-types">
@@ -247,6 +248,12 @@ export default {
         } else {
           ElMessage.error("发布失败!");
         }
+      } catch (error) {
+        if (error === "请求频率超限") {
+          ElMessage.warning("发布次数超限~");
+        } else {
+          ElMessage.error("发布失败，请稍后重试");
+        }
       } finally {
         this.publishing = false;
         this.$emit("loadingBegin", false);
@@ -317,40 +324,96 @@ export default {
 <style lang="scss" scoped>
 .publish-entry {
   position: relative;
+  margin-bottom: 18px;
 }
 
-.publish-fab {
-  position: fixed;
-  right: 20px;
-  bottom: 80px;
-  z-index: 1555;
+.publish-inline-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid #dddddd;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 
-  .el-button {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  &:hover {
+    border-color: #111;
+    background: #fafafa;
+  }
 
-    &:hover {
-      transform: scale(1.1) rotate(15deg);
-    }
+  .entry-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .entry-title {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #111;
+  }
+
+  .entry-hint {
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    color: #777;
+  }
+
+  .entry-action {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #555;
+    letter-spacing: 0.06em;
   }
 }
 
-.publish-drawer {
-  border-radius: 16px 16px 0 0;
-  overflow: hidden;
+:deep(.publish-drawer) {
+  background: #fff;
+}
+
+:deep(.publish-drawer .el-drawer__header) {
+  margin-bottom: 0;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid #ececec;
+  color: #111;
+}
+
+:deep(.publish-drawer .el-drawer__title) {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111;
+}
+
+:deep(.publish-drawer .el-drawer__close-btn) {
+  color: #555;
 }
 
 .publish-options {
-  padding: 0 20px 20px;
+  padding: 22px 24px 24px;
 
   .publish-header {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     text-align: center;
 
     h3 {
+      margin: 0;
       font-size: 18px;
       font-weight: 500;
-      color: #303133;
+      color: #111;
+    }
+
+    .publish-note {
+      margin: 8px 0 0;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #777;
     }
   }
 }
@@ -365,38 +428,44 @@ export default {
     flex-direction: column;
     align-items: center;
     width: 30%;
-    padding: 16px;
+    padding: 18px 16px;
     cursor: pointer;
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    border-radius: 14px;
+    border: 1px solid #e4e4e4;
+    background: #fff;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 
     &:hover {
-      background-color: #f5f7fa;
+      background-color: #fafafa;
+      border-color: #cfcfcf;
     }
 
     &.active {
-      background-color: #ecf5ff;
-      border: 1px solid #d9ecff;
+      background-color: #fafafa;
+      border: 1px solid #111;
 
       .publish-icon {
-        color: #409eff;
+        color: #111;
       }
     }
 
     .publish-icon {
       margin-bottom: 8px;
       font-size: 24px;
+      color: #555;
     }
 
     span {
       margin-bottom: 4px;
       font-size: 16px;
       font-weight: 500;
+      color: #111;
     }
 
     .type-desc {
       font-size: 12px;
-      color: #909399;
+      line-height: 1.6;
+      color: #777;
       text-align: center;
     }
   }
@@ -418,7 +487,7 @@ export default {
 
   .note {
     margin-top: 8px;
-    color: #909399;
+    color: #777;
   }
 }
 
@@ -432,8 +501,74 @@ export default {
   gap: 12px;
 }
 
+:deep(.publish-drawer .el-button) {
+  border-radius: 999px;
+}
+
+:deep(.publish-drawer .el-button:not(.is-disabled):not(.el-button--primary)) {
+  color: #444;
+  border-color: #d8d8d8;
+  background: #fff;
+}
+
+:deep(.publish-drawer .el-button--primary) {
+  color: #fff;
+  border-color: #111;
+  background: #111;
+}
+
+:deep(.publish-drawer .el-button--primary.is-disabled) {
+  color: #8c8c8c;
+  border-color: #e3e3e3;
+  background: #f3f3f3;
+}
+
+:deep(.publish-drawer .el-textarea__inner) {
+  border-radius: 10px;
+  border-color: #dddddd;
+  box-shadow: none;
+  color: #222;
+  line-height: 1.8;
+}
+
+:deep(.publish-drawer .el-textarea__inner:focus) {
+  border-color: #111;
+  box-shadow: none;
+}
+
+:deep(.publish-drawer .el-textarea .el-input__count) {
+  color: #888;
+  background: #fff;
+}
+
+:deep(.publish-drawer .el-upload--picture-card),
+:deep(.publish-drawer .el-upload-list--picture-card .el-upload-list__item) {
+  border-radius: 10px;
+  border-color: #dddddd;
+  background: #fff;
+}
+
+:deep(.publish-drawer .el-upload--picture-card:hover) {
+  border-color: #111;
+}
+
 .fade-in {
   animation: textFadeIn 0.4s ease-out;
+}
+
+@media (max-width: 768px) {
+  .publish-inline-entry {
+    min-height: 46px;
+    padding: 0 14px;
+
+    .entry-hint {
+      display: none;
+    }
+  }
+
+  .publish-options {
+    padding: 18px 16px 20px;
+  }
 }
 
 @keyframes fadeIn {

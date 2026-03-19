@@ -1,51 +1,27 @@
 <template>
   <div class="register-prompt" @click="handleExplore">
-    <div class="prompt-content">
-      <div class="prompt-header">
-        <div class="community-stats">
-          <div class="stat-item">
-            <el-icon><i-ep-User /></el-icon>
-            <span class="stat-text"
-              >已有 {{ currentUsers.toLocaleString() }} 位探索者</span
-            >
-          </div>
-          <!-- <div class="stat-item">
-            <el-icon><i-ep-ChatDotRound /></el-icon>
-            <span class="stat-text">本周新增 {{ weeklyPosts }} 条随想</span>
-          </div> -->
-        </div>
-        <div class="preview-content">
-          <div class="preview-card">
-            <h4>解锁完整阁楼地图</h4>
-            <p>看看其他人分享了什么</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="prompt-cta">
-        <div class="cta-text">
-          <h3>这片阁楼不止这些故事</h3>
-          <p>登录后继续探索，或许能找到共鸣</p>
-        </div>
-        <div class="cta-actions">
-          <el-button
-            type="primary"
-            size="default"
-            round
-            @click.stop="$router.push('/login')"
-          >
-            开始探索
-          </el-button>
-        </div>
-      </div>
+    <div class="prompt-meta">
+      <span>访客入口</span>
+      <span>{{ currentUsers.toLocaleString() }} 位读者正在浏览</span>
+      <span>本周新增 {{ weeklyPosts }} 条内容</span>
     </div>
 
-    <div class="floating-elements">
-      <div class="floating-item" style="top: 20%; left: 10%">
-        <el-icon><i-ep-Collection /></el-icon>
+    <div class="prompt-main">
+      <div class="prompt-copy">
+        <h3>登录后可继续阅读、关注作者并参与互动</h3>
+        <p>如果你只是先看看，这里依然保留清晰、连续的阅读路径。</p>
       </div>
-      <div class="floating-item" style="top: 60%; right: 15%">
-        <el-icon><i-ep-Star /></el-icon>
+
+      <div class="prompt-actions">
+        <el-button class="prompt-button" @click.stop="$router.push('/login')">
+          登录
+        </el-button>
+        <el-button
+          class="prompt-button is-secondary"
+          @click.stop="$router.push('/register')"
+        >
+          注册
+        </el-button>
       </div>
     </div>
   </div>
@@ -214,170 +190,96 @@ export default {
 
 <style lang="scss" scoped>
 .register-prompt {
-  position: relative;
-  margin: 24px 0;
+  margin: 18px 0 22px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 16px;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #fff;
+  border-top: 1px solid #ececec;
+  border-bottom: 1px solid #ececec;
+  transition: border-color 0.2s ease;
+  padding: 16px 0 18px;
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(64, 158, 255, 0.15);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: #dcdcdc;
   }
 }
 
-.prompt-content {
-  position: relative;
-  z-index: 2;
-  padding: 24px;
-}
-
-.prompt-header {
-  margin-bottom: 20px;
-}
-
-.community-stats {
+.prompt-meta {
   display: flex;
-  gap: 20px;
+  gap: 18px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #606266;
-
-    .el-icon {
-      font-size: 16px;
-      color: #409eff;
-    }
-  }
-
-  @media (max-width: 768px) {
-    gap: 12px;
-
-    .stat-item {
-      font-size: 12px;
-    }
-  }
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #777;
+  letter-spacing: 0.03em;
 }
 
-.preview-content .preview-card {
-  padding: 16px;
-  background: rgba(245, 247, 250, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  border-radius: 12px;
-
-  h4 {
-    margin: 0 0 4px 0;
-    font-size: 15px;
-    font-weight: 600;
-    color: #303133;
-  }
-
-  p {
-    margin: 0;
-    font-size: 13px;
-    color: #606266;
-  }
-}
-
-.prompt-cta {
+.prompt-main {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 20px;
-    text-align: center;
-  }
+  align-items: flex-end;
+  gap: 18px;
 }
 
-.cta-text {
+.prompt-copy {
   flex: 1;
 
   h3 {
-    margin: 0 0 6px 0;
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.4;
-    color: #303133;
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 500;
+    color: #111;
+    line-height: 1.45;
   }
 
   p {
     margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #606266;
-  }
-
-  @media (max-width: 768px) {
-    h3 {
-      font-size: 17px;
-    }
+    font-size: 13px;
+    color: #666;
+    line-height: 1.8;
   }
 }
 
-.cta-actions {
+.prompt-actions {
+  display: flex;
+  gap: 10px;
   flex-shrink: 0;
+}
 
-  .el-button {
-    padding: 10px 24px;
-    font-weight: 500;
+.prompt-button {
+  min-width: 72px;
+  height: 34px;
+  padding: 0 14px;
+  color: #111;
+  background: #111;
+  border: 1px solid #111;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.prompt-button.is-secondary {
+  color: #444;
+  background: #fff;
+  border-color: #d8d8d8;
+}
+
+@media (max-width: 768px) {
+  .register-prompt {
+    margin: 16px 0 20px;
+    padding: 14px 0 16px;
   }
 
-  @media (max-width: 768px) {
+  .prompt-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .prompt-actions {
     width: 100%;
-
-    .el-button {
-      width: 100%;
-    }
-  }
-}
-
-.floating-elements {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.25;
-}
-
-.floating-item {
-  position: absolute;
-  animation: float 6s ease-in-out infinite;
-
-  &:nth-child(2) {
-    animation-delay: 1s;
   }
 
-  .el-icon {
-    font-size: 20px;
-    color: #409eff;
-    opacity: 0.4;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-10px) rotate(5deg);
+  .prompt-button {
+    flex: 1;
   }
 }
 </style>

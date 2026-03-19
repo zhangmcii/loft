@@ -7,16 +7,26 @@ export default {
         return [];
       },
     },
+    mode: {
+      type: String,
+      default: "default",
+    },
   },
   computed: {
     gridTemplateColumns() {
       const count = this.postImages.length;
+      if (this.mode === "article" && count === 1) return "1fr";
       if (count === 1) return "1fr";
       if (count === 2 || count === 4) return "1fr 1fr";
       return "1fr 1fr 1fr";
     },
     containerWidth() {
       const count = this.postImages.length;
+      if (this.mode === "article") {
+        if (count === 1) return "min(100%, 560px)";
+        if (count === 2 || count === 4) return "min(100%, 560px)";
+        return "min(100%, 620px)";
+      }
       if (count === 1) return "220px";
       if (count === 2 || count === 4) return "320px";
       return "330px";
@@ -50,6 +60,10 @@ export default {
 </template>
 <style lang="scss" scoped>
 .container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+
   .preview {
     display: grid;
     gap: 5px;
@@ -75,6 +89,17 @@ export default {
         }
       }
     }
+  }
+}
+
+.container[style*="560px"],
+.container[style*="620px"] {
+  .preview {
+    gap: 8px;
+  }
+
+  .el-image {
+    border: 1px solid #f0f0f0;
   }
 }
 </style>

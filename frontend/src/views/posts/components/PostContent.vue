@@ -37,6 +37,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    previewType: {
+      type: String,
+      default: "",
+    },
+    compact: {
+      type: Boolean,
+      default: false,
+    },
     fontSize: {
       type: Number,
       default: 16,
@@ -48,6 +56,7 @@ export default {
   data() {
     return {
       pContent: "",
+      isTruncated: false,
       // 图片预览相关状态
       imageViewerVisible: false,
       imageViewerUrls: [],
@@ -133,6 +142,9 @@ export default {
         const hasRelevantChange = mutations.some((m) => m.type === "childList");
         if (!hasRelevantChange) return;
 
+        if (this.preview) {
+          this.scheduleTruncationApply();
+        }
         this.scheduleProcessCodeBlocks(false);
       });
 
@@ -156,6 +168,9 @@ export default {
         const doFullRebuild = this.needsFullRebuild;
         this.needsFullRebuild = false;
         this.processCodeBlocks(doFullRebuild);
+        if (this.preview) {
+          this.updateTruncation();
+        }
         this.scheduleTocEmit();
       });
     },
@@ -279,6 +294,7 @@ export default {
       contentDom.style.maxHeight = "none";
       contentDom.style.overflow = "auto";
       contentDom.style.position = "static";
+      this.isTruncated = false;
     },
 
     applyTruncationStyles(contentDom) {
@@ -286,6 +302,7 @@ export default {
       if (oldMask) oldMask.remove();
 
       if (contentDom.scrollHeight > TRUNCATION_MAX_HEIGHT) {
+        this.isTruncated = true;
         contentDom.style.maxHeight = `${TRUNCATION_MAX_HEIGHT}px`;
         contentDom.style.overflow = "hidden";
         contentDom.style.position = "relative";
@@ -295,12 +312,13 @@ export default {
         mask.style.position = "absolute";
         mask.style.left = 0;
         mask.style.right = 0;
-        mask.style.bottom = 0;
-        mask.style.height = `${TRUNCATION_MASK_HEIGHT}px`;
+        mask.style.bottom = "10px";
+        mask.style.height = `${TRUNCATION_MASK_HEIGHT + 6}px`;
         mask.style.background =
-          "linear-gradient(rgba(255,255,255,0), #fff 80%)";
+          "linear-gradient(rgba(255,255,255,0), #fff 72%)";
         contentDom.appendChild(mask);
       } else {
+        this.isTruncated = false;
         contentDom.style.maxHeight = "none";
         contentDom.style.overflow = "auto";
         contentDom.style.position = "static";
@@ -550,7 +568,14 @@ export default {
 </script>
 
 <template>
-  <div class="post-content-wrapper">
+  <div
+    class="post-content-wrapper"
+    :class="{
+      'post-content-wrapper-compact': compact,
+      'post-content-wrapper-preview': preview,
+      'post-content-wrapper-detail': !preview,
+    }"
+  >
     <mavon-editor
       ref="md"
       v-model="pContent"
@@ -568,6 +593,15 @@ export default {
         bulletListMarker: '-',
       }"
     />
+    <div
+      v-if="preview && isTruncated"
+      class="truncation-indicator"
+      :class="{ 'truncation-indicator-markdown': previewType === 'markdown' }"
+    >
+      <span class="truncation-line"></span>
+      <span class="truncation-text">下文已折叠</span>
+      <span class="truncation-cta">点击卡片继续阅读</span>
+    </div>
     <!-- Element Plus 图片查看器 -->
     <el-image-viewer
       v-if="imageViewerVisible"
@@ -586,11 +620,117 @@ export default {
   padding: 0;
 }
 
+.post-content-wrapper-detail {
+  --content-font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
+    "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  --content-code-font-family: "SFMono-Regular", Consolas, Monaco,
+    "Liberation Mono", "Courier New", monospace;
+  --content-text-color: #1c1c1c;
+  --content-muted-color: #646464;
+  --content-line-height: 1.96;
+  --content-heading-color: #101010;
+  --content-block-spacing: 1.42em;
+  --content-heading-spacing-top: 2.35em;
+  --content-heading-spacing-bottom: 0.78em;
+}
+
+.post-content-wrapper-preview {
+  --content-font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
+    "Microsoft YaHei", sans-serif;
+  --content-code-font-family: Consolas, Monaco, "Andale Mono", monospace;
+  --content-text-color: #222;
+  --content-muted-color: #666;
+  --content-line-height: 1.85;
+  --content-heading-color: #111;
+  --content-block-spacing: 1em;
+  --content-heading-spacing-top: 1.5em;
+  --content-heading-spacing-bottom: 0.8em;
+}
+
+.post-content-wrapper-compact {
+  :deep(.v-note-wrapper) {
+    min-height: auto;
+  }
+
+  :deep(.v-show-content) {
+    p {
+      margin: 0.08em 0 0.22em;
+      line-height: 1.65;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    ul,
+    ol,
+    blockquote,
+    pre,
+    table,
+    hr {
+      margin-top: 0.4em;
+      margin-bottom: 0.5em;
+    }
+  }
+
+  .truncation-indicator {
+    margin-top: 6px;
+    padding-top: 8px;
+  }
+}
+
+.truncation-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -2px;
+  padding-top: 12px;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+
+  .truncation-line {
+    width: 24px;
+    height: 1px;
+    background: #d9d9d9;
+    flex-shrink: 0;
+  }
+
+  .truncation-text {
+    color: #666;
+  }
+
+  .truncation-cta {
+    color: #111;
+    text-decoration: underline;
+    text-decoration-color: #d4d4d4;
+    text-underline-offset: 2px;
+  }
+}
+
+.truncation-indicator-markdown {
+  margin-top: 8px;
+  padding-top: 14px;
+
+  .truncation-line {
+    width: 32px;
+    background: #cfcfcf;
+  }
+
+  .truncation-text {
+    color: #555;
+    font-weight: 500;
+  }
+}
+
 .base {
   font-size: 16px;
-  line-height: 1.8;
-  letter-spacing: 0.02em;
-  color: #333;
+  line-height: var(--content-line-height);
+  letter-spacing: 0;
+  color: var(--content-text-color);
+  font-family: var(--content-font-family);
 }
 
 .v-note-wrapper {
@@ -603,6 +743,13 @@ export default {
 :deep(.v-show-content) {
   padding: 0 !important;
   background-color: transparent !important;
+  color: var(--content-text-color);
+  font-family: var(--content-font-family);
+  line-height: var(--content-line-height);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 
   // 标题样式优化
   h1,
@@ -611,36 +758,50 @@ export default {
   h4,
   h5,
   h6 {
-    margin-top: 1.5em;
-    margin-bottom: 0.8em;
+    margin-top: var(--content-heading-spacing-top);
+    margin-bottom: var(--content-heading-spacing-bottom);
     font-weight: 600;
-    line-height: 1.4;
-    color: #222;
+    line-height: 1.38;
+    letter-spacing: -0.01em;
+    color: var(--content-heading-color);
   }
 
   h1 {
-    font-size: 1.4em;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.3em;
+    font-size: 1.78em;
+    font-weight: 650;
+    margin-top: 0;
+    margin-bottom: 1.05em;
+    border-bottom: none;
+    padding-bottom: 0;
   }
 
   h2 {
-    font-size: 1.2em;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 0.2em;
+    font-size: 1.4em;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  h3 {
+    font-size: 1.18em;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-size: 1.02em;
   }
 
   // 段落样式
   p {
-    margin: 0.8em 0 1.2em;
-    line-height: 1.8;
+    margin: 0 0 var(--content-block-spacing);
+    line-height: var(--content-line-height);
   }
 
   // 列表样式
   ul,
   ol {
     padding-left: 1.5em;
-    margin: 0.8em 0;
+    margin: 0 0 var(--content-block-spacing);
   }
 
   // 无序列表
@@ -656,36 +817,37 @@ export default {
   }
 
   li {
-    margin: 0.4em 0;
-    line-height: 1.6;
+    margin: 0.46em 0;
+    line-height: 1.88;
   }
 
   // 引用样式
   blockquote {
-    padding: 0.5em 1em;
-    color: #666;
-    border-left: 4px solid #ddd;
-    margin: 1em 0;
-    background-color: #f9f9f9;
-    border-radius: 0 4px 4px 0;
+    padding: 0.2em 0 0.2em 1.15em;
+    color: var(--content-muted-color);
+    border-left: 2px solid #d8d8d8;
+    margin: 0 0 calc(var(--content-block-spacing) + 0.15em);
+    background-color: transparent;
+    border-radius: 0;
   }
 
   // 代码样式
   pre {
-    margin: 1em 0;
-    border-radius: 6px;
-    background-color: #f6f8fa !important;
-    padding: 1em;
+    margin: 0 0 calc(var(--content-block-spacing) + 0.12em);
+    border-radius: 0;
+    background-color: #f6f6f6 !important;
+    padding: 1.05em;
     overflow: auto;
+    border: 1px solid #ebebeb;
   }
 
   // 代码块内的 code 元素样式
   pre code {
     display: block;
     padding: 0 !important;
-    font-family: Consolas, Monaco, "Andale Mono", monospace;
-    font-size: 0.9em;
-    line-height: 1.5;
+    font-family: var(--content-code-font-family);
+    font-size: 0.92em;
+    line-height: 1.68;
     color: inherit;
     background-color: transparent !important;
     border-radius: 0 !important;
@@ -693,28 +855,27 @@ export default {
 
   // 行内代码样式
   :not(pre) > code {
-    font-family: Consolas, Monaco, "Andale Mono", monospace;
-    background-color: #f6f8fa;
+    font-family: var(--content-code-font-family);
+    background-color: #f4f4f4;
     padding: 0.2em 0.4em;
-    border-radius: 3px;
+    border-radius: 0;
     font-size: 0.9em;
-    color: #e83e8c;
+    color: #222;
   }
 
   // 图片样式
   img {
     max-width: 100%;
-    border-radius: 6px;
-    margin: 1em auto;
+    border-radius: 0;
+    margin: 0.35em auto calc(var(--content-block-spacing) + 0.2em);
     display: block;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
   // 表格样式
   table {
     border-collapse: collapse;
     width: 100%;
-    margin: 1em 0;
+    margin: 0 0 calc(var(--content-block-spacing) + 0.1em);
     overflow-x: auto;
     display: block;
   }
@@ -722,11 +883,11 @@ export default {
   th,
   td {
     border: 1px solid #ddd;
-    padding: 8px 12px;
+    padding: 10px 12px;
   }
 
   th {
-    background-color: #f6f8fa;
+    background-color: #f8f8f8;
     font-weight: 600;
   }
 
@@ -735,17 +896,58 @@ export default {
     height: 1px;
     background-color: #eee;
     border: none;
-    margin: 1.5em 0;
+    margin: calc(var(--content-block-spacing) + 0.35em) 0;
   }
 
   // 链接样式
   a {
-    color: #0366d6;
-    text-decoration: none;
+    color: #111;
+    text-decoration: underline;
+    text-decoration-color: #d4d4d4;
 
     &:hover {
-      text-decoration: underline;
+      text-decoration-color: #111;
     }
+  }
+}
+
+.post-content-wrapper-detail {
+  :deep(.v-note-wrapper) {
+    min-height: auto;
+  }
+
+  :deep(.v-show-content) {
+    font-size: 17px;
+
+    h1 {
+      font-size: 1.9em;
+      line-height: 1.3;
+      margin-bottom: 1.12em;
+    }
+
+    h2 {
+      font-size: 1.46em;
+      margin-top: 2.5em;
+    }
+
+    h3 {
+      font-size: 1.22em;
+      margin-top: 2.15em;
+    }
+
+    p,
+    li {
+      text-align: justify;
+      text-justify: inter-ideograph;
+    }
+
+    blockquote {
+      padding-left: 1.3em;
+    }
+  }
+
+  :deep(.code-block-wrapper) {
+    margin: 0 0 calc(var(--content-block-spacing) + 0.15em);
   }
 }
 
@@ -766,20 +968,19 @@ export default {
   z-index: 10;
   padding: 0px 8px;
   font-size: 12px;
-  background: #f8f9fa;
-  border: 1px solid #f6f8fa;
-  border-radius: 4px;
-  color: #24292e;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 0;
+  color: #222;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif;
+  font-family: var(--content-font-family);
   display: flex;
   align-items: center;
   gap: 4px;
 
   &.copied {
-    color: #9bd7a2;
+    color: #444;
     cursor: default !important;
     pointer-events: none !important;
   }
@@ -793,10 +994,11 @@ export default {
 :deep(pre) {
   position: relative;
   margin: 0 !important;
-  border-radius: 6px;
-  background-color: #f6f8fa !important;
+  border-radius: 0;
+  background-color: #f6f6f6 !important;
   padding: 1em !important;
   overflow: auto;
+  border: 1px solid #ebebeb;
 
   // 避免复制按钮挡住代码
   padding-top: 2.5em !important;
@@ -854,15 +1056,36 @@ export default {
 
 // 适配移动端
 @media (max-width: 768px) {
-  :deep(.v-show-content) {
-    font-size: 14px;
+  .post-content-wrapper-detail {
+    --content-line-height: 1.9;
+    --content-block-spacing: 1.28em;
+    --content-heading-spacing-top: 2.05em;
 
-    h1 {
-      font-size: 1.6em;
+    :deep(.v-show-content) {
+      font-size: 15px;
+
+      h1 {
+        font-size: 1.72em;
+        margin-bottom: 0.95em;
+      }
+
+      h2 {
+        font-size: 1.34em;
+      }
     }
+  }
 
-    h2 {
-      font-size: 1.4em;
+  .post-content-wrapper-preview {
+    :deep(.v-show-content) {
+      font-size: 14px;
+
+      h1 {
+        font-size: 1.6em;
+      }
+
+      h2 {
+        font-size: 1.4em;
+      }
     }
   }
 

@@ -60,10 +60,7 @@ export default {
     <template v-else>
       <el-button
         v-if="toc.length > 0"
-        class="font-size-button"
-        circle
-        type="primary"
-        size="large"
+        class="toc-trigger"
         @click="toggleVisible"
       >
         <span class="font-icon">目录</span>
@@ -105,7 +102,8 @@ export default {
   z-index: 999;
 
   .font-icon {
-    font-size: 13px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
   }
 }
 
@@ -115,18 +113,30 @@ export default {
   right: auto;
 
   .toc-panel {
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px 0 0;
+    background: #fff;
+    border-top: 1px solid #ececec;
   }
 
   .toc-title {
-    padding-bottom: 8px;
+    padding-bottom: 10px;
     margin-bottom: 12px;
-    font-weight: 600;
-    border-bottom: 1px solid #eaeaea;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: #777;
+    border-bottom: 1px solid #ececec;
   }
+}
+
+.toc-trigger {
+  min-width: 42px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  color: #111;
+  box-shadow: none;
 }
 
 .toc-content {
@@ -135,20 +145,34 @@ export default {
 
   .toc-item {
     margin-bottom: 8px;
-    color: #555;
+    color: #666;
     font-weight: normal;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.2s ease;
 
     &.active {
-      color: #409eff;
-      font-weight: bold;
+      color: #111;
+      font-weight: 600;
     }
 
     &:hover {
-      color: #409eff;
-      transform: translateX(4px);
+      color: #111;
     }
   }
+}
+
+.toc :deep(.el-drawer__header) {
+  margin-bottom: 0;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #ececec;
+}
+
+.toc :deep(.el-drawer__title) {
+  color: #111;
+  font-weight: 500;
+}
+
+.toc :deep(.el-drawer__body) {
+  padding: 16px 20px 20px;
 }
 </style>

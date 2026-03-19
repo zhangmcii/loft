@@ -156,129 +156,155 @@ export default {
       :infinite-scroll-disabled="infiniteDisabled"
       :infinite-scroll-immediate="true"
     >
-      <RegisterPrompt
-        v-if="!currentUser.isLogin"
-        :key="'register-prompt'"
-        v-slide-in
-      />
+      <section class="posts-shell">
+        <div class="posts-intro">
+          <p class="posts-kicker">LOFT / FEED</p>
+          <h1>白纸上的内容流</h1>
+          <p class="posts-note">把视觉退后，让文字回到前面。</p>
+        </div>
 
-      <!-- 使用新的发布入口组件 -->
-      <PublishEntry
-        @loading-begin="(flag) => (loading.publishPost = flag)"
-        @newPost="getPostsResult"
-        v-if="currentUser.isLogin"
-      />
-      <el-tabs
-        v-model="activeName"
-        type="card"
-        class="demo-tabs"
-        @tab-change="changeTab"
-      >
-        <el-tab-pane label="广场" name="all">
-          <el-empty
-            :image-size="200"
-            v-if="activeName == 'all' && posts_count == 0 && !loading.card"
-          />
-          <SkeletonUtil
-            :loading="loading.card"
-            :row="5"
-            :throttle="throttle"
-            :useNew="true"
-          >
-            <transition-group name="slide-in" tag="div" class="posts-list">
-              <PostPreview
-                v-for="item in posts"
-                :key="item.id"
-                :post="item"
-                @click="$router.push(`/postDetail/${item.id}`)"
-                v-slide-in
-              >
-                <template #image>
-                  <PostImage :postImages="item.post_images" @click.stop="" />
-                </template>
-              </PostPreview>
-            </transition-group>
-          </SkeletonUtil>
-          <div class="posts-infinite-footer">
-            <div v-if="loading.more" class="posts-loading">加载中...</div>
-            <div v-else-if="noMore && posts.length" class="posts-end">
-              已经到底了～
+        <RegisterPrompt
+          v-if="!currentUser.isLogin"
+          :key="'register-prompt'"
+          v-slide-in
+        />
+
+        <PublishEntry
+          @loading-begin="(flag) => (loading.publishPost = flag)"
+          @newPost="getPostsResult"
+          v-if="currentUser.isLogin"
+        />
+        <el-tabs v-model="activeName" class="demo-tabs" @tab-change="changeTab">
+          <el-tab-pane label="广场" name="all">
+            <div
+              v-if="activeName == 'all' && posts_count == 0 && !loading.card"
+              class="posts-empty"
+            >
+              <p class="posts-empty-title">这里还没有内容</p>
+              <p class="posts-empty-note">
+                等第一篇文字出现，阅读会从这里开始。
+              </p>
             </div>
-          </div>
-        </el-tab-pane>
-        <el-tab-pane name="showFollowed" v-if="currentUser.isLogin">
-          <template #label>
-            <van-badge :dot="showDot" :offset="[1, 10]"> 关注 </van-badge>
-          </template>
-          <el-empty
-            :image-size="200"
-            v-if="
-              activeName == 'showFollowed' && posts_count == 0 && !loading.card
-            "
-          />
-          <SkeletonUtil
-            :loading="loading.card"
-            :row="5"
-            :throttle="throttle"
-            :useNew="true"
-          >
-            <transition-group name="slide-in" tag="div" class="posts-list">
-              <PostPreview
-                v-for="item in posts"
-                :key="item.id"
-                :post="item"
-                @click="$router.push(`/postDetail/${item.id}`)"
-                v-slide-in
-              >
-                <template #image>
-                  <PostImage :postImages="item.post_images" @click.stop="" />
-                </template>
-              </PostPreview>
-            </transition-group>
-          </SkeletonUtil>
-          <div class="posts-infinite-footer">
-            <div v-if="loading.more" class="posts-loading">加载中...</div>
-            <div v-else-if="noMore && posts.length" class="posts-end">
-              已经到底了～
+            <SkeletonUtil
+              :loading="loading.card"
+              :row="5"
+              :throttle="throttle"
+              :useNew="true"
+            >
+              <transition-group name="slide-in" tag="div" class="posts-list">
+                <PostPreview
+                  v-for="item in posts"
+                  :key="item.id"
+                  :post="item"
+                  @click="$router.push(`/postDetail/${item.id}`)"
+                  v-slide-in
+                >
+                  <template #image>
+                    <PostImage :postImages="item.post_images" @click.stop="" />
+                  </template>
+                </PostPreview>
+              </transition-group>
+            </SkeletonUtil>
+            <div class="posts-infinite-footer">
+              <div v-if="loading.more" class="posts-loading">加载中...</div>
+              <div v-else-if="noMore && posts.length" class="posts-end">
+                已经到底了～
+              </div>
             </div>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+          </el-tab-pane>
+          <el-tab-pane name="showFollowed" v-if="currentUser.isLogin">
+            <template #label>
+              <van-badge :dot="showDot" :offset="[1, 10]"> 关注 </van-badge>
+            </template>
+            <div
+              v-if="
+                activeName == 'showFollowed' &&
+                posts_count == 0 &&
+                !loading.card
+              "
+              class="posts-empty"
+            >
+              <p class="posts-empty-title">关注流暂时为空</p>
+              <p class="posts-empty-note">
+                先去看看广场，或关注一些你想继续阅读的人。
+              </p>
+            </div>
+            <SkeletonUtil
+              :loading="loading.card"
+              :row="5"
+              :throttle="throttle"
+              :useNew="true"
+            >
+              <transition-group name="slide-in" tag="div" class="posts-list">
+                <PostPreview
+                  v-for="item in posts"
+                  :key="item.id"
+                  :post="item"
+                  @click="$router.push(`/postDetail/${item.id}`)"
+                  v-slide-in
+                >
+                  <template #image>
+                    <PostImage :postImages="item.post_images" @click.stop="" />
+                  </template>
+                </PostPreview>
+              </transition-group>
+            </SkeletonUtil>
+            <div class="posts-infinite-footer">
+              <div v-if="loading.more" class="posts-loading">加载中...</div>
+              <div v-else-if="noMore && posts.length" class="posts-end">
+                已经到底了～
+              </div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </section>
     </div>
   </PageScroll>
 </template>
 <style lang="scss" scoped>
 @use "./components/PostCard.scss" as *;
 
-.gradient-text {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 10px;
+.posts-shell {
+  width: min(100%, 820px);
+  margin: 0 auto;
+  padding: 40px 24px 56px;
+  box-sizing: border-box;
+}
 
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #09c8ce, #eb2f96);
-    border-radius: 2px;
+.posts-intro {
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ececec;
+
+  .posts-kicker {
+    margin-bottom: 8px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: #777;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.25;
+    font-weight: 500;
+    color: #111;
+  }
+
+  .posts-note {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #666;
   }
 }
-// .el-pagination {
-//   /* float: right; */
-//   display: flex;
-//   justify-content: flex-end;
-//   margin-bottom: 10px;
-// }
+
 .demo-tabs {
-  margin-top: 20px;
+  margin-top: 18px;
   min-height: 47vh;
 
   :deep(.el-tabs__header) {
-    margin-bottom: 20px;
-    border-bottom: none;
+    margin-bottom: 26px;
   }
 
   :deep(.el-tabs__nav) {
@@ -287,31 +313,34 @@ export default {
   }
 
   :deep(.el-tabs__item) {
-    height: 40px;
-    line-height: 40px;
-    padding: 0 20px;
-    margin-right: 10px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 6px;
+    margin-right: 24px;
     font-size: 15px;
-    color: #606266;
-    background-color: #f5f7fa;
+    color: #7a7a7a;
     border: none;
-    border-radius: 20px;
-    transition: all 0.3s ease;
+    border-radius: 0;
+    transition: color 0.2s ease;
 
     &.is-active {
-      color: #fff;
-      background: linear-gradient(90deg, #09c8ce, #3a7bd5);
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      color: #111;
+      font-weight: 600;
     }
 
     &:hover:not(.is-active) {
-      color: #409eff;
-      background-color: #ecf5ff;
+      color: #333;
     }
   }
 
+  :deep(.el-tabs__active-bar) {
+    height: 1px;
+    background: #111;
+  }
+
   :deep(.el-tabs__nav-wrap::after) {
-    display: none;
+    height: 1px;
+    background: #ececec;
   }
 }
 
@@ -321,37 +350,75 @@ export default {
   align-items: center;
   min-height: 36px;
   padding: 0 0 24px;
-  color: #909399;
-  font-size: 13px;
-  letter-spacing: 0.2px;
+  color: #777;
+  font-size: 12px;
+  letter-spacing: 0.06em;
 
   .posts-loading {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 0;
 
     &::before {
-      content: "";
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 2px solid rgba(9, 200, 206, 0.25);
-      border-top-color: #09c8ce;
-      animation: posts-spin 0.9s linear infinite;
+      content: "·";
+      margin-right: 6px;
     }
   }
 
   .posts-end {
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: #f5f7fa;
-    color: #909399;
+    color: #8a8a8a;
   }
 }
 
-@keyframes posts-spin {
-  to {
-    transform: rotate(360deg);
+.posts-empty {
+  padding: 36px 0 44px;
+  border-bottom: 1px solid #ececec;
+
+  .posts-empty-title {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 500;
+    color: #111;
+  }
+
+  .posts-empty-note {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #666;
+  }
+}
+
+@media (max-width: 768px) {
+  .posts-shell {
+    padding: 28px 16px 40px;
+  }
+
+  .posts-intro {
+    margin-bottom: 22px;
+
+    h1 {
+      font-size: 22px;
+    }
+
+    .posts-note {
+      font-size: 13px;
+    }
+  }
+
+  .demo-tabs {
+    :deep(.el-tabs__item) {
+      margin-right: 18px;
+    }
+  }
+
+  .posts-empty {
+    padding: 28px 0 34px;
+
+    .posts-empty-title {
+      font-size: 16px;
+    }
   }
 }
 </style>

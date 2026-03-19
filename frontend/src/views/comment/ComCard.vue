@@ -40,10 +40,10 @@
       </template>
 
       <template #default>
-        <div class="comment-header">
+        <!-- <div class="comment-header">
           <h3 class="comment-title">评论区</h3>
           <div class="comment-count">共 {{ query.total }} 条评论</div>
-        </div>
+        </div> -->
 
         <u-comment-scroll
           :disable="disable"
@@ -110,6 +110,7 @@ import message from "@/utils/message";
 
 const currentUser = useCurrentUserStore();
 const props = defineProps({ postId: Number, postAuthor: String });
+const emit = defineEmits(["count-change"]);
 const config = reactive({
   user: {}, // 当前用户信息
   emoji: emoji, // 表情包数据
@@ -446,45 +447,41 @@ watch(
     }
   }
 );
+
+watch(
+  () => query.total,
+  (newVal) => {
+    emit("count-change", Number(newVal) || 0);
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>
 .comment-section {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
-.comment-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 0 4px;
-}
+// .comment-header {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   margin-bottom: 20px;
+//   padding: 0;
+// }
 
 .comment-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  color: #333;
+  color: #151515;
   margin: 0;
-  position: relative;
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: -4px;
-    top: 2px;
-    bottom: 2px;
-    width: 3px;
-    background: linear-gradient(to bottom, #09c8ce, #eb2f96);
-    border-radius: 3px;
-  }
 }
 
 .comment-count {
-  font-size: 14px;
-  color: #999;
+  font-size: 13px;
+  color: #8a8a8a;
 }
 
 .comment-skeleton {
@@ -495,8 +492,8 @@ watch(
   .skeleton-comment-item {
     display: flex;
     gap: 12px;
-    padding: 16px;
-    border-radius: 8px;
+    padding: 12px 0;
+    border-radius: 0;
   }
 
   .skeleton-content {
@@ -518,57 +515,82 @@ watch(
   padding: 0;
 
   :deep(.u-comment-box) {
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+    box-shadow: none;
+    border: 1px solid #ececec;
+    background: #fff;
 
     .u-comment-textarea {
-      border-radius: 6px;
-      border-color: #e8e8e8;
+      border-radius: 0;
+      border-color: #e6e6e6;
+      color: #222;
 
       &:focus {
-        border-color: #1890ff;
-        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+        border-color: #111;
+        box-shadow: none;
       }
     }
 
     .u-comment-submit {
-      background-color: #1890ff;
-      border-radius: 4px;
+      background-color: #111;
+      border-radius: 0;
+      border: 1px solid #111;
 
       &:hover {
-        background-color: #40a9ff;
+        background-color: #222;
       }
     }
   }
 
   :deep(.u-comment-item) {
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    background-color: #fafafa;
-    transition: background-color 0.2s ease;
+    padding: 14px 0;
+    margin-bottom: 0;
+    border-radius: 0;
+    background-color: transparent;
+    border-bottom: 1px solid #efefef;
+    transition: none;
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: transparent;
     }
+  }
+
+  :deep(.u-comment-content) {
+    color: #222;
+    line-height: 1.8;
+  }
+
+  :deep(.u-comment-info),
+  :deep(.u-comment-time),
+  :deep(.u-comment-username),
+  :deep(.u-comment-action) {
+    color: #7d7d7d;
+  }
+
+  :deep(.u-comment-like),
+  :deep(.u-comment-reply) {
+    color: #6f6f6f;
   }
 }
 
 .comment-avatar {
-  border: 2px solid #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ececec;
+  box-shadow: none;
 }
 
 .comment-nav {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 
   :deep(.u-comment-nav-item) {
-    padding: 6px 12px;
-    border-radius: 16px;
+    padding: 4px 0;
+    margin-right: 18px;
+    border-radius: 0;
+    color: #8a8a8a;
 
     &.active {
-      background-color: #e6f7ff;
-      color: #1890ff;
+      background-color: transparent;
+      color: #111;
+      font-weight: 500;
     }
   }
 }
@@ -578,13 +600,13 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 0;
-  color: #999;
+  padding: 40px 0 24px;
+  color: #8d8d8d;
 
   .empty-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    color: #d9d9d9;
+    font-size: 40px;
+    margin-bottom: 12px;
+    color: #d6d6d6;
   }
 
   p {
@@ -595,8 +617,8 @@ watch(
 
 @media (max-width: 768px) {
   .comment-section {
-    margin-top: 16px;
-    padding-top: 12px;
+    margin-top: 0;
+    padding-top: 0;
   }
 
   .comment-title {
@@ -609,14 +631,13 @@ watch(
 
   .comment-skeleton {
     .skeleton-comment-item {
-      padding: 12px;
+      padding: 10px 0;
     }
   }
 
   .UComment {
     :deep(.u-comment-item) {
-      padding: 10px;
-      margin-bottom: 10px;
+      padding: 12px 0;
     }
   }
 }

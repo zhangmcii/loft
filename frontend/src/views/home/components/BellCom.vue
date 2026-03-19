@@ -199,11 +199,10 @@ export default {
       <template #reference>
         <div class="notification-icon-container">
           <van-badge :dot="showDot" :offset="[-8, 5]">
-            <el-button circle class="notification-button">
-              <template #icon>
-                <el-icon :size="20" class="bell-icon"><i-ep-Bell /></el-icon>
-              </template>
-            </el-button>
+            <div class="notification-button" aria-label="通知">
+              <el-icon :size="15" class="bell-icon"><i-ep-Bell /></el-icon>
+              <span class="notification-label">通知</span>
+            </div>
           </van-badge>
         </div>
       </template>
@@ -308,18 +307,6 @@ export default {
   </div>
 </template>
 <style scoped>
-:root {
-  --primary-color: #3a7bd5;
-  --secondary-color: #00d2ff;
-  --accent-color: #4a90e2;
-  --danger-color: #f56c6c;
-  --text-color: #2c3e50;
-  --light-text: #6c757d;
-  --border-color: #e9ecef;
-  --hover-color: #f8f9fa;
-  --shadow-color: rgba(0, 0, 0, 0.08);
-}
-
 .notification-wrapper {
   position: relative;
 }
@@ -330,47 +317,35 @@ export default {
 }
 
 .notification-button {
-  border-color: transparent;
-  /* background: linear-gradient(145deg, #f0f4f8, #ffffff); */
-  box-shadow: 0 2px 8px var(--shadow-color);
-  transition: all 0.3s ease;
-  height: 35px;
-  width: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  user-select: none;
 }
 
 .notification-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  color: #111;
+  opacity: 0.85;
 }
 
 .bell-icon {
-  color: var(--primary-color);
-  transition: all 0.3s ease;
+  color: currentColor;
 }
 
-.notification-button:hover .bell-icon {
-  transform: rotate(12deg);
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(0.95);
-    opacity: 0.7;
-  }
-  70% {
-    transform: scale(1.1);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
+.notification-label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 .notification-popover :deep(.van-popover__content) {
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ececec;
 }
 
 .notification-container {
@@ -386,14 +361,26 @@ export default {
 }
 
 .notification-tabs {
-  padding: 10px;
+  padding: 12px 12px 8px;
 }
 
 .notification-tabs :deep(.el-tabs__nav) {
   width: 100%;
 }
 
-/* 修复tab上的红点显示问题 */
+.notification-tabs :deep(.el-tabs__item) {
+  color: #757575;
+}
+
+.notification-tabs :deep(.el-tabs__item.is-active) {
+  color: #111;
+}
+
+.notification-tabs :deep(.el-tabs__active-bar) {
+  background: #111;
+  height: 1px;
+}
+
 .notification-tabs :deep(.van-badge) {
   position: absolute;
   top: 2px;
@@ -413,24 +400,24 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid #ececec;
   padding: 12px 16px;
-  background-color: #f9fafc;
+  background-color: #fff;
 }
 
 .view-all-btn,
 .clear-btn {
   font-size: 12px;
-  border-radius: 20px;
+  border-radius: 999px;
   padding: 6px 12px;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .view-all-btn:not(:disabled):hover,
 .clear-btn:not(:disabled):hover {
-  transform: translateY(-1px);
+  opacity: 0.8;
 }
-/* 禁用状态样式 */
+
 button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
@@ -442,6 +429,12 @@ button[disabled] {
 }
 
 .van-cell:hover {
-  background-color: var(--hover-color);
+  background-color: #fafafa;
+}
+
+@media (max-width: 768px) {
+  .notification-label {
+    display: none;
+  }
 }
 </style>

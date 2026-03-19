@@ -40,6 +40,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    compact: {
+      type: Boolean,
+      default: false,
+    },
+    showComment: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
@@ -178,7 +186,10 @@ export default {
 </script>
 
 <template>
-  <div class="post-action-container">
+  <div
+    class="post-action-container"
+    :class="{ 'post-action-container-compact': compact }"
+  >
     <div class="action-left">
       <div
         class="action-item"
@@ -216,7 +227,7 @@ export default {
     </div>
 
     <div class="action-right">
-      <div class="action-item comment" @click.stop>
+      <div v-if="showComment" class="action-item comment" @click.stop>
         <van-icon
           name="comment-o"
           @click="handleCommentClick"
@@ -269,7 +280,25 @@ export default {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 8px 0;
+  padding: 2px 0 0;
+  color: #7a7a7a;
+}
+
+.post-action-container-compact {
+  padding-top: 0;
+
+  .action-item {
+    margin-right: 14px;
+  }
+
+  .action-icon {
+    margin-right: 3px;
+  }
+
+  .action-count {
+    font-size: 11px;
+    color: #7a7a7a;
+  }
 }
 
 .action-left,
@@ -291,21 +320,18 @@ export default {
 
 .action-icon {
   margin-right: 4px;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
+  color: #7a7a7a;
 
   &:hover {
-    transform: scale(1.1);
-  }
-
-  &.delete-icon:hover {
-    transform: scale(1.2);
-    filter: brightness(1.1);
+    opacity: 0.65;
   }
 }
 
 .action-count {
-  font-size: 14px;
-  color: #666;
+  font-size: 12px;
+  color: #7a7a7a;
+  letter-spacing: 0.01em;
 }
 
 // 点赞动画
@@ -323,11 +349,15 @@ export default {
 // 响应式
 @media (max-width: 768px) {
   .post-action-container {
-    padding: 6px 0;
+    padding-top: 0;
   }
 
   .action-item {
     margin-right: 12px;
+  }
+
+  .action-count {
+    font-size: 11px;
   }
 }
 </style>

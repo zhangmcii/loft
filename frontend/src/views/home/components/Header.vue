@@ -5,9 +5,7 @@
       <div class="home-icon" @click="goHomePage">
         <homeIcon />
       </div>
-      <div class="daily-sentence">
-        <MarQuee :text="daySentence" :speed="0.7" />
-      </div>
+      <div class="site-title" @click="goHomePage">LOFT</div>
     </div>
 
     <!-- 中间空白区域 -->
@@ -68,8 +66,6 @@
 
 <script>
 import { useCurrentUserStore } from "@/stores/user";
-import MarQuee from "@/utils/components/MarQuee.vue";
-import daysApi from "@/api/days/daysApi.js";
 import emitter from "@/utils/emitter.js";
 import imageCfg from "@/config/image.js";
 import homeIcon from "@/asset/svg/homeIcon.svg?component";
@@ -79,7 +75,6 @@ import authApi from "@/api/auth/authApi.js";
 export default {
   name: "BurgerMenu",
   components: {
-    MarQuee,
     homeIcon,
     BellCom,
   },
@@ -117,7 +112,6 @@ export default {
   },
   mounted() {
     this.initImage();
-    this.daySentence = daysApi.fetchQuote();
     emitter.on("image", (url) => {
       this.photo.Avatar = url;
     });
@@ -212,41 +206,39 @@ export default {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 48px;
-  padding: 0 24px;
+  height: 56px;
+  padding: 0 28px;
   box-sizing: border-box;
+  background: #fff;
 }
 
 .header-left {
   display: flex;
   flex-shrink: 0;
   align-items: center;
+  gap: 12px;
 }
 
 .home-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px 0 0 8px;
+  width: 26px;
+  height: 26px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  color: #111;
 
   &:hover {
-    transform: translateY(-1px);
+    opacity: 0.75;
   }
 }
 
-.daily-sentence {
-  height: 40px;
-  min-width: 250px;
-  padding: 0 12px;
-  font-size: 14px;
-  line-height: 40px;
-  white-space: nowrap;
-  overflow: hidden;
-  border-radius: 0 8px 8px 0;
+.site-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #111;
+  cursor: pointer;
 }
 
 .header-center {
@@ -264,26 +256,24 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px 0 0 8px;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .user-avatar {
   display: flex;
   align-items: center;
-  height: 40px;
-  padding: 0 8px;
-  border-radius: 0 8px 8px 0;
+  height: 32px;
+  padding: 0 0 0 12px;
 
   .el-avatar {
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
+    border: 1px solid #ededed;
 
     &:hover {
-      transform: scale(1.05);
+      opacity: 0.75;
     }
   }
 }
@@ -298,31 +288,23 @@ export default {
 
 @media (max-width: 768px) {
   .header-container {
-    height: 48px;
+    height: 52px;
     padding: 0 16px;
   }
 
-  .daily-sentence {
-    max-width: 200px;
-    height: 36px;
-    padding: 0 8px 0 0;
+  .site-title {
     font-size: 13px;
-    line-height: 36px;
-  }
-
-  .header-right {
-    margin-top: 6px;
   }
 
   .home-icon,
   .notification-icon {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
   }
 
   .user-avatar {
-    height: 36px;
-    padding: 0 6px;
+    height: 28px;
+    padding-left: 10px;
   }
 }
 </style>

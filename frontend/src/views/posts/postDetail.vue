@@ -1,5 +1,4 @@
 <script>
-import PageHeadBack from "@/utils/components/PageHeadBack.vue";
 import PageScroll from "@/utils/components/PageScroll.vue";
 import PostImage from "@/views/posts/components/PostImage.vue";
 import PostAction from "@/views/posts/components/PostAction.vue";
@@ -15,7 +14,6 @@ import { useCurrentUserStore } from "@/stores/user";
 
 export default {
   components: {
-    PageHeadBack,
     PageScroll,
     CommentCard,
     PostImage,
@@ -50,11 +48,11 @@ export default {
       },
       postId: -1,
       // 默认字体大小
-      fontSize: 14,
+      fontSize: 16,
       // 是否显示搜索框
       showSearch: false,
       toolboxVisible: false,
-      toolboxFontSize: 14,
+      toolboxFontSize: 16,
       showFloatingButtons: true,
       lastScrollTop: 0,
       scrollRaf: null,
@@ -71,6 +69,8 @@ export default {
       // 骨架屏延时配置（毫秒）
       skeletonDelay: 500,
       skeletonTimer: null,
+      commentsExpanded: false,
+      hasEnteredReadingMode: false,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -93,6 +93,7 @@ export default {
       (newVal) => {
         if (this.$route.name === "postDetail") {
           this.postId = Number(newVal);
+          this.commentsExpanded = false;
           this.getPostById(this.postId);
         }
       }
@@ -101,7 +102,47 @@ export default {
   mounted() {
     this.bindScrollListener();
   },
-  computed: {},
+  computed: {
+    plainContent() {
+      const raw = this.post?.content || "";
+      return raw
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/`[^`]*`/g, " ")
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+        .replace(/\[[^\]]*\]\([^)]+\)/g, " ")
+        .replace(/[#>*_\-\[\]\(\)!]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    },
+    plainContentLength() {
+      return this.plainContent.length;
+    },
+    isShortArticle() {
+      return (
+        this.plainContentLength > 0 &&
+        this.plainContentLength <= 120 &&
+        this.toc.length === 0 &&
+        (this.post?.post_images?.length || 0) === 0
+      );
+    },
+    isLongArticle() {
+      return (
+        this.plainContentLength >= 420 ||
+        this.toc.length >= 3 ||
+        (this.post?.post_images?.length || 0) >= 2
+      );
+    },
+    shouldShowReadingAids() {
+      return (
+        this.isLongArticle &&
+        this.showSkeletonComponents &&
+        this.hasEnteredReadingMode
+      );
+    },
+    commentToggleLabel() {
+      return this.commentsExpanded ? "收起评论" : "展开评论";
+    },
+  },
 
   watch: {
     loading: {
@@ -136,9 +177,29 @@ export default {
   },
 
   methods: {
+    goBack() {
+      this.$router.back();
+    },
     handleTocReady(toc) {
       this.toc = Array.isArray(toc) ? toc : [];
       this.setupScrollObserver();
+    },
+    toggleComments() {
+      this.commentsExpanded = !this.commentsExpanded;
+      if (this.commentsExpanded) {
+        this.$nextTick(() => {
+          this.$refs.commentsAnchor?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        });
+      }
+    },
+    handleCommentCountChange(count) {
+      this.post = {
+        ...this.post,
+        comment_count: Number(count) || 0,
+      };
     },
 
     setupScrollObserver() {
@@ -203,6 +264,7 @@ export default {
               comment_count:
                 nextPost.comment_count ?? nextPost.commentCount ?? 0,
             };
+            this.commentsExpanded = false;
           }
         })
         .catch((error) => {
@@ -273,9 +335,11 @@ export default {
         const delta = currentTop - this.lastScrollTop;
         const threshold = 10;
         if (Math.abs(delta) < threshold) {
+          this.hasEnteredReadingMode = currentTop > 220;
           this.lastScrollTop = currentTop;
           return;
         }
+        this.hasEnteredReadingMode = currentTop > 220;
         if (currentTop < 10) {
           this.showFloatingButtons = true;
         } else {
@@ -289,8 +353,9 @@ export default {
 </script>
 
 <template>
-  <PageHeadBack>
-    <PageScroll ref="pageScrollRef" max-height="calc(100vh - 45px - 47px)">
+  <PageScroll ref="pageScrollRef" max-height="calc(100vh - 45px - 47px)">
+    <div class="post-detail-shell">
+      <button type="button" class="detail-back" @click="goBack">返回</button>
       <!-- 回到顶部 -->
       <el-backtop
         target=".page-scroll .el-scrollbar__wrap"
@@ -298,7 +363,10 @@ export default {
         :bottom="30"
       />
       <!-- 阅读进度条 -->
-      <ReadProgress target=".page-scroll .el-scrollbar__wrap" />
+      <ReadProgress
+        v-if="shouldShowReadingAids"
+        target=".page-scroll .el-scrollbar__wrap"
+      />
       <div class="post-detail-container">
         <!-- 骨架屏：当文章内容为空时显示 -->
         <el-skeleton
@@ -358,10 +426,22 @@ export default {
 
           <!-- 实际内容 -->
           <template #default>
-            <div class="post-detail-layout">
+            <div
+              class="post-detail-layout"
+              :class="{
+                'post-detail-layout-short': isShortArticle,
+                'post-detail-layout-long': !isShortArticle,
+              }"
+            >
               <div class="post-main-column">
                 <div class="post-main-content">
-                  <PostHeader :post="post" class="post-header" />
+                  <div class="post-meta-intro">
+                    <PostHeader
+                      :post="post"
+                      mode="byline"
+                      class="post-header"
+                    />
+                  </div>
 
                   <PostContent
                     :postContent="post.content"
@@ -372,8 +452,15 @@ export default {
                   />
                   <PostImage
                     :postImages="post.post_images"
+                    mode="article"
                     class="post-images"
                   />
+                </div>
+
+                <div class="post-tail">
+                  <p class="post-tail-note">
+                    {{ isShortArticle ? "文后信息" : "读完这一篇，再继续往下" }}
+                  </p>
                 </div>
 
                 <div class="post-actions">
@@ -382,12 +469,26 @@ export default {
                     :showShare="true"
                     :showEdit="true"
                     :showDelete="true"
+                    :showComment="false"
                   />
+                </div>
+
+                <div class="post-comment-entry">
+                  <button
+                    type="button"
+                    class="comment-toggle"
+                    @click="toggleComments"
+                  >
+                    <span>{{ commentToggleLabel }}</span>
+                    <span class="comment-toggle-count"
+                      >{{ post.comment_count || 0 }} 条</span
+                    >
+                  </button>
                 </div>
               </div>
 
               <aside
-                v-if="showSkeletonComponents && toc.length > 0"
+                v-if="shouldShowReadingAids && toc.length > 0"
                 class="post-aside"
               >
                 <PostToc
@@ -400,11 +501,20 @@ export default {
             </div>
           </template>
         </el-skeleton>
-        <div class="post-comments">
-          <CommentCard :post-id="postId" :post-author="post.author" />
+        <div
+          v-show="commentsExpanded"
+          ref="commentsAnchor"
+          class="post-comments"
+          :class="{ 'post-comments-short': isShortArticle }"
+        >
+          <CommentCard
+            :post-id="postId"
+            :post-author="post.author"
+            @count-change="handleCommentCountChange"
+          />
         </div>
         <PostToc
-          v-if="showSkeletonComponents"
+          v-if="shouldShowReadingAids"
           :toc="toc"
           :activeId="activeHeadingId"
           class="post-toc-drawer"
@@ -415,7 +525,7 @@ export default {
 
         <!-- 工具箱按钮 -->
         <div
-          v-if="showSkeletonComponents"
+          v-if="shouldShowReadingAids"
           class="toolbox-button"
           :class="{ 'float-hidden': !showFloatingButtons }"
           @click="toggleToolbox"
@@ -480,46 +590,80 @@ export default {
           @close="showSearch = false"
         />
       </div>
-    </PageScroll>
-  </PageHeadBack>
+    </div>
+  </PageScroll>
 </template>
 
 <style scoped lang="scss">
 @use "./components/PostDetail.scss" as *;
 
+.post-detail-shell {
+  width: min(100%, 1160px);
+  margin: 0 auto;
+}
+
+.detail-back {
+  margin: 10px 0 6px 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #7c7c7c;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #111;
+  }
+
+  @include mobile {
+    margin: 10px 0 4px 16px;
+    font-size: 12px;
+  }
+}
+
 // 文章容器
 .post-detail-container {
+  width: min(100%, 1160px);
   margin: 0 auto;
-  padding: $spacing-md;
+  padding: 34px 28px 48px;
+  box-sizing: border-box;
   background-color: #fff;
-  border-radius: $border-radius-md;
-  box-shadow: 0 1px 3px $shadow-color;
   @extend .fade-in;
 
   @include mobile {
-    padding: $spacing-sm;
-    border-radius: 0;
-    box-shadow: none;
+    padding: 20px 16px 34px;
   }
 }
 
 .post-detail-layout {
   display: flex;
-  gap: 32px;
+  gap: 64px;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+.post-detail-layout-short {
+  .post-main-column {
+    max-width: 660px;
+  }
 }
 
 .post-main-column {
   flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
+  max-width: 720px;
 }
 
 .post-aside {
-  flex: 0 0 300px;
+  flex: 0 0 240px;
   position: sticky;
-  top: 20px;
+  top: 24px;
   align-self: flex-start;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 72px);
   overflow: auto;
 }
 
@@ -532,11 +676,10 @@ export default {
   right: 20px;
   bottom: 80px;
   z-index: 999;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 
   .el-button {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    box-shadow: none;
   }
 }
 
@@ -547,36 +690,98 @@ export default {
 }
 
 .post-main-content {
-  margin-bottom: $spacing-lg;
+  margin-bottom: 36px;
   @extend .slide-up;
 }
 
+.post-meta-intro {
+  margin-bottom: 18px;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 .post-header {
-  margin-bottom: $spacing-md;
+  margin-bottom: 0;
 }
 
 .post-content {
-  margin-bottom: $spacing-md;
+  margin-bottom: 0;
 }
 
 .post-images {
-  margin-bottom: $spacing-lg;
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+.post-tail {
+  margin-top: 72px;
+  padding-top: 18px;
+  border-top: 1px solid #efefef;
+}
+
+.post-tail-note {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #8a8a8a;
 }
 
 .post-actions {
-  padding: $spacing-sm 0;
-  margin-bottom: $spacing-md;
-  border-top: 1px solid $border-color;
-  border-bottom: 1px solid $border-color;
+  padding: 12px 0 0;
+  margin-bottom: 0;
+  border-top: none;
+  border-bottom: none;
+}
+
+.post-comment-entry {
+  padding-top: 20px;
+}
+
+.comment-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #111;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.comment-toggle-count {
+  color: #8b8b8b;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .post-comments {
-  margin-top: $spacing-md;
+  margin-top: 72px;
+  padding-top: 28px;
+  border-top: 1px solid #ececec;
+}
+
+.post-comments-short {
+  margin-top: 88px;
 }
 
 @include mobile {
   .post-detail-layout {
     display: block;
+  }
+
+  .post-main-column {
+    max-width: 100%;
+  }
+
+  .post-meta-intro {
+    margin-bottom: 14px;
+    padding-bottom: 0;
+  }
+
+  .post-content {
+    margin-bottom: 0;
   }
 
   .post-aside {
@@ -585,6 +790,21 @@ export default {
 
   .post-toc-drawer {
     display: block;
+  }
+
+  .post-tail {
+    margin-top: 48px;
+    padding-top: 14px;
+  }
+
+  .post-comment-entry {
+    padding-top: 18px;
+  }
+
+  .post-comments,
+  .post-comments-short {
+    margin-top: 56px;
+    padding-top: 22px;
   }
 }
 
@@ -615,8 +835,8 @@ export default {
 .toolbox-content {
   display: flex;
   flex-direction: column;
-  gap: 100px;
-  padding: 0 16px;
+  gap: 40px;
+  padding: 4px 16px 0;
 }
 
 .toolbox-section {
@@ -625,8 +845,8 @@ export default {
 
 .toolbox-title {
   margin-bottom: 12px;
-  font-weight: 600;
-  color: #303133;
+  font-weight: 500;
+  color: #111;
 }
 
 .toolbox-preview {
@@ -634,19 +854,20 @@ export default {
   padding: 16px;
   margin-bottom: 16px;
   overflow: auto;
-  background-color: #f5f7fa;
-  border-radius: 8px;
+  background-color: #fafafa;
+  border: 1px solid #ececec;
+  border-radius: 12px;
 
   .preview-title {
     margin-bottom: 10px;
     font-size: 14px;
     font-weight: 500;
-    color: #606266;
+    color: #555;
   }
 
   .preview-text {
     line-height: 1.8;
-    color: #303133;
+    color: #222;
   }
 }
 
@@ -659,7 +880,7 @@ export default {
 
     span {
       font-size: 14px;
-      color: #606266;
+      color: #555;
     }
   }
 
@@ -681,9 +902,67 @@ export default {
   color: #909399;
 }
 
-// 其他样式
-.el-button {
-  margin-top: $spacing-sm;
+:deep(.el-backtop) {
+  background: #fff;
+  border: 1px solid #e2e2e2;
+  box-shadow: none;
+  color: #111;
+}
+
+:deep(.toolbox-button .el-button) {
+  width: 42px;
+  height: 42px;
+  color: #111;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+}
+
+:deep(.toolbox-button .el-button:hover) {
+  border-color: #111;
+  background: #fafafa;
+}
+
+:deep(.el-drawer__header) {
+  margin-bottom: 0;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #ececec;
+}
+
+:deep(.el-drawer__title) {
+  color: #111;
+  font-weight: 500;
+}
+
+:deep(.toolbox-content .el-button) {
+  border-radius: 999px;
+}
+
+:deep(.toolbox-content .el-button--primary) {
+  color: #fff;
+  background: #111;
+  border-color: #111;
+}
+
+:deep(.toolbox-content .el-button:not(.el-button--primary)) {
+  color: #444;
+  background: #fff;
+  border-color: #d8d8d8;
+}
+
+:deep(.toolbox-content .el-slider__runway) {
+  background: #ededed;
+}
+
+:deep(.toolbox-content .el-slider__bar) {
+  background: #111;
+}
+
+:deep(.toolbox-content .el-slider__button) {
+  border-color: #111;
+}
+
+:deep(.post-comments .comment-section) {
+  padding-top: 0;
 }
 
 .Scrollbar {

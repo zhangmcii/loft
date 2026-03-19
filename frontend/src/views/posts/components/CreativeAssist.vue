@@ -79,13 +79,13 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   background: #fafafa;
-  border-radius: 6px;
+  border: 1px solid #ececec;
 
   .assist-header {
     .assist-hint {
-      color: #999;
+      color: #777;
       font-size: 12px;
     }
   }
@@ -100,13 +100,14 @@ export default {
       font-size: 12px;
       color: #666;
       background: #fff;
-      border: 1px solid #eee;
-      border-radius: 4px;
+      border: 1px solid #ddd;
+      border-radius: 999px;
       transition: all 0.2s;
 
       &:hover:not(:disabled) {
-        background: #f5f5f5;
-        border-color: #ddd;
+        background: #fff;
+        border-color: #111;
+        color: #111;
       }
     }
   }
