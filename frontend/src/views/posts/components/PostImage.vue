@@ -66,7 +66,7 @@ export default {
 
   .preview {
     display: grid;
-    gap: 5px;
+    gap: 2px;
     width: 100%;
     margin: 0 auto;
 
@@ -95,7 +95,7 @@ export default {
 .container[style*="560px"],
 .container[style*="620px"] {
   .preview {
-    gap: 8px;
+    gap: 2px;
   }
 
   .el-image {

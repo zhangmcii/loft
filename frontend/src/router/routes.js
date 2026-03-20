@@ -158,9 +158,21 @@ const routes = [
         component: () => import("../views/posts/postDetail.vue"),
       },
       {
+        path: "/compose",
+        name: "compose",
+        component: () => import("../views/posts/PostCompose.vue"),
+        meta: { requireAuth: true },
+      },
+      {
+        path: "/compose/:id",
+        name: "composeEdit",
+        component: () => import("../views/posts/PostCompose.vue"),
+        meta: { requireAuth: true },
+      },
+      {
         path: "/pubImage",
         name: "pubImage",
-        component: () => import("../views/posts/publish/PublishImage.vue"),
+        redirect: "/compose?mode=image",
         meta: { keepAlive: true },
       },
       {
@@ -172,7 +184,7 @@ const routes = [
       {
         path: "/editPost/:id",
         name: "editPost",
-        component: () => import("../views/posts/PostEdit.vue"),
+        component: () => import("../views/posts/PostCompose.vue"),
         meta: { requireAuth: true },
       },
       {

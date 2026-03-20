@@ -40,6 +40,7 @@ export default {
       showDot: false,
       followPost: [],
       followPostHandler: null,
+      newPostListHandler: null,
       postDeletedHandler: null,
     };
   },
@@ -65,6 +66,17 @@ export default {
       console.log("newPost", this.followPost);
     };
     emitter.on("followPost", this.followPostHandler);
+    this.newPostListHandler = (payload) => {
+      const list = Array.isArray(payload?.list) ? payload.list : [];
+      this.posts = list;
+      this.posts_count =
+        typeof payload?.total === "number" ? payload.total : list.length;
+      this.currentPage = 1;
+      this.loading.publishPost = false;
+      this.loading.card = false;
+      this.loading.more = false;
+    };
+    emitter.on("newPostList", this.newPostListHandler);
     // 监听文章删除事件，刷新页面
     this.postDeletedHandler = () => {
       this.resetPosts(this.activeName);
@@ -138,6 +150,10 @@ export default {
       emitter.off("followPost", this.followPostHandler);
       this.followPostHandler = null;
     }
+    if (this.newPostListHandler) {
+      emitter.off("newPostList", this.newPostListHandler);
+      this.newPostListHandler = null;
+    }
     if (this.postDeletedHandler) {
       emitter.off("postDeleted", this.postDeletedHandler);
       this.postDeletedHandler = null;
@@ -157,23 +173,13 @@ export default {
       :infinite-scroll-immediate="true"
     >
       <section class="posts-shell">
-        <div class="posts-intro">
-          <p class="posts-kicker">LOFT / FEED</p>
-          <h1>白纸上的内容流</h1>
-          <p class="posts-note">把视觉退后，让文字回到前面。</p>
-        </div>
-
         <RegisterPrompt
           v-if="!currentUser.isLogin"
           :key="'register-prompt'"
           v-slide-in
         />
 
-        <PublishEntry
-          @loading-begin="(flag) => (loading.publishPost = flag)"
-          @newPost="getPostsResult"
-          v-if="currentUser.isLogin"
-        />
+        <PublishEntry v-if="currentUser.isLogin" />
         <el-tabs v-model="activeName" class="demo-tabs" @tab-change="changeTab">
           <el-tab-pane label="广场" name="all">
             <div
@@ -271,34 +277,6 @@ export default {
   box-sizing: border-box;
 }
 
-.posts-intro {
-  margin-bottom: 22px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #ececec;
-
-  .posts-kicker {
-    margin-bottom: 8px;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    color: #777;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: 26px;
-    line-height: 1.25;
-    font-weight: 500;
-    color: #111;
-  }
-
-  .posts-note {
-    margin-top: 8px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #666;
-  }
-}
-
 .demo-tabs {
   margin-top: 18px;
   min-height: 47vh;
@@ -393,18 +371,6 @@ export default {
 @media (max-width: 768px) {
   .posts-shell {
     padding: 28px 16px 40px;
-  }
-
-  .posts-intro {
-    margin-bottom: 22px;
-
-    h1 {
-      font-size: 22px;
-    }
-
-    .posts-note {
-      font-size: 13px;
-    }
   }
 
   .demo-tabs {

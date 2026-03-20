@@ -78,15 +78,17 @@ export default {
 .creative-assist {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: #fafafa;
-  border: 1px solid #ececec;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 0;
+  background: transparent;
+  border: none;
 
   .assist-header {
     .assist-hint {
       color: #777;
       font-size: 12px;
+      letter-spacing: 0.03em;
     }
   }
 
@@ -99,8 +101,8 @@ export default {
       padding: 4px 10px;
       font-size: 12px;
       color: #666;
-      background: #fff;
-      border: 1px solid #ddd;
+      background: transparent;
+      border: 1px solid #e0e0e0;
       border-radius: 999px;
       transition: all 0.2s;
 

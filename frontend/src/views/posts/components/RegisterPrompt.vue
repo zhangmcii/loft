@@ -250,7 +250,7 @@ export default {
   min-width: 72px;
   height: 34px;
   padding: 0 14px;
-  color: #111;
+  color: #fff;
   background: #111;
   border: 1px solid #111;
   border-radius: 999px;

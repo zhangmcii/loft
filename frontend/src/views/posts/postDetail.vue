@@ -178,7 +178,11 @@ export default {
 
   methods: {
     goBack() {
-      this.$router.back();
+      if (window.history.length > 1) {
+        this.$router.back();
+      } else {
+        this.$router.push("/posts");
+      }
     },
     handleTocReady(toc) {
       this.toc = Array.isArray(toc) ? toc : [];
@@ -355,7 +359,15 @@ export default {
 <template>
   <PageScroll ref="pageScrollRef" max-height="calc(100vh - 45px - 47px)">
     <div class="post-detail-shell">
-      <button type="button" class="detail-back" @click="goBack">返回</button>
+      <button
+        type="button"
+        class="detail-back"
+        aria-label="返回"
+        title="返回"
+        @click="goBack"
+      >
+        ←
+      </button>
       <!-- 回到顶部 -->
       <el-backtop
         target=".page-scroll .el-scrollbar__wrap"
@@ -466,7 +478,6 @@ export default {
                 <div class="post-actions">
                   <PostAction
                     :post="post"
-                    :showShare="true"
                     :showEdit="true"
                     :showDelete="true"
                     :showComment="false"
@@ -603,13 +614,13 @@ export default {
 }
 
 .detail-back {
-  margin: 10px 0 6px 28px;
+  margin: 8px 0 2px 28px;
   padding: 0;
   border: none;
   background: transparent;
-  color: #7c7c7c;
-  font-size: 13px;
-  line-height: 1.4;
+  color: #8f8f8f;
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
   transition: color 0.2s ease;
 
@@ -618,8 +629,8 @@ export default {
   }
 
   @include mobile {
-    margin: 10px 0 4px 16px;
-    font-size: 12px;
+    margin: 8px 0 2px 16px;
+    font-size: 15px;
   }
 }
 

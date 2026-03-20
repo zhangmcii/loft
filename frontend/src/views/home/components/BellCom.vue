@@ -198,10 +198,9 @@ export default {
     >
       <template #reference>
         <div class="notification-icon-container">
-          <van-badge :dot="showDot" :offset="[-8, 5]">
+          <van-badge :dot="showDot" :offset="[0, 5]">
             <div class="notification-button" aria-label="通知">
               <el-icon :size="15" class="bell-icon"><i-ep-Bell /></el-icon>
-              <span class="notification-label">通知</span>
             </div>
           </van-badge>
         </div>
@@ -336,11 +335,6 @@ export default {
   color: currentColor;
 }
 
-.notification-label {
-  font-size: 12px;
-  letter-spacing: 0.04em;
-}
-
 .notification-popover :deep(.van-popover__content) {
   border-radius: 0;
   overflow: hidden;
@@ -430,11 +424,5 @@ button[disabled] {
 
 .van-cell:hover {
   background-color: #fafafa;
-}
-
-@media (max-width: 768px) {
-  .notification-label {
-    display: none;
-  }
 }
 </style>

@@ -3,6 +3,7 @@
     <mavon-editor
       ref="mavonEditor"
       v-model="markdown"
+      :autofocus="false"
       @imgAdd="handleImageUpload"
       @change="change"
     />
