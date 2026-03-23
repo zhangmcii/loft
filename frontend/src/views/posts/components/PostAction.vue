@@ -275,13 +275,15 @@ export default {
 </template>
 
 <style scoped lang="scss">
+@use "./PostReadingTokens.scss" as tokens;
+
 .post-action-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   padding: 2px 0 0;
-  color: #7a7a7a;
+  color: tokens.$reading-text-quaternary;
 }
 
 .post-action-container-compact {
@@ -296,8 +298,8 @@ export default {
   }
 
   .action-count {
-    font-size: 11px;
-    color: #7a7a7a;
+    font-size: tokens.$reading-font-size-caption;
+    color: tokens.$reading-text-quaternary;
   }
 }
 
@@ -310,28 +312,36 @@ export default {
 .action-item {
   display: flex;
   align-items: center;
-  margin-right: 16px;
+  gap: 4px;
+  margin-right: 20px;
   cursor: pointer;
+  color: tokens.$reading-text-quaternary;
+  transition: color 0.2s ease;
 
   &:last-child {
     margin-right: 0;
   }
+
+  &:hover {
+    color: tokens.$reading-text-primary;
+  }
 }
 
 .action-icon {
-  margin-right: 4px;
+  margin-right: 0;
   transition: opacity 0.2s ease;
-  color: #7a7a7a;
+  color: currentColor;
 
   &:hover {
-    opacity: 0.65;
+    opacity: 1;
   }
 }
 
 .action-count {
-  font-size: 12px;
-  color: #7a7a7a;
+  font-size: tokens.$reading-font-size-meta;
+  color: currentColor;
   letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 // 点赞动画

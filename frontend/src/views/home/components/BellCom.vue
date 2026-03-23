@@ -318,17 +318,20 @@ export default {
 .notification-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  height: 24px;
-  color: #555;
+  width: 32px;
+  height: 32px;
+  color: #777;
   cursor: pointer;
-  transition: color 0.2s ease, opacity 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease;
   user-select: none;
+  border-radius: 999px;
 }
 
 .notification-button:hover {
   color: #111;
-  opacity: 0.85;
+  background: #fafafa;
 }
 
 .bell-icon {

@@ -50,7 +50,7 @@ export default {
         <div class="skeleton-container">
           <el-skeleton-item
             variant="circle"
-            style="--el-skeleton-circle-size: 40px"
+            style="--el-skeleton-circle-size: 30px"
             v-if="showAvatar"
           />
           <div class="item">
@@ -82,7 +82,7 @@ export default {
           <div class="container-head-left">
             <el-skeleton-item
               variant="circle"
-              style="--el-skeleton-circle-size: 40px"
+              style="--el-skeleton-circle-size: 30px"
               v-if="showAvatar"
             />
             <el-skeleton-item variant="text" style="width: 60%" />
@@ -107,8 +107,19 @@ export default {
   </el-skeleton>
 </template>
 <style lang="scss" scoped>
+@use "@/views/posts/components/PostReadingTokens.scss" as tokens;
+
 :deep(.el-card__body) {
   padding: 5px 20px;
+}
+
+:deep(.el-skeleton__item) {
+  --el-skeleton-color: #f4f4f4;
+  --el-skeleton-to-color: #fafafa;
+}
+
+:deep(.el-skeleton__circle) {
+  border: 1px solid tokens.$reading-border;
 }
 
 .skeleton-container {
@@ -126,17 +137,21 @@ export default {
 .container {
   display: flex;
   flex-direction: column;
+  padding: 0 0 26px;
+  border-bottom: 1px solid tokens.$reading-border;
 
   &-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 42px;
+    margin-bottom: 12px;
 
     &-left {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      width: 30%;
+      gap: 12px;
+      width: 42%;
     }
   }
 
@@ -145,14 +160,14 @@ export default {
     flex-direction: column;
     gap: 10px;
     width: 100%;
-    padding: 15px 20px;
+    padding: 0;
   }
 }
 
 .block {
   width: 100%;
-  height: 5px;
-  margin: 5px 0;
-  background-color: #f5f7fa;
+  height: 12px;
+  margin: 16px 0 0;
+  background-color: transparent;
 }
 </style>

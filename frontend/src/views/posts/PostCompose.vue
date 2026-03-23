@@ -343,7 +343,14 @@ export default {
         </nav>
 
         <div class="compose-editor">
-          <div class="compose-sheet">
+          <div
+            class="compose-sheet"
+            :class="{
+              'compose-sheet-text': mode === 'text',
+              'compose-sheet-image': mode === 'image',
+              'compose-sheet-markdown': mode === 'markdown',
+            }"
+          >
             <div class="compose-sheet-head">
               <span class="sheet-label">
                 {{ mode === "markdown" ? "正文（Markdown）" : "正文" }}
@@ -419,9 +426,8 @@ export default {
             <template v-else>
               <MarkdownEditor
                 ref="md"
+                :min-height="660"
                 :body-init="markdownContent.content"
-                :initially-active="false"
-                inactive-label="点击进入 Markdown 写作"
                 @contentChange="
                   (payload) =>
                     (markdownContent = { ...markdownContent, ...payload })
@@ -458,12 +464,14 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+@use "./components/PostReadingTokens.scss" as tokens;
+
 .compose-page {
   box-sizing: border-box;
-  width: min(100%, 980px);
+  width: min(100%, 960px);
   margin: 0 auto;
-  padding: 24px 24px 48px;
-  color: #111;
+  padding: 24px 24px 56px;
+  color: tokens.$reading-text-primary;
   background: #fff;
   overflow-x: clip;
 }
@@ -473,24 +481,31 @@ export default {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid tokens.$reading-border;
 }
 
 .compose-back {
   padding: 0;
   border: none;
   background: transparent;
-  color: #7a7a7a;
-  font-size: 18px;
+  color: tokens.$reading-text-quaternary;
+  font-size: 15px;
   line-height: 1;
   cursor: pointer;
   justify-self: start;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: tokens.$reading-text-primary;
+  }
 }
 
 .compose-status {
   margin: 0;
   font-size: 12px;
-  color: #8a8a8a;
+  color: tokens.$reading-text-quaternary;
   letter-spacing: 0.08em;
 }
 
@@ -503,20 +518,20 @@ export default {
 
 .compose-submit-note {
   font-size: 12px;
-  color: #8a8a8a;
+  color: tokens.$reading-text-quaternary;
   white-space: nowrap;
 }
 
 .compose-submit {
-  border-color: #111;
-  background: #111;
+  border-color: tokens.$reading-text-primary;
+  background: tokens.$reading-text-primary;
   color: #fff;
 
   &:hover,
   &:focus,
   &:focus-visible {
-    border-color: #111;
-    background: #111;
+    border-color: tokens.$reading-text-primary;
+    background: tokens.$reading-text-primary;
     color: #fff;
   }
 
@@ -536,7 +551,7 @@ export default {
 }
 
 .compose-shell {
-  max-width: 720px;
+  max-width: 700px;
   margin: 0 auto;
   min-width: 0;
 }
@@ -544,32 +559,53 @@ export default {
 .compose-modes {
   display: flex;
   gap: 20px;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #ececec;
+  border-bottom: 1px solid tokens.$reading-border;
 }
 
 .compose-mode {
   padding: 0;
   border: none;
   background: transparent;
-  color: #8a8a8a;
+  color: tokens.$reading-text-quaternary;
   font-size: 14px;
   letter-spacing: 0.02em;
   cursor: pointer;
+  transition: color 0.2s ease;
 
   &.active {
-    color: #111;
+    color: tokens.$reading-text-primary;
     font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 10px;
+    text-decoration-color: tokens.$reading-text-primary;
+  }
+
+  &:hover {
+    color: tokens.$reading-text-secondary;
   }
 }
 
 .compose-editor {
-  margin-bottom: 22px;
+  margin-bottom: 26px;
+  min-height: 620px;
 }
 
 .compose-sheet {
-  padding: 0 0 12px;
+  padding: 0 0 10px;
+  min-height: 620px;
+}
+
+.compose-sheet-text,
+.compose-sheet-markdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.compose-sheet-markdown {
+  min-height: 660px;
 }
 
 .compose-sheet-head {
@@ -582,35 +618,38 @@ export default {
 .sheet-label,
 .sheet-count {
   font-size: 12px;
-  color: #7d7d7d;
+  color: tokens.$reading-text-quaternary;
   letter-spacing: 0.04em;
 }
 
 .compose-textarea {
+  flex: 1 1 auto;
+
   :deep(.el-textarea__inner) {
-    min-height: 320px !important;
+    min-height: 460px !important;
     padding: 0;
     border: none;
     border-radius: 0;
     box-shadow: none;
-    font-size: 16px;
-    line-height: 1.9;
-    color: #1f1f1f;
+    font-size: tokens.$reading-font-size-body;
+    line-height: tokens.$reading-line-height-body;
+    color: tokens.$reading-text-primary;
     resize: none;
     background: transparent;
+    font-family: tokens.$reading-font-family;
   }
 
   :deep(.el-textarea .el-input__count) {
-    color: #9a9a9a;
+    color: tokens.$reading-text-quaternary;
     background: transparent;
   }
 }
 
 .compose-insert {
   min-width: 0;
-  margin-top: 28px;
+  margin-top: 30px;
   padding-top: 18px;
-  border-top: 1px solid #efefef;
+  border-top: 1px solid tokens.$reading-border-soft;
 }
 
 .insert-head {
@@ -624,20 +663,20 @@ export default {
 .insert-title {
   margin: 0;
   font-size: 12px;
-  color: #7d7d7d;
+  color: tokens.$reading-text-tertiary;
   letter-spacing: 0.08em;
 }
 
 .insert-meta {
   margin: 0;
   font-size: 12px;
-  color: #9a9a9a;
+  color: tokens.$reading-text-quaternary;
 }
 
 .insert-note {
   margin: 0 0 12px;
   font-size: 12px;
-  color: #888;
+  color: tokens.$reading-text-quaternary;
   line-height: 1.6;
 }
 
@@ -646,7 +685,7 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  color: #666;
+  color: tokens.$reading-text-secondary;
   font-size: 12px;
 
   :deep(svg) {
@@ -664,21 +703,30 @@ export default {
 .existing-image {
   width: 100%;
   aspect-ratio: 1;
-  border: 1px solid #ececec;
+  border: 1px solid tokens.$reading-border;
 }
 
 .compose-assist {
   padding-top: 16px;
-  border-top: 1px solid #efefef;
+  border-top: 1px solid tokens.$reading-border-soft;
 }
 
 .assist-toggle {
   padding: 0;
   border: none;
   background: transparent;
-  color: #666;
+  color: tokens.$reading-text-secondary;
   font-size: 13px;
   cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+
+  &:hover {
+    color: tokens.$reading-text-primary;
+    text-decoration-color: tokens.$reading-border;
+  }
 }
 
 .compose-preview-image {
@@ -689,7 +737,7 @@ export default {
 :deep(.el-upload-list--picture-card .el-upload-list__item) {
   box-sizing: border-box;
   border-radius: 0;
-  border-color: #e6e6e6;
+  border-color: tokens.$reading-border;
   background: #fff;
 }
 
@@ -710,12 +758,12 @@ export default {
 }
 
 :deep(.el-upload--picture-card:hover) {
-  border-color: #111;
+  border-color: tokens.$reading-text-primary;
 }
 
 @media (max-width: 768px) {
   .compose-page {
-    padding: 14px 16px 32px;
+    padding: 14px 16px 36px;
   }
 
   .compose-topbar {
@@ -751,9 +799,18 @@ export default {
     margin-bottom: 12px;
   }
 
+  .compose-editor,
+  .compose-sheet {
+    min-height: 500px;
+  }
+
+  .compose-sheet-markdown {
+    min-height: 560px;
+  }
+
   .compose-textarea {
     :deep(.el-textarea__inner) {
-      min-height: 260px !important;
+      min-height: 360px !important;
       font-size: 15px;
     }
   }

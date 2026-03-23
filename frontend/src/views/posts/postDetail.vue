@@ -395,7 +395,7 @@ export default {
             <div class="skeleton-header">
               <el-skeleton-item
                 variant="circle"
-                style="width: 40px; height: 40px"
+                style="width: 30px; height: 30px"
               />
               <el-skeleton-item variant="text" style="width: 120px" />
             </div>
@@ -607,50 +607,52 @@ export default {
 
 <style scoped lang="scss">
 @use "./components/PostDetail.scss" as *;
+@use "./components/PostReadingTokens.scss" as tokens;
 
 .post-detail-shell {
-  width: min(100%, 1160px);
+  width: min(100%, 1040px);
   margin: 0 auto;
 }
 
 .detail-back {
-  margin: 8px 0 2px 28px;
+  margin: 14px 0 0 28px;
   padding: 0;
   border: none;
   background: transparent;
-  color: #8f8f8f;
-  font-size: 16px;
+  color: tokens.$reading-text-quaternary;
+  font-size: 15px;
   line-height: 1;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, opacity 0.2s ease;
 
   &:hover {
-    color: #111;
+    color: tokens.$reading-text-primary;
+    opacity: 1;
   }
 
   @include mobile {
-    margin: 8px 0 2px 16px;
+    margin: 12px 0 0 16px;
     font-size: 15px;
   }
 }
 
 // 文章容器
 .post-detail-container {
-  width: min(100%, 1160px);
+  width: min(100%, 1040px);
   margin: 0 auto;
-  padding: 34px 28px 48px;
+  padding: 26px 28px 56px;
   box-sizing: border-box;
   background-color: #fff;
   @extend .fade-in;
 
   @include mobile {
-    padding: 20px 16px 34px;
+    padding: 18px 16px 40px;
   }
 }
 
 .post-detail-layout {
   display: flex;
-  gap: 64px;
+  gap: 56px;
   align-items: flex-start;
   width: 100%;
   min-width: 0;
@@ -658,7 +660,7 @@ export default {
 
 .post-detail-layout-short {
   .post-main-column {
-    max-width: 660px;
+    max-width: 620px;
   }
 }
 
@@ -666,11 +668,11 @@ export default {
   flex: 1 1 auto;
   min-width: 0;
   width: 100%;
-  max-width: 720px;
+  max-width: 680px;
 }
 
 .post-aside {
-  flex: 0 0 240px;
+  flex: 0 0 208px;
   position: sticky;
   top: 24px;
   align-self: flex-start;
@@ -684,8 +686,8 @@ export default {
 
 .toolbox-button {
   position: fixed;
-  right: 20px;
-  bottom: 80px;
+  right: 18px;
+  bottom: 76px;
   z-index: 999;
   transition: all 0.2s ease;
 
@@ -706,7 +708,7 @@ export default {
 }
 
 .post-meta-intro {
-  margin-bottom: 18px;
+  margin-bottom: 22px;
   padding-bottom: 0;
   border-bottom: none;
 }
@@ -725,22 +727,23 @@ export default {
 }
 
 .post-tail {
-  margin-top: 72px;
-  padding-top: 18px;
-  border-top: 1px solid #efefef;
+  margin-top: 56px;
+  padding-top: 14px;
+  border-top: 1px solid tokens.$reading-border-soft;
 }
 
 .post-tail-note {
   margin: 0;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  color: #8a8a8a;
+  font-size: tokens.$reading-font-size-meta;
+  letter-spacing: 0.05em;
+  color: tokens.$reading-text-quaternary;
 }
 
 .post-actions {
-  padding: 12px 0 0;
+  margin-top: 10px;
+  padding: 14px 0 0;
   margin-bottom: 0;
-  border-top: none;
+  border-top: 1px solid tokens.$reading-border-soft;
   border-bottom: none;
 }
 
@@ -751,30 +754,36 @@ export default {
 .comment-toggle {
   display: inline-flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
   padding: 0;
   border: none;
   background: transparent;
-  color: #111;
-  font-size: 14px;
+  color: tokens.$reading-text-secondary;
+  font-size: 13px;
   font-weight: 500;
+  line-height: 1.6;
   cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: tokens.$reading-text-primary;
+  }
 }
 
 .comment-toggle-count {
-  color: #8b8b8b;
-  font-size: 12px;
+  color: tokens.$reading-text-tertiary;
+  font-size: tokens.$reading-font-size-meta;
   font-weight: 400;
 }
 
 .post-comments {
-  margin-top: 72px;
-  padding-top: 28px;
-  border-top: 1px solid #ececec;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid tokens.$reading-border;
 }
 
 .post-comments-short {
-  margin-top: 88px;
+  margin-top: 72px;
 }
 
 @include mobile {
@@ -787,7 +796,7 @@ export default {
   }
 
   .post-meta-intro {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     padding-bottom: 0;
   }
 
@@ -804,7 +813,7 @@ export default {
   }
 
   .post-tail {
-    margin-top: 48px;
+    margin-top: 40px;
     padding-top: 14px;
   }
 
@@ -814,14 +823,9 @@ export default {
 
   .post-comments,
   .post-comments-short {
-    margin-top: 56px;
-    padding-top: 22px;
+    margin-top: 44px;
+    padding-top: 20px;
   }
-}
-
-// 骨架屏样式
-.skeleton-wrapper {
-  // min-height: calc(100vh - 200px);
 }
 
 .skeleton-header {
@@ -846,8 +850,8 @@ export default {
 .toolbox-content {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 4px 16px 0;
+  gap: 32px;
+  padding: 2px 16px 0;
 }
 
 .toolbox-section {
@@ -855,9 +859,11 @@ export default {
 }
 
 .toolbox-title {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  font-size: 14px;
   font-weight: 500;
   color: #111;
+  font-family: tokens.$reading-font-family;
 }
 
 .toolbox-preview {
@@ -866,19 +872,20 @@ export default {
   margin-bottom: 16px;
   overflow: auto;
   background-color: #fafafa;
-  border: 1px solid #ececec;
-  border-radius: 12px;
+  border: 1px solid tokens.$reading-border;
+  border-radius: 0;
 
   .preview-title {
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    color: #555;
+    color: tokens.$reading-text-secondary;
   }
 
   .preview-text {
-    line-height: 1.8;
-    color: #222;
+    line-height: 1.9;
+    color: tokens.$reading-text-primary;
+    font-family: tokens.$reading-font-family;
   }
 }
 
@@ -891,7 +898,7 @@ export default {
 
     span {
       font-size: 14px;
-      color: #555;
+      color: tokens.$reading-text-secondary;
     }
   }
 
@@ -903,73 +910,72 @@ export default {
   }
 }
 
-.toolbox-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.toolbox-hint {
-  color: #909399;
-}
-
 :deep(.el-backtop) {
   background: #fff;
-  border: 1px solid #e2e2e2;
+  border: 1px solid tokens.$reading-border;
   box-shadow: none;
-  color: #111;
+  color: tokens.$reading-text-primary;
+}
+
+:deep(.skeleton-wrapper .el-skeleton__item) {
+  --el-skeleton-color: #f4f4f4;
+  --el-skeleton-to-color: #fafafa;
+}
+
+:deep(.skeleton-wrapper .el-skeleton__circle) {
+  border: 1px solid tokens.$reading-border;
 }
 
 :deep(.toolbox-button .el-button) {
-  width: 42px;
-  height: 42px;
-  color: #111;
+  width: 38px;
+  height: 38px;
+  color: tokens.$reading-text-primary;
   background: #fff;
-  border: 1px solid #dcdcdc;
+  border: 1px solid tokens.$reading-border;
 }
 
 :deep(.toolbox-button .el-button:hover) {
-  border-color: #111;
-  background: #fafafa;
+  border-color: tokens.$reading-text-primary;
+  background: tokens.$reading-fill-softer;
 }
 
 :deep(.el-drawer__header) {
   margin-bottom: 0;
   padding: 18px 20px 12px;
-  border-bottom: 1px solid #ececec;
+  border-bottom: 1px solid tokens.$reading-border;
 }
 
 :deep(.el-drawer__title) {
-  color: #111;
+  color: tokens.$reading-text-primary;
   font-weight: 500;
 }
 
 :deep(.toolbox-content .el-button) {
-  border-radius: 999px;
+  border-radius: 0;
 }
 
 :deep(.toolbox-content .el-button--primary) {
   color: #fff;
-  background: #111;
-  border-color: #111;
+  background: tokens.$reading-text-primary;
+  border-color: tokens.$reading-text-primary;
 }
 
 :deep(.toolbox-content .el-button:not(.el-button--primary)) {
-  color: #444;
+  color: tokens.$reading-text-secondary;
   background: #fff;
-  border-color: #d8d8d8;
+  border-color: tokens.$reading-border;
 }
 
 :deep(.toolbox-content .el-slider__runway) {
-  background: #ededed;
+  background: tokens.$reading-border;
 }
 
 :deep(.toolbox-content .el-slider__bar) {
-  background: #111;
+  background: tokens.$reading-text-primary;
 }
 
 :deep(.toolbox-content .el-slider__button) {
-  border-color: #111;
+  border-color: tokens.$reading-text-primary;
 }
 
 :deep(.post-comments .comment-section) {

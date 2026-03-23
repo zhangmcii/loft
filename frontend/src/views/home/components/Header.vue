@@ -201,6 +201,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "@/views/posts/components/PostReadingTokens.scss" as tokens;
+
 .header-container {
   display: flex;
   align-items: center;
@@ -210,34 +212,37 @@ export default {
   padding: 0 28px;
   box-sizing: border-box;
   background: #fff;
+  border-bottom: 1px solid tokens.$reading-border;
 }
 
 .header-left {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .home-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
   cursor: pointer;
-  color: #111;
+  color: tokens.$reading-text-primary;
+  transition: color 0.2s ease, background-color 0.2s ease;
 
   &:hover {
-    opacity: 0.75;
+    background: tokens.$reading-fill-softer;
   }
 }
 
 .site-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  color: #111;
+  letter-spacing: 0.06em;
+  color: tokens.$reading-text-primary;
   cursor: pointer;
 }
 
@@ -250,6 +255,7 @@ export default {
   display: flex;
   flex-shrink: 0;
   align-items: center;
+  gap: 10px;
 }
 
 .notification-icon {
@@ -258,22 +264,29 @@ export default {
   justify-content: center;
   width: 32px;
   height: 32px;
+  border-radius: 999px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: tokens.$reading-fill-softer;
+  }
 }
 
 .user-avatar {
   display: flex;
   align-items: center;
   height: 32px;
-  padding: 0 0 0 12px;
+  padding: 0;
 
   .el-avatar {
     cursor: pointer;
-    transition: opacity 0.2s ease;
-    border: 1px solid #ededed;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    border: 1px solid tokens.$reading-border;
 
     &:hover {
-      opacity: 0.75;
+      opacity: 0.92;
+      border-color: tokens.$reading-border-strong;
     }
   }
 }
@@ -288,7 +301,7 @@ export default {
 
 @media (max-width: 768px) {
   .header-container {
-    height: 52px;
+    height: 56px;
     padding: 0 16px;
   }
 
@@ -298,13 +311,12 @@ export default {
 
   .home-icon,
   .notification-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
   }
 
   .user-avatar {
-    height: 28px;
-    padding-left: 10px;
+    height: 32px;
   }
 }
 </style>

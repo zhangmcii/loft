@@ -271,9 +271,9 @@ export default {
 @use "./components/PostCard.scss" as *;
 
 .posts-shell {
-  width: min(100%, 820px);
+  width: min(100%, 780px);
   margin: 0 auto;
-  padding: 40px 24px 56px;
+  padding: 28px 24px 56px;
   box-sizing: border-box;
 }
 
@@ -282,7 +282,7 @@ export default {
   min-height: 47vh;
 
   :deep(.el-tabs__header) {
-    margin-bottom: 26px;
+    margin-bottom: 18px;
   }
 
   :deep(.el-tabs__nav) {
@@ -293,9 +293,9 @@ export default {
   :deep(.el-tabs__item) {
     height: 32px;
     line-height: 32px;
-    padding: 0 6px;
-    margin-right: 24px;
-    font-size: 15px;
+    padding: 0 4px;
+    margin-right: 22px;
+    font-size: 14px;
     color: #7a7a7a;
     border: none;
     border-radius: 0;
@@ -303,11 +303,11 @@ export default {
 
     &.is-active {
       color: #111;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     &:hover:not(.is-active) {
-      color: #333;
+      color: #444;
     }
   }
 
@@ -326,11 +326,11 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 36px;
-  padding: 0 0 24px;
+  min-height: 32px;
+  padding: 4px 0 20px;
   color: #777;
   font-size: 12px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 
   .posts-loading {
     display: inline-flex;
@@ -349,12 +349,12 @@ export default {
 }
 
 .posts-empty {
-  padding: 36px 0 44px;
+  padding: 32px 0 40px;
   border-bottom: 1px solid #ececec;
 
   .posts-empty-title {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.4;
     font-weight: 500;
     color: #111;
@@ -363,24 +363,25 @@ export default {
   .posts-empty-note {
     margin: 8px 0 0;
     font-size: 13px;
-    line-height: 1.8;
-    color: #666;
+    line-height: 1.75;
+    color: #777;
   }
 }
 
 @media (max-width: 768px) {
   .posts-shell {
-    padding: 28px 16px 40px;
+    width: min(100%, 740px);
+    padding: 22px 16px 40px;
   }
 
   .demo-tabs {
     :deep(.el-tabs__item) {
-      margin-right: 18px;
+      margin-right: 16px;
     }
   }
 
   .posts-empty {
-    padding: 28px 0 34px;
+    padding: 24px 0 30px;
 
     .posts-empty-title {
       font-size: 16px;

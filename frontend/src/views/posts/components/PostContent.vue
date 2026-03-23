@@ -614,6 +614,8 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+@use "./PostReadingTokens.scss" as tokens;
+
 .post-content-wrapper {
   width: 100%;
   margin: 0;
@@ -621,30 +623,27 @@ export default {
 }
 
 .post-content-wrapper-detail {
-  --content-font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
-    "Source Han Sans SC", "Microsoft YaHei", sans-serif;
-  --content-code-font-family: "SFMono-Regular", Consolas, Monaco,
-    "Liberation Mono", "Courier New", monospace;
-  --content-text-color: #1c1c1c;
-  --content-muted-color: #646464;
-  --content-line-height: 1.96;
-  --content-heading-color: #101010;
-  --content-block-spacing: 1.42em;
-  --content-heading-spacing-top: 2.35em;
-  --content-heading-spacing-bottom: 0.78em;
+  --content-font-family: #{tokens.$reading-font-family};
+  --content-code-font-family: #{tokens.$reading-code-font-family};
+  --content-text-color: #{tokens.$reading-text-primary};
+  --content-muted-color: #{tokens.$reading-text-secondary};
+  --content-line-height: #{tokens.$reading-line-height-body};
+  --content-heading-color: #{tokens.$reading-text-primary};
+  --content-block-spacing: 1.3em;
+  --content-heading-spacing-top: 2.1em;
+  --content-heading-spacing-bottom: 0.72em;
 }
 
 .post-content-wrapper-preview {
-  --content-font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
-    "Microsoft YaHei", sans-serif;
-  --content-code-font-family: Consolas, Monaco, "Andale Mono", monospace;
-  --content-text-color: #222;
-  --content-muted-color: #666;
-  --content-line-height: 1.85;
-  --content-heading-color: #111;
-  --content-block-spacing: 1em;
-  --content-heading-spacing-top: 1.5em;
-  --content-heading-spacing-bottom: 0.8em;
+  --content-font-family: #{tokens.$reading-font-family};
+  --content-code-font-family: #{tokens.$reading-code-font-family};
+  --content-text-color: #{tokens.$reading-text-primary};
+  --content-muted-color: #{tokens.$reading-text-secondary};
+  --content-line-height: #{tokens.$reading-line-height-summary};
+  --content-heading-color: #{tokens.$reading-text-primary};
+  --content-block-spacing: 0.92em;
+  --content-heading-spacing-top: 1.35em;
+  --content-heading-spacing-bottom: 0.68em;
 }
 
 .post-content-wrapper-compact {
@@ -654,8 +653,8 @@ export default {
 
   :deep(.v-show-content) {
     p {
-      margin: 0.08em 0 0.22em;
-      line-height: 1.65;
+      margin: 0.1em 0 0.24em;
+      line-height: 1.7;
     }
 
     h1,
@@ -688,24 +687,24 @@ export default {
   margin-top: -2px;
   padding-top: 12px;
   color: #777;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: tokens.$reading-font-size-meta;
+  line-height: 1.55;
 
   .truncation-line {
     width: 24px;
     height: 1px;
-    background: #d9d9d9;
+    background: tokens.$reading-border;
     flex-shrink: 0;
   }
 
   .truncation-text {
-    color: #666;
+    color: tokens.$reading-text-secondary;
   }
 
   .truncation-cta {
-    color: #111;
+    color: tokens.$reading-text-primary;
     text-decoration: underline;
-    text-decoration-color: #d4d4d4;
+    text-decoration-color: tokens.$reading-border;
     text-underline-offset: 2px;
   }
 }
@@ -716,17 +715,17 @@ export default {
 
   .truncation-line {
     width: 32px;
-    background: #cfcfcf;
+    background: tokens.$reading-border;
   }
 
   .truncation-text {
-    color: #555;
-    font-weight: 500;
+    color: tokens.$reading-text-secondary;
+    font-weight: 400;
   }
 }
 
 .base {
-  font-size: 16px;
+  font-size: tokens.$reading-font-size-body;
   line-height: var(--content-line-height);
   letter-spacing: 0;
   color: var(--content-text-color);
@@ -761,28 +760,28 @@ export default {
     margin-top: var(--content-heading-spacing-top);
     margin-bottom: var(--content-heading-spacing-bottom);
     font-weight: 600;
-    line-height: 1.38;
-    letter-spacing: -0.01em;
+    line-height: 1.42;
+    letter-spacing: 0;
     color: var(--content-heading-color);
   }
 
   h1 {
-    font-size: 1.78em;
-    font-weight: 650;
+    font-size: 1.74em;
+    font-weight: 600;
     margin-top: 0;
-    margin-bottom: 1.05em;
+    margin-bottom: 0.95em;
     border-bottom: none;
     padding-bottom: 0;
   }
 
   h2 {
-    font-size: 1.4em;
+    font-size: 1.34em;
     border-bottom: none;
     padding-bottom: 0;
   }
 
   h3 {
-    font-size: 1.18em;
+    font-size: 1.14em;
   }
 
   h4,
@@ -817,15 +816,15 @@ export default {
   }
 
   li {
-    margin: 0.46em 0;
-    line-height: 1.88;
+    margin: 0.42em 0;
+    line-height: 1.84;
   }
 
   // 引用样式
   blockquote {
     padding: 0.2em 0 0.2em 1.15em;
     color: var(--content-muted-color);
-    border-left: 2px solid #d8d8d8;
+    border-left: 2px solid tokens.$reading-border;
     margin: 0 0 calc(var(--content-block-spacing) + 0.15em);
     background-color: transparent;
     border-radius: 0;
@@ -835,10 +834,10 @@ export default {
   pre {
     margin: 0 0 calc(var(--content-block-spacing) + 0.12em);
     border-radius: 0;
-    background-color: #f6f6f6 !important;
+    background-color: tokens.$reading-fill-soft !important;
     padding: 1.05em;
     overflow: auto;
-    border: 1px solid #ebebeb;
+    border: 1px solid tokens.$reading-border-code;
   }
 
   // 代码块内的 code 元素样式
@@ -856,11 +855,11 @@ export default {
   // 行内代码样式
   :not(pre) > code {
     font-family: var(--content-code-font-family);
-    background-color: #f4f4f4;
+    background-color: tokens.$reading-fill-soft;
     padding: 0.2em 0.4em;
     border-radius: 0;
     font-size: 0.9em;
-    color: #222;
+    color: tokens.$reading-text-primary;
   }
 
   // 图片样式
@@ -882,31 +881,31 @@ export default {
 
   th,
   td {
-    border: 1px solid #ddd;
+    border: 1px solid tokens.$reading-border;
     padding: 10px 12px;
   }
 
   th {
-    background-color: #f8f8f8;
+    background-color: tokens.$reading-fill-softer;
     font-weight: 600;
   }
 
   // 水平线
   hr {
     height: 1px;
-    background-color: #eee;
+    background-color: tokens.$reading-border;
     border: none;
     margin: calc(var(--content-block-spacing) + 0.35em) 0;
   }
 
   // 链接样式
   a {
-    color: #111;
+    color: tokens.$reading-text-primary;
     text-decoration: underline;
-    text-decoration-color: #d4d4d4;
+    text-decoration-color: tokens.$reading-border;
 
     &:hover {
-      text-decoration-color: #111;
+      text-decoration-color: tokens.$reading-text-primary;
     }
   }
 }
@@ -917,32 +916,26 @@ export default {
   }
 
   :deep(.v-show-content) {
-    font-size: 17px;
+    font-size: tokens.$reading-font-size-body;
 
     h1 {
-      font-size: 1.9em;
-      line-height: 1.3;
-      margin-bottom: 1.12em;
+      font-size: 1.78em;
+      line-height: 1.34;
+      margin-bottom: 1em;
     }
 
     h2 {
-      font-size: 1.46em;
-      margin-top: 2.5em;
-    }
-
-    h3 {
-      font-size: 1.22em;
+      font-size: 1.36em;
       margin-top: 2.15em;
     }
 
-    p,
-    li {
-      text-align: justify;
-      text-justify: inter-ideograph;
+    h3 {
+      font-size: 1.16em;
+      margin-top: 1.9em;
     }
 
     blockquote {
-      padding-left: 1.3em;
+      padding-left: 1.2em;
     }
   }
 
@@ -969,9 +962,9 @@ export default {
   padding: 0px 8px;
   font-size: 12px;
   background: #fff;
-  border: 1px solid #e5e5e5;
+  border: 1px solid tokens.$reading-border;
   border-radius: 0;
-  color: #222;
+  color: tokens.$reading-text-primary;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: var(--content-font-family);
@@ -980,7 +973,7 @@ export default {
   gap: 4px;
 
   &.copied {
-    color: #444;
+    color: tokens.$reading-text-secondary;
     cursor: default !important;
     pointer-events: none !important;
   }
@@ -995,10 +988,10 @@ export default {
   position: relative;
   margin: 0 !important;
   border-radius: 0;
-  background-color: #f6f6f6 !important;
+  background-color: tokens.$reading-fill-soft !important;
   padding: 1em !important;
   overflow: auto;
-  border: 1px solid #ebebeb;
+  border: 1px solid tokens.$reading-border-code;
 
   // 避免复制按钮挡住代码
   padding-top: 2.5em !important;
@@ -1058,19 +1051,19 @@ export default {
 @media (max-width: 768px) {
   .post-content-wrapper-detail {
     --content-line-height: 1.9;
-    --content-block-spacing: 1.28em;
-    --content-heading-spacing-top: 2.05em;
+    --content-block-spacing: 1.2em;
+    --content-heading-spacing-top: 1.9em;
 
     :deep(.v-show-content) {
       font-size: 15px;
 
       h1 {
-        font-size: 1.72em;
-        margin-bottom: 0.95em;
+        font-size: 1.68em;
+        margin-bottom: 0.88em;
       }
 
       h2 {
-        font-size: 1.34em;
+        font-size: 1.3em;
       }
     }
   }
@@ -1080,11 +1073,11 @@ export default {
       font-size: 14px;
 
       h1 {
-        font-size: 1.6em;
+        font-size: 1.52em;
       }
 
       h2 {
-        font-size: 1.4em;
+        font-size: 1.28em;
       }
     }
   }

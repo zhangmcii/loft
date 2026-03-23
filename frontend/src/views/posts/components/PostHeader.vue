@@ -163,6 +163,8 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+@use "./PostReadingTokens.scss" as tokens;
+
 .byline {
   margin: 0;
 }
@@ -176,65 +178,66 @@ export default {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  color: #6f6f6f;
+  color: tokens.$reading-text-tertiary;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .byline-name {
-  color: #1f1f1f;
+  color: tokens.$reading-text-primary;
   font-weight: 500;
   cursor: pointer;
 }
 
 .byline-separator,
 .byline-time {
-  color: #8a8a8a;
+  color: tokens.$reading-text-quaternary;
 }
 
 .byline-note {
-  margin-top: 4px;
-  color: #929292;
-  font-size: 11px;
-  line-height: 1.5;
+  margin-top: 6px;
+  color: tokens.$reading-text-quaternary;
+  font-size: tokens.$reading-font-size-meta;
+  line-height: 1.6;
   cursor: pointer;
 }
 
 .head {
-  min-height: 40px;
+  min-height: 42px;
   margin-bottom: 0;
 
   .user-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
 
     .el-avatar {
       cursor: pointer;
-      width: 28px;
-      height: 28px;
-      border: 1px solid #e9e9e9;
-      transition: opacity 0.2s ease;
+      width: 30px;
+      height: 30px;
+      border: 1px solid tokens.$reading-border;
+      transition: opacity 0.2s ease, border-color 0.2s ease;
 
       &:hover {
-        opacity: 0.75;
+        opacity: 0.92;
+        border-color: tokens.$reading-border-strong;
       }
     }
 
     .user-mata {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
 
       .nickname {
-        font-size: 14px;
+        font-size: tokens.$reading-font-size-author;
         font-weight: 500;
-        color: #141414;
-        line-height: 1.3;
+        color: tokens.$reading-text-primary;
+        line-height: 1.35;
 
         &:hover {
-          color: #141414;
+          color: tokens.$reading-text-primary;
         }
       }
 
@@ -242,15 +245,15 @@ export default {
         display: flex;
         align-items: center;
         gap: 4px;
-        font-size: 11px;
-        color: #7d7d7d;
+        font-size: tokens.$reading-font-size-caption;
+        color: tokens.$reading-text-quaternary;
       }
     }
   }
 
   .head-time {
     margin-right: 1px;
-    color: #7d7d7d;
+    color: tokens.$reading-text-quaternary;
     letter-spacing: 0.02em;
   }
 }
@@ -274,14 +277,14 @@ export default {
       }
 
       .music {
-        font-size: 10px;
+        font-size: tokens.$reading-font-size-caption;
       }
     }
   }
 
   .head-time {
-    font-size: 11px;
-    color: #8a8a8a;
+    font-size: tokens.$reading-font-size-caption;
+    color: tokens.$reading-text-quaternary;
   }
 }
 
@@ -291,7 +294,7 @@ export default {
   }
 
   .byline-note {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 </style>

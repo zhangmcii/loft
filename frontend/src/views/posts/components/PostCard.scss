@@ -1,18 +1,29 @@
+@use "./PostReadingTokens.scss" as tokens;
+
 .post-card {
   margin-bottom: 0;
-  padding: 0 0 30px;
+  padding: 0 0 26px;
   background: #fff;
   position: relative;
   border: none;
-  border-bottom: 1px solid #ececec;
+  border-bottom: 1px solid tokens.$reading-border;
+  transition: border-color 0.2s ease;
+
+  & + .post-card {
+    padding-top: 26px;
+  }
+
+  &:hover {
+    border-bottom-color: tokens.$reading-border-strong;
+  }
 
   .head {
-    margin-bottom: 18px;
+    margin-bottom: 12px;
 
     .head-time {
       padding: 0;
-      font-size: 12px;
-      color: #7a7a7a;
+      font-size: tokens.$reading-font-size-meta;
+      color: tokens.$reading-text-quaternary;
     }
   }
 
@@ -24,15 +35,15 @@
     }
 
     :deep(.v-show-content) {
-      font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
-        "Microsoft YaHei", sans-serif;
-      line-height: 1.8;
-      color: #202020;
+      font-family: tokens.$reading-font-family;
+      font-size: tokens.$reading-font-size-summary;
+      line-height: tokens.$reading-line-height-summary;
+      color: tokens.$reading-text-primary;
     }
   }
 
   .container {
-    margin: 18px 0 0;
+    margin: 16px 0 0;
 
     .preview {
       border-radius: 0;
@@ -41,8 +52,8 @@
   }
 
   .footer {
-    margin-top: 18px;
-    padding-top: 0;
+    margin-top: 16px;
+    padding-top: 2px;
     border-top: none;
 
     .van-icon {
@@ -52,7 +63,7 @@
 
     .el-text {
       font-size: 12px;
-      color: #707070;
+      color: tokens.$reading-text-tertiary;
     }
   }
 
@@ -62,14 +73,14 @@
 }
 
 .post-card-short {
-  padding-bottom: 16px;
+  padding-bottom: 22px;
 
   .head {
     margin-bottom: 8px;
 
     .head-time {
-      font-size: 11px;
-      color: #8a8a8a;
+      font-size: tokens.$reading-font-size-caption;
+      color: tokens.$reading-text-quaternary;
     }
   }
 
@@ -77,9 +88,9 @@
     margin-bottom: 0;
 
     :deep(.v-show-content) {
-      font-size: 18px;
-      line-height: 1.65;
-      color: #141414;
+      font-size: tokens.$reading-font-size-summary-compact;
+      line-height: tokens.$reading-line-height-summary-compact;
+      color: tokens.$reading-text-primary;
 
       p {
         margin: 0.08em 0 0.22em;
@@ -88,8 +99,8 @@
   }
 
   .footer {
-    margin-top: 8px;
-    color: #7a7a7a;
+    margin-top: 12px;
+    color: tokens.$reading-text-tertiary;
   }
 }
 
@@ -108,7 +119,7 @@
 .praise-leave-from {
   transform: scale(1) rotate(0);
   opacity: 1;
-  color: #111;
+  color: tokens.$reading-text-primary;
 }
 
 .posts-container {
@@ -117,24 +128,24 @@
   .posts-list {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 0;
   }
 }
 
 @media (min-width: 768px) {
   .post-card {
     .container {
-      margin-top: 20px;
+      margin-top: 18px;
     }
   }
 
   .post-card-short {
-    padding-bottom: 18px;
+    padding-bottom: 24px;
 
     .text {
       :deep(.v-show-content) {
-        font-size: 19px;
-        line-height: 1.68;
+        font-size: tokens.$reading-font-size-summary-compact;
+        line-height: tokens.$reading-line-height-summary-compact;
       }
     }
   }

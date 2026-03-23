@@ -57,7 +57,7 @@ body {
 }
 
 .el-header {
-  height: 45px;
+  height: 56px;
   padding: 0;
 }
 
@@ -72,6 +72,6 @@ body {
 
 .el-divider--horizontal {
   height: 0;
-  margin: 2px 0 0;
+  margin: 0;
 }
 </style>

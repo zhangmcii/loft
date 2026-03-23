@@ -1,5 +1,8 @@
 <template>
-  <div class="markdown-editor">
+  <div
+    class="markdown-editor"
+    :style="{ '--markdown-min-height': editorMinHeight }"
+  >
     <mavon-editor
       ref="mavonEditor"
       v-model="markdown"
@@ -34,6 +37,10 @@ export default {
       type: String,
       default: () => "",
     },
+    minHeight: {
+      type: Number,
+      default: 620,
+    },
   },
   components: {
     mavonEditor,
@@ -58,6 +65,11 @@ export default {
   },
   mounted() {
     this.markdown = this.bodyInit || "";
+  },
+  computed: {
+    editorMinHeight() {
+      return `${this.minHeight}px`;
+    },
   },
   methods: {
     async handleImageUpload(pos, file) {
@@ -120,4 +132,70 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+@use "@/views/posts/components/PostReadingTokens.scss" as tokens;
+
+.markdown-editor {
+  min-height: var(--markdown-min-height);
+
+  :deep(.v-note-wrapper) {
+    min-height: var(--markdown-min-height);
+    border: 1px solid tokens.$reading-border;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  :deep(.v-note-op) {
+    background: tokens.$reading-fill-softer;
+    border-bottom: 1px solid tokens.$reading-border;
+  }
+
+  :deep(.v-note-panel) {
+    min-height: calc(var(--markdown-min-height) - 48px);
+  }
+
+  :deep(.v-note-edit.divarea-wrapper),
+  :deep(.v-note-show) {
+    min-height: calc(var(--markdown-min-height) - 48px);
+  }
+
+  :deep(.content-input),
+  :deep(.v-show-content) {
+    min-height: calc(var(--markdown-min-height) - 80px);
+    font-family: tokens.$reading-font-family;
+    font-size: tokens.$reading-font-size-body;
+    line-height: tokens.$reading-line-height-body;
+    color: tokens.$reading-text-primary;
+  }
+
+  :deep(.content-input) {
+    padding: 18px 20px;
+  }
+
+  :deep(.v-show-content) {
+    padding: 18px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .markdown-editor {
+    min-height: min(var(--markdown-min-height), 560px);
+
+    :deep(.v-note-wrapper) {
+      min-height: min(var(--markdown-min-height), 560px);
+    }
+
+    :deep(.v-note-panel),
+    :deep(.v-note-edit.divarea-wrapper),
+    :deep(.v-note-show) {
+      min-height: 500px;
+    }
+
+    :deep(.content-input),
+    :deep(.v-show-content) {
+      min-height: 420px;
+      font-size: 15px;
+    }
+  }
+}
+</style>
