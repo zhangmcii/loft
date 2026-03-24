@@ -25,7 +25,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div class="about-page">
         <!-- 头部区域 -->
         <div class="about-header">
@@ -61,7 +61,7 @@ export default {
 
 <style lang="scss" scoped>
 .about-page {
-  min-height: calc(100vh - 45px - 47px);
+  min-height: calc(100vh - var(--app-header-height));
   background-color: #fff;
   display: flex;
   flex-direction: column;

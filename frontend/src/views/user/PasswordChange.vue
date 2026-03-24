@@ -185,7 +185,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div v-if="isCheckingFreshness" class="loading-state"></div>
 
       <div v-else class="password-change-container">

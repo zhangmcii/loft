@@ -110,7 +110,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div class="email-binding-container">
         <div class="email-header">
           <div class="email-icon">

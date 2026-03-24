@@ -170,7 +170,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <!-- 加载状态 -->
       <div v-if="isCheckingFreshness" class="loading-state"></div>
 

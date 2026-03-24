@@ -160,7 +160,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <van-tabs
         v-model:active="action"
         @click-tab="onClickTab"

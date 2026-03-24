@@ -126,7 +126,7 @@ async function submitdata() {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <van-tabs v-model:active="active" animated>
         <van-tab title="手机端壁纸" name="mobile" class="tab tab-mobile">
           <!-- 图片 -->

@@ -6,6 +6,7 @@ import postApi from "@/api/posts/postApi.js";
 import uploadApi from "@/api/upload/uploadApi.js";
 import emitter from "@/utils/emitter.js";
 import { useCurrentUserStore } from "@/stores/user";
+import { useComposeDraftStore } from "@/stores/composeDraft";
 import {
   compressImages,
   uploadFiles,
@@ -13,6 +14,7 @@ import {
 } from "@/utils/common.js";
 
 export default {
+  name: "PostCompose",
   components: {
     PageScroll,
     MarkdownEditor,
@@ -36,14 +38,18 @@ export default {
         images: [],
         type: "markdown",
       },
+      restoredDraftMessage: "",
       previewVisible: false,
       previewUrl: "",
       assistExpanded: false,
+      draftSaveTimer: null,
+      draftHydrating: false,
     };
   },
   setup() {
     const currentUser = useCurrentUserStore();
-    return { currentUser };
+    const composeDraftStore = useComposeDraftStore();
+    return { currentUser, composeDraftStore };
   },
   computed: {
     submitLabel() {
@@ -112,17 +118,35 @@ export default {
     $route(to) {
       this.initializePage(to);
     },
+    mode() {
+      this.scheduleDraftPersist();
+    },
+    textContent() {
+      this.scheduleDraftPersist();
+    },
+    imageContent() {
+      this.scheduleDraftPersist();
+    },
+    "markdownContent.content"() {
+      this.scheduleDraftPersist();
+    },
+  },
+  beforeUnmount() {
+    this.flushDraftPersist();
+    this.clearDraftPersistTimer();
   },
   methods: {
     initializePage(route) {
       this.postId = route.params.id ? Number(route.params.id) : null;
       this.isEdit = Boolean(this.postId);
       this.mode = route.query.mode || "text";
+      this.restoredDraftMessage = "";
       this.resetDraft();
       if (this.isEdit) {
         this.fetchPost();
       } else {
         this.originalSnapshot = this.currentSnapshot();
+        this.restoreDraftIfAvailable();
       }
     },
     async fetchPost() {
@@ -151,6 +175,7 @@ export default {
             );
           }
           this.originalSnapshot = this.currentSnapshot();
+          this.restoreDraftIfAvailable();
         } else {
           ElMessage.error(res.message || "获取内容失败");
         }
@@ -189,6 +214,7 @@ export default {
           ? await postApi.editPost(this.postId, payload)
           : await postApi.publish_post(payload);
         if (res.code === 200) {
+          this.clearDraftStorage();
           ElMessage.success(this.isEdit ? "保存成功" : "发布成功");
           if (this.isEdit) {
             this.$router.push(`/postDetail/${this.postId}`);
@@ -263,6 +289,152 @@ export default {
       const response = await uploadApi.get_upload_token();
       return response.data.upload_token;
     },
+    draftUserId() {
+      return this.currentUser?.userInfo?.id || "guest";
+    },
+    newDraftStorageKeys() {
+      const userId = this.draftUserId();
+      return ["text", "image", "markdown"].map((mode) =>
+        this.composeDraftStore.getNewDraftKey(userId, mode)
+      );
+    },
+    draftStorageKey() {
+      const userId = this.draftUserId();
+      if (this.isEdit && this.postId) {
+        return this.composeDraftStore.getEditDraftKey(userId, this.postId);
+      }
+      return this.composeDraftStore.getNewDraftKey(userId, this.mode);
+    },
+    currentDraftPayload() {
+      return {
+        mode: this.mode,
+        textContent: this.textContent,
+        imageContent: this.imageContent,
+        markdownContent: this.markdownContent.content,
+        updatedAt: Date.now(),
+      };
+    },
+    hasDraftContent(payload) {
+      if (!payload) return false;
+      return Boolean(
+        payload.textContent?.trim() ||
+          payload.imageContent?.trim() ||
+          payload.markdownContent?.trim()
+      );
+    },
+    scheduleDraftPersist() {
+      if (this.loading || this.submitting || this.draftHydrating) {
+        return;
+      }
+      this.clearDraftPersistTimer();
+      this.draftSaveTimer = window.setTimeout(() => {
+        this.persistDraft();
+      }, 280);
+    },
+    clearDraftPersistTimer() {
+      if (this.draftSaveTimer) {
+        window.clearTimeout(this.draftSaveTimer);
+        this.draftSaveTimer = null;
+      }
+    },
+    flushDraftPersist() {
+      this.clearDraftPersistTimer();
+      this.persistDraft();
+    },
+    persistDraft() {
+      if (this.loading || this.submitting || this.draftHydrating) {
+        return;
+      }
+      const payload = this.currentDraftPayload();
+      const key = this.draftStorageKey();
+      if (!this.hasDraftContent(payload)) {
+        this.composeDraftStore.removeDraft(key);
+        return;
+      }
+      if (!this.isEdit) {
+        this.newDraftStorageKeys()
+          .filter((draftKey) => draftKey !== key)
+          .forEach((draftKey) => this.composeDraftStore.removeDraft(draftKey));
+      }
+      this.composeDraftStore.saveDraft(key, payload);
+    },
+    restoreNewestNewDraft() {
+      let newestDraft = null;
+      let newestKey = "";
+
+      this.newDraftStorageKeys().forEach((draftKey) => {
+        const draft = this.composeDraftStore.getDraft(draftKey);
+        if (!draft) return;
+        if (!this.hasDraftContent(draft)) {
+          this.composeDraftStore.removeDraft(draftKey);
+          return;
+        }
+        if (
+          !newestDraft ||
+          (draft.updatedAt || 0) > (newestDraft.updatedAt || 0)
+        ) {
+          newestDraft = draft;
+          newestKey = draftKey;
+        }
+      });
+
+      return { newestDraft, newestKey };
+    },
+    restoreDraftIfAvailable() {
+      let draft = null;
+      let draftKey = this.draftStorageKey();
+
+      if (this.isEdit) {
+        draft = this.composeDraftStore.getDraft(draftKey);
+        if (!draft) {
+          return;
+        }
+      } else {
+        const restored = this.restoreNewestNewDraft();
+        draft = restored.newestDraft;
+        draftKey = restored.newestKey;
+      }
+
+      if (!draft) {
+        return;
+      }
+
+      try {
+        if (!this.hasDraftContent(draft)) {
+          this.composeDraftStore.removeDraft(draftKey);
+          return;
+        }
+        this.draftHydrating = true;
+        if (!this.isEdit && draft.mode) {
+          this.mode = draft.mode;
+        }
+        this.textContent = draft.textContent || "";
+        this.imageContent = draft.imageContent || "";
+        this.markdownContent = {
+          ...this.markdownContent,
+          content: draft.markdownContent || "",
+        };
+        this.restoredDraftMessage = this.isEdit
+          ? "已恢复未保存修改"
+          : "已恢复上次草稿";
+      } catch {
+        this.composeDraftStore.removeDraft(draftKey);
+      } finally {
+        this.$nextTick(() => {
+          this.draftHydrating = false;
+        });
+      }
+    },
+    clearDraftStorage() {
+      if (this.isEdit) {
+        this.composeDraftStore.removeDraft(this.draftStorageKey());
+      } else {
+        this.newDraftStorageKeys().forEach((draftKey) =>
+          this.composeDraftStore.removeDraft(draftKey)
+        );
+      }
+      this.restoredDraftMessage = "";
+    },
     currentSnapshot() {
       if (this.mode === "markdown") {
         return JSON.stringify({
@@ -293,6 +465,7 @@ export default {
         images: [],
         type: "markdown",
       };
+      this.restoredDraftMessage = "";
       this.assistExpanded = false;
     },
   },
@@ -300,7 +473,7 @@ export default {
 </script>
 
 <template>
-  <PageScroll max-height="calc(100vh - 45px - 47px)">
+  <PageScroll max-height="calc(100vh - var(--app-header-height))">
     <div class="compose-page">
       <header class="compose-topbar">
         <button
@@ -327,6 +500,10 @@ export default {
           </el-button>
         </div>
       </header>
+
+      <p v-if="restoredDraftMessage" class="compose-draft-note">
+        {{ restoredDraftMessage }}
+      </p>
 
       <div class="compose-shell">
         <nav class="compose-modes">
@@ -523,9 +700,14 @@ export default {
 }
 
 .compose-submit {
+  min-height: 32px;
+  padding: 0 14px;
   border-color: tokens.$reading-text-primary;
+  border-radius: 999px;
   background: tokens.$reading-text-primary;
   color: #fff;
+  font-size: 13px;
+  line-height: 1;
 
   &:hover,
   &:focus,
@@ -544,10 +726,21 @@ export default {
   &.is-disabled,
   &.is-disabled:hover,
   &.is-disabled:focus {
-    border-color: #d7d7d7;
-    background: #d7d7d7;
-    color: #8a8a8a;
+    border-color: tokens.$reading-border;
+    background: transparent;
+    color: tokens.$reading-text-quaternary;
   }
+
+  :deep(.el-icon) {
+    font-size: 13px;
+  }
+}
+
+.compose-draft-note {
+  margin: -8px 0 20px;
+  font-size: 12px;
+  color: tokens.$reading-text-tertiary;
+  letter-spacing: 0.02em;
 }
 
 .compose-shell {

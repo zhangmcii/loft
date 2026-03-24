@@ -96,7 +96,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <h1>编辑</h1>
       <h4>你在想什么？</h4>
       <MarkdownEditor

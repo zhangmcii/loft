@@ -17,7 +17,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div class="legal-content">
         <h1 class="page-title">隐私政策</h1>
         <p class="last-updated">最后更新时间：{{ lastUpdated }}</p>

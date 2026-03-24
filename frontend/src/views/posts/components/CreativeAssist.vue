@@ -1,8 +1,8 @@
 <template>
   <div class="creative-assist">
-    <div class="assist-header">
+    <!-- <div class="assist-header">
       <span class="assist-hint">🙂 没灵感？</span>
-    </div>
+    </div> -->
     <div class="assist-buttons">
       <el-button
         size="small"
@@ -75,10 +75,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@use "./PostReadingTokens.scss" as tokens;
+
 .creative-assist {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   padding: 12px 0 0;
   background: transparent;
@@ -100,16 +102,24 @@ export default {
       height: auto;
       padding: 4px 10px;
       font-size: 12px;
-      color: #666;
-      background: transparent;
-      border: 1px solid #e0e0e0;
+      color: tokens.$reading-text-secondary;
+      background: #fff;
+      border: 1px solid tokens.$reading-border;
       border-radius: 999px;
-      transition: all 0.2s;
+      box-shadow: none;
+      transition: color 0.2s ease, border-color 0.2s ease,
+        background-color 0.2s ease;
 
       &:hover:not(:disabled) {
-        background: #fff;
-        border-color: #111;
-        color: #111;
+        background: tokens.$reading-fill-softer;
+        border-color: tokens.$reading-border-strong;
+        color: tokens.$reading-text-primary;
+      }
+
+      &:disabled {
+        background: transparent;
+        border-color: tokens.$reading-border;
+        color: tokens.$reading-text-quaternary;
       }
     }
   }

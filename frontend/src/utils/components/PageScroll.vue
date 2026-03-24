@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onActivated, onMounted } from "vue";
-import { useRoute } from "vue-router";
 
 const props = defineProps({
   maxHeight: {
@@ -11,11 +10,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  noPadding: {
+    type: Boolean,
+    default: false,
+  },
 });
-
-const route = useRoute();
-// 判断是否为 用户资料页面
-const noPadding = computed(() => route.name === "user");
 
 const scrollbarRef = ref();
 const scrollTop = ref(0);

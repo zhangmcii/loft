@@ -96,7 +96,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div class="password-reset-container">
         <div class="reset-header">
           <div class="reset-icon">

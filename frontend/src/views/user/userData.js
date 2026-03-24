@@ -36,15 +36,17 @@ export default {
       user: null,
       posts: [],
       currentPage: 1,
-      posts_count: 0,
+      posts_count: -1,
       loading: {
         userData: true,
         follow: false,
         switch: false,
+        more: false,
       },
       dialogShow: false,
       contentLoaded: false,
       isMobileDevice: false,
+      noPadding: true,
     };
   },
   setup() {
@@ -122,6 +124,13 @@ export default {
         (value) => value === "" || value === null || value === undefined
       );
     },
+    noMore() {
+      if (this.posts_count < 0) return false;
+      return this.posts.length >= this.posts_count;
+    },
+    infiniteDisabled() {
+      return this.loading.userData || this.loading.switch || this.loading.more;
+    },
   },
   // 当从A资料跳转B资料时，更新资料页面
   created() {
@@ -137,6 +146,10 @@ export default {
           this.isUserPage = true;
           // 重置加载状态
           this.user = null;
+          this.posts = [];
+          this.currentPage = 1;
+          this.posts_count = -1;
+          this.loading.more = false;
           this.loading.userData = true;
           this.contentLoaded = false;
           this.getUser();
@@ -179,9 +192,11 @@ export default {
       const root = document.documentElement;
       if (this.isUserPage) {
         this.setMainProperty();
+        this.noPadding = true;
       } else {
         root.style.setProperty("--leleo-background-image-url", `none`);
         root.style.setProperty("background-color", "#fff");
+        this.noPadding = false;
       }
     },
     async beforeSwitch() {
@@ -190,7 +205,12 @@ export default {
         return true;
       }
       this.loading.switch = true;
-      await this.getPosts(this.$route.params.userName, 1);
+      this.posts = [];
+      this.currentPage = 1;
+      this.posts_count = -1;
+      await this.fetchUserPosts(this.$route.params.userName, 1, {
+        append: false,
+      });
       this.loading.switch = false;
       return true;
     },
@@ -268,25 +288,54 @@ export default {
           console.error(err);
         });
     },
-    async getPosts(userName, page) {
-      await userApi
-        .getPosts(userName, page)
-        .then((res) => {
-          // 适配新的统一接口返回格式
-          if (res.code === 200) {
-            // 新格式
-            this.posts = res.data.posts || res.data;
-            this.posts_count = res.total || 0;
-          } else if (res.data) {
-            // 兼容旧格式
-            this.posts = res.data.posts;
-            this.posts_count = res.data.total;
-          }
-        })
-        .catch((error) => {
-          console.error("获取用户文章失败", error);
-          ElMessage.error("获取用户文章失败，请稍后重试");
-        });
+    async fetchUserPosts(userName, page, { append = false } = {}) {
+      const loadingKey = append ? "more" : "userData";
+      this.loading[loadingKey] = true;
+      try {
+        const ok = await userApi
+          .getPosts(userName, page)
+          .then((res) => {
+            // 适配新的统一接口返回格式
+            if (res.code === 200) {
+              // 新格式
+              const list = res.data.posts || res.data || [];
+              this.posts = append ? [...this.posts, ...list] : list;
+              this.posts_count = res.total || 0;
+              return true;
+            } else if (res.data) {
+              // 兼容旧格式
+              const list = res.data.posts || [];
+              this.posts = append ? [...this.posts, ...list] : list;
+              this.posts_count = res.data.total;
+              return true;
+            }
+            return false;
+          })
+          .catch((error) => {
+            console.error("获取用户文章失败", error);
+            ElMessage.error("获取用户文章失败，请稍后重试");
+            return false;
+          });
+        return ok;
+      } finally {
+        this.loading[loadingKey] = false;
+      }
+    },
+    async loadMoreUserPosts() {
+      if (this.isUserPage || this.infiniteDisabled || this.noMore) {
+        return;
+      }
+      const nextPage = this.currentPage + 1;
+      const ok = await this.fetchUserPosts(
+        this.$route.params.userName,
+        nextPage,
+        {
+          append: true,
+        }
+      );
+      if (ok) {
+        this.currentPage = nextPage;
+      }
     },
     editProfile() {
       this.$router.push(`/editProfile`);
@@ -348,9 +397,6 @@ export default {
     followedDetail() {
       const f = "followed";
       this.$router.push(`/follow/${f}/${this.user.username}`);
-    },
-    handleCurrentChange() {
-      this.getPosts(this.$route.params.userName, this.currentPage);
     },
     openChat() {
       if (!this.currentUser.isLogin) {

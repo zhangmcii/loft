@@ -298,7 +298,7 @@ const calTableHeight = async () => {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <!-- 统一卡片容器 -->
       <el-card class="music-container" shadow="hover">
         <!-- 卡片头部：搜索和已选择区域 -->

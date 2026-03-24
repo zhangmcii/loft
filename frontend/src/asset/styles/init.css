@@ -10,3 +10,7 @@ body {
   padding: 0;
   width: 100%;
 }
+
+:root {
+  --app-header-height: 56px;
+}

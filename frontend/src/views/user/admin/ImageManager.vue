@@ -1,6 +1,8 @@
 <template>
   <div class="container">
-    <PageScroll max-height="calc(100vh - 45px - 40px - 60px)">
+    <PageScroll
+      max-height="calc(100vh - var(--app-header-height) - 40px - 60px)"
+    >
       <!-- 功能标签页 -->
       <el-tabs
         v-model="activeTab"

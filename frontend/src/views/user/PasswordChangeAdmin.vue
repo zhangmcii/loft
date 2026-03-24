@@ -88,7 +88,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <h1>找回其他用户密码</h1>
       <el-form
         :model="form"

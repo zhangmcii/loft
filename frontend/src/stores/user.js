@@ -15,6 +15,7 @@ import {
   isTokenExpired,
   refreshAccessToken,
 } from "@/utils/tokenService.js";
+import { useComposeDraftStore } from "./composeDraft.js";
 
 export const useCurrentUserStore = defineStore("currentUser", {
   state: () => ({
@@ -165,6 +166,8 @@ export const useCurrentUserStore = defineStore("currentUser", {
       localStorage.removeItem("blogOtherUser");
     },
     logOut() {
+      const composeDraftStore = useComposeDraftStore();
+      composeDraftStore.clearUserDrafts(this.userInfo.id || "guest");
       this.cleanup();
       this.clearLocalData();
       this.$reset();

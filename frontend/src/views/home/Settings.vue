@@ -1,6 +1,6 @@
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div class="settings-content">
         <!-- 未设置密码提示横幅 -->
         <el-alert

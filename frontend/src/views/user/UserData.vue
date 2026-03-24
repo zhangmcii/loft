@@ -8,7 +8,6 @@
       @back="$router.back()"
       title="返回"
     />
-
     <el-switch
       v-model="isUserPage"
       :loading="loading.switch"
@@ -20,7 +19,11 @@
       @change="handleSwitchChange"
       :before-change="beforeSwitch"
     />
-    <PageScroll class="area-container" max-height="calc(100vh - 45px - 47px)">
+    <PageScroll
+      class="area-container"
+      max-height="calc(100vh - var(--app-header-height))"
+      :no-padding="noPadding"
+    >
       <div class="avatar" style="margin-top: 1rem">
         <music-player
           :avatar="user?.image || ''"
@@ -155,7 +158,16 @@
         <div class="bottom"></div>
       </div>
       <!-- 文章区  -->
-      <div v-show="!isUserPage" class="posts-container">
+
+      <div
+        v-show="!isUserPage"
+        class="posts-container"
+        v-infinite-scroll="loadMoreUserPosts"
+        :infinite-scroll-delay="200"
+        :infinite-scroll-distance="160"
+        :infinite-scroll-disabled="infiniteDisabled || loading.userData"
+        :infinite-scroll-immediate="false"
+      >
         <SkeletonUtil
           :loading="loading.userData"
           :row="5"
@@ -174,20 +186,17 @@
               <PostImage :postImages="item.post_images" @click.stop="" />
             </template>
           </PostPreview>
-          <el-pagination
-            v-model:current-page="currentPage"
-            :page-size="10"
-            layout="total, prev, pager, next"
-            :total="posts_count"
-            @current-change="handleCurrentChange"
-            :hide-on-single-page="true"
-            :pager-count="5"
-          />
           <el-empty
             :image-size="200"
             description="生活总归带点荒谬"
-            v-if="posts.length === 0"
+            v-if="posts.length === 0 && !loading.userData"
           />
+          <div class="posts-infinite-footer">
+            <div v-if="loading.more" class="posts-loading">加载中...</div>
+            <div v-else-if="noMore && posts.length" class="posts-end">
+              已经到底了～
+            </div>
+          </div>
         </SkeletonUtil>
       </div>
       <div class="block" v-if="!isCurrentUser"></div>
@@ -465,6 +474,33 @@
 
   .posts-container {
     margin: 0 20px;
+  }
+
+  .posts-infinite-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 32px;
+    padding: 4px 0 20px;
+    color: rgba(24, 33, 49, 0.48);
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+  }
+
+  .posts-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+
+    &::before {
+      content: "·";
+      margin-right: 6px;
+    }
+  }
+
+  .posts-end {
+    color: rgba(24, 33, 49, 0.56);
   }
 
   .block {

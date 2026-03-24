@@ -77,7 +77,7 @@ export default {
 
 <template>
   <PageHeadBack>
-    <PageScroll max-height="calc(100vh - 45px - 47px)">
+    <PageScroll max-height="calc(100vh - var(--app-header-height))">
       <div class="page-head">
         <el-text>各分类下最多展示3张图片</el-text>
         <Transition>

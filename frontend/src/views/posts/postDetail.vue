@@ -357,7 +357,10 @@ export default {
 </script>
 
 <template>
-  <PageScroll ref="pageScrollRef" max-height="calc(100vh - 45px - 47px)">
+  <PageScroll
+    ref="pageScrollRef"
+    max-height="calc(100vh - var(--app-header-height))"
+  >
     <div class="post-detail-shell">
       <button
         type="button"

@@ -163,7 +163,7 @@ export default {
 </script>
 
 <template>
-  <PageScroll max-height="calc(100vh - 45px - 5px)">
+  <PageScroll max-height="calc(100vh - var(--app-header-height))">
     <div
       class="posts-container"
       v-infinite-scroll="loadMore"
