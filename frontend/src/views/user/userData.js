@@ -69,12 +69,7 @@ export default {
         : "";
     },
     from_now() {
-      if (!this.user || !this.user.last_seen) return "";
-      // 防止上线时间与当前时间过于接近而显示"几秒后"
-      const time = dayjs(this.user.last_seen)
-        .subtract(5, "second")
-        .format("YYYY-MM-DD HH:mm:ss");
-      return date.dateShow(time);
+      return date.dateShow(this.user.last_seen);
     },
     isCurrentUser() {
       return this.$route.params.userName == this.currentUser.userInfo.username;

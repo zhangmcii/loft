@@ -39,11 +39,13 @@ export default {
         type: "markdown",
       },
       restoredDraftMessage: "",
+      restoredDraftMode: "",
       previewVisible: false,
       previewUrl: "",
       assistExpanded: false,
       draftSaveTimer: null,
       draftHydrating: false,
+      draftPersistLocked: false,
     };
   },
   setup() {
@@ -108,6 +110,13 @@ export default {
         { key: "markdown", label: "Markdown" },
       ];
     },
+    visibleRestoredDraftMessage() {
+      if (!this.restoredDraftMessage) return "";
+      if (this.isEdit) return this.restoredDraftMessage;
+      return this.restoredDraftMode === this.mode
+        ? this.restoredDraftMessage
+        : "";
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -132,8 +141,11 @@ export default {
     },
   },
   beforeUnmount() {
-    this.flushDraftPersist();
-    this.clearDraftPersistTimer();
+    if (!this.draftPersistLocked) {
+      this.flushDraftPersist();
+    } else {
+      this.clearDraftPersistTimer();
+    }
   },
   methods: {
     initializePage(route) {
@@ -141,6 +153,7 @@ export default {
       this.isEdit = Boolean(this.postId);
       this.mode = route.query.mode || "text";
       this.restoredDraftMessage = "";
+      this.restoredDraftMode = "";
       this.resetDraft();
       if (this.isEdit) {
         this.fetchPost();
@@ -208,6 +221,7 @@ export default {
     async submit() {
       if (!this.canSubmit) return;
       this.submitting = true;
+      this.clearDraftPersistTimer();
       try {
         const payload = await this.buildPayload();
         const res = this.isEdit
@@ -215,15 +229,21 @@ export default {
           : await postApi.publish_post(payload);
         if (res.code === 200) {
           this.clearDraftStorage();
+          // 避免路由跳转后 beforeUnmount 再次把当前内容写回草稿
+          this.draftPersistLocked = true;
           ElMessage.success(this.isEdit ? "保存成功" : "发布成功");
           if (this.isEdit) {
-            this.$router.push(`/postDetail/${this.postId}`);
+            void this.$router
+              .push(`/postDetail/${this.postId}`)
+              .catch(() => (this.draftPersistLocked = false));
           } else {
             emitter.emit("newPostList", {
               list: Array.isArray(res.data) ? res.data : [],
               total: typeof res.total === "number" ? res.total : undefined,
             });
-            this.$router.push("/posts");
+            void this.$router
+              .push("/posts")
+              .catch(() => (this.draftPersistLocked = false));
           }
         } else {
           ElMessage.error(
@@ -414,6 +434,7 @@ export default {
           ...this.markdownContent,
           content: draft.markdownContent || "",
         };
+        this.restoredDraftMode = draft.mode || this.mode;
         this.restoredDraftMessage = this.isEdit
           ? "已恢复未保存修改"
           : "已恢复上次草稿";
@@ -434,6 +455,7 @@ export default {
         );
       }
       this.restoredDraftMessage = "";
+      this.restoredDraftMode = "";
     },
     currentSnapshot() {
       if (this.mode === "markdown") {
@@ -466,6 +488,7 @@ export default {
         type: "markdown",
       };
       this.restoredDraftMessage = "";
+      this.restoredDraftMode = "";
       this.assistExpanded = false;
     },
   },
@@ -501,8 +524,8 @@ export default {
         </div>
       </header>
 
-      <p v-if="restoredDraftMessage" class="compose-draft-note">
-        {{ restoredDraftMessage }}
+      <p v-if="visibleRestoredDraftMessage" class="compose-draft-note">
+        {{ visibleRestoredDraftMessage }}
       </p>
 
       <div class="compose-shell">

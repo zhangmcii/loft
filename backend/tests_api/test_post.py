@@ -73,3 +73,32 @@ class TestApiCase:
         data = r.json.get("data")
         assert "测试markdown文章" in data[0].get("summary")
         assert "1" in data[0].get("pos")
+
+    def test_search_posts(self, client, auth):
+        auth_instance = auth()
+        register_response = auth_instance.register()
+        assert register_response.status_code == 200
+
+        login_response = auth_instance.login()
+        assert login_response.status_code == 200
+
+        client.post(
+            self.pre_fix + "/posts",
+            headers=auth_instance.get_headers(),
+            json={"content": "Flask 搜索设计实践", "type": "text", "images": []},
+        )
+        client.post(
+            self.pre_fix + "/posts",
+            headers=auth_instance.get_headers(),
+            json={"content": "Vue 组件交互记录", "type": "text", "images": []},
+        )
+
+        response = client.get(
+            self.pre_fix + "/posts/search",
+            query_string={"q": "搜索"},
+            headers=auth_instance.get_headers(),
+        )
+        assert response.status_code == 200
+        assert response.json.get("code") == 200
+        assert response.json.get("total") == 1
+        assert "搜索" in response.json.get("data")[0].get("summary")

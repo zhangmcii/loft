@@ -14,6 +14,16 @@ export default {
     return $http.get(`${url_prefix}/posts`, { params: params });
   },
 
+  searchPosts(page, keyword) {
+    let params = {};
+    params["page"] = page;
+    params["q"] = keyword;
+    if (!/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+      params["per_page"] = 9;
+    }
+    return $http.get(`${url_prefix}/posts/search`, { params: params });
+  },
+
   // 发布文章
   publish_post(post) {
     return $http.post(`${url_prefix}/posts`, post);

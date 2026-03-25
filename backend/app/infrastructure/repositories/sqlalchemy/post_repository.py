@@ -1,4 +1,5 @@
-from sqlalchemy import func
+from sqlalchemy import func, or_
+from sqlalchemy.dialects.mysql import match
 from sqlalchemy.orm import joinedload
 
 from ....domain.common.repositories import PageEntities
@@ -57,6 +58,18 @@ class SqlAlchemyPostRepository(PostRepository):
         ).order_by(Post.timestamp.desc())
         paginate = query.paginate(page=page, per_page=per_page, error_out=False)
         return PageEntities(items=paginate.items, total=paginate.total)
+
+    def search_posts(
+        self, *, keyword: str, page: int, per_page: int, viewer=None
+    ) -> PageEntities:
+        dialect_name = self.session.bind.dialect.name if self.session.bind else ""
+        if dialect_name == "mysql":
+            return self._search_posts_by_fulltext(
+                keyword=keyword,
+                page=page,
+                per_page=per_page,
+            )
+        return self._search_posts_by_like(keyword=keyword, page=page, per_page=per_page)
 
     def get_post_detail(self, post_id: int):
         return (
@@ -230,3 +243,67 @@ class SqlAlchemyPostRepository(PostRepository):
             }
 
         return extra_data_map
+
+    def _search_posts_by_fulltext(
+        self, *, keyword: str, page: int, per_page: int
+    ) -> PageEntities:
+        fulltext_match = match(
+            Post.summary,
+            Post.content,
+            against=keyword,
+            in_natural_language_mode=True,
+        )
+        summary_score = match(
+            Post.summary,
+            against=keyword,
+            in_natural_language_mode=True,
+        )
+        content_score = match(
+            Post.content,
+            against=keyword,
+            in_natural_language_mode=True,
+        )
+        score = (summary_score * 2 + content_score).label("score")
+
+        query = Post.query.filter(Post.deleted.is_(False)).filter(fulltext_match)
+        paginate = (
+            query.with_entities(Post.id, score)
+            .order_by(score.desc(), Post.timestamp.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
+        post_ids = [post_id for post_id, _ in paginate.items]
+        if not post_ids:
+            return PageEntities(items=[], total=paginate.total)
+        posts = self._load_posts_by_ids(post_ids)
+        return PageEntities(items=posts, total=paginate.total)
+
+    def _search_posts_by_like(
+        self, *, keyword: str, page: int, per_page: int
+    ) -> PageEntities:
+        pattern = f"%{keyword}%"
+        query = (
+            Post.query.filter(Post.deleted.is_(False))
+            .filter(or_(Post.summary.ilike(pattern), Post.content.ilike(pattern)))
+            .options(
+                joinedload(Post.author).load_only(
+                    User.id, User.username, User.nickname, User.image
+                )
+            )
+            .order_by(Post.timestamp.desc())
+        )
+        paginate = query.paginate(page=page, per_page=per_page, error_out=False)
+        return PageEntities(items=paginate.items, total=paginate.total)
+
+    @staticmethod
+    def _load_posts_by_ids(post_ids: list[int]):
+        posts = (
+            Post.query.options(
+                joinedload(Post.author).load_only(
+                    User.id, User.username, User.nickname, User.image
+                )
+            )
+            .filter(Post.id.in_(post_ids))
+            .all()
+        )
+        order_map = {post_id: index for index, post_id in enumerate(post_ids)}
+        return sorted(posts, key=lambda post: order_map.get(post.id, len(order_map)))

@@ -6,6 +6,7 @@ import postApi from "@/api/posts/postApi.js";
 import { useCurrentUserStore } from "@/stores/user";
 import SkeletonUtil from "@/utils/components/SkeletonUtil.vue";
 import PublishEntry from "@/views/posts/components/PublishEntry.vue";
+import SearchEntry from "@/views/posts/components/SearchEntry.vue";
 import RegisterPrompt from "@/views/posts/components/RegisterPrompt.vue";
 import PageScroll from "@/utils/components/PageScroll.vue";
 import emitter from "@/utils/emitter.js";
@@ -15,6 +16,7 @@ export default {
     PostPreview,
     PostImage,
     PublishEntry,
+    SearchEntry,
     SkeletonUtil,
     RegisterPrompt,
     PageScroll,
@@ -179,6 +181,7 @@ export default {
           v-slide-in
         />
 
+        <SearchEntry />
         <PublishEntry v-if="currentUser.isLogin" />
         <el-tabs v-model="activeName" class="demo-tabs" @tab-change="changeTab">
           <el-tab-pane label="广场" name="all">

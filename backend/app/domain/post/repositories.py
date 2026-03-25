@@ -24,6 +24,12 @@ class PostRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def search_posts(
+        self, *, keyword: str, page: int, per_page: int, viewer=None
+    ) -> PageEntities[Any]:
+        raise NotImplementedError
+
+    @abstractmethod
     def get_post_detail(self, post_id: int):
         raise NotImplementedError
 

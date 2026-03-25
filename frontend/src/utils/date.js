@@ -15,6 +15,7 @@ export default {
     return dayjs(date).tz("UTC").format("YYYY-MM-DD HH:mm:ss");
   },
   dateShow(date) {
+    if (!date) return "";
     // 当天内返回相对时间，其他的时间自定义
     const d = dayjs(date);
     const currentYear = dayjs().year();
@@ -31,8 +32,10 @@ export default {
     // 今年
     if (year === currentYear) {
       if (month === currentMonth && day === currentDay) {
+        // 防止时间与当前时间过于接近而显示"几秒后"
+        const _d = d.subtract(5, "second");
         // 今天 返回相对时间
-        return d.fromNow();
+        return _d.fromNow();
       } else if (month === currentMonth && day === currentDay - 1) {
         // 昨天
         return "昨天 " + d.format("HH:mm");

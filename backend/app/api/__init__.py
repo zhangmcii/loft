@@ -13,7 +13,12 @@ from .praise import register_praise_api
 from .tags import register_tag_api
 from .user_1 import register_user_api
 
-register_post_api(api, post_item_url="/posts/<int:id>", post_group_url="/posts")
+register_post_api(
+    api,
+    post_item_url="/posts/<int:id>",
+    post_group_url="/posts",
+    post_search_url="/posts/search",
+)
 register_notification_api(api, notification_url="/notifications")
 register_user_api(
     api,

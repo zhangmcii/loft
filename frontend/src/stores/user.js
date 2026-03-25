@@ -16,6 +16,7 @@ import {
   refreshAccessToken,
 } from "@/utils/tokenService.js";
 import { useComposeDraftStore } from "./composeDraft.js";
+import { useSearchHistoryStore } from "./searchHistory.js";
 
 export const useCurrentUserStore = defineStore("currentUser", {
   state: () => ({
@@ -167,7 +168,9 @@ export const useCurrentUserStore = defineStore("currentUser", {
     },
     logOut() {
       const composeDraftStore = useComposeDraftStore();
+      const searchHistoryStore = useSearchHistoryStore();
       composeDraftStore.clearUserDrafts(this.userInfo.id || "guest");
+      searchHistoryStore.clearHistory(this.userInfo.id || "guest");
       this.cleanup();
       this.clearLocalData();
       this.$reset();

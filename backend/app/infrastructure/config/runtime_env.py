@@ -35,3 +35,5 @@ def load_env():
     logging.info(f"加载环境变量文件: {dotenv_path}")
     if dotenv_path and os.path.exists(dotenv_path):
         load_dotenv(dotenv_path)
+    else:
+        logging.info(f"{dotenv_path}文件不存在，未加载")

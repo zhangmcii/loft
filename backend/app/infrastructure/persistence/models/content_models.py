@@ -11,6 +11,17 @@ class PostType(Enum):
 
 class Post(db.Model):
     __tablename__ = "posts"
+    __table_args__ = (
+        db.Index(
+            "ft_posts_summary_content",
+            "summary",
+            "content",
+            mysql_prefix="FULLTEXT",
+            mysql_with_parser="ngram",
+        ),
+        db.Index("idx_posts_deleted_timestamp", "deleted", "timestamp"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     summary = db.Column(db.String(500))
     body = db.Column(db.Text)

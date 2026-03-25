@@ -158,6 +158,11 @@ const routes = [
         component: () => import("../views/posts/postDetail.vue"),
       },
       {
+        path: "/posts/search",
+        name: "postSearchPage",
+        component: () => import("../views/posts/PostSearchPage.vue"),
+      },
+      {
         path: "/compose",
         name: "compose",
         component: () => import("../views/posts/PostCompose.vue"),

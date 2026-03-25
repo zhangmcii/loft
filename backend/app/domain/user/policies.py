@@ -14,16 +14,16 @@ PROTECTED_PROFILE_FIELDS = {
 }
 
 EDITABLE_PROFILE_FIELDS = {
+    "image",
     "nickname",
     "location",
     "about_me",
     "birthday",
-    "gender",
+    "sex",
+    "bg_image",
+    "pc_bg_image",
     "social_account",
-    "website",
-    "company",
-    "occupation",
-    "school",
+    "music",
 }
 
 

@@ -57,6 +57,34 @@ class PostService:
             total=page_entities.total,
         )
 
+    def search_posts(self, *, keyword: str, page: int, per_page: int, viewer=None):
+        normalized_keyword = keyword.strip()
+        if not normalized_keyword:
+            return PageResult(data=[], total=0)
+
+        page_entities = self.uow.posts.search_posts(
+            keyword=normalized_keyword,
+            page=page,
+            per_page=per_page,
+            viewer=viewer,
+        )
+        posts = page_entities.items
+        if not posts:
+            return PageResult(data=[], total=page_entities.total)
+
+        extra_data_map = self.uow.posts.build_post_extra_data_map(
+            posts,
+            viewer_id=(viewer.id if viewer else None),
+        )
+        return PageResult(
+            data=self.assembler.batch_map_posts(
+                posts,
+                extra_data_map=extra_data_map,
+                is_list=True,
+            ),
+            total=page_entities.total,
+        )
+
     def get_post(self, post_id: int, *, viewer=None):
         post = self.uow.posts.get_post_detail(post_id)
         if not post:

@@ -54,6 +54,15 @@ def _query_post(page: int, per_page: int, tab_name: str | None = None):
     return result
 
 
+def _search_post(page: int, per_page: int, keyword: str):
+    return _post_service().search_posts(
+        page=page,
+        per_page=per_page,
+        viewer=current_user,
+        keyword=keyword,
+    )
+
+
 class PostGroupApi(DecoratedMethodView):
     method_decorators = {
         "get": [log_operate],
@@ -127,8 +136,23 @@ class PostItemApi(DecoratedMethodView):
         return success(data=result.data)
 
 
-def register_post_api(bp, *, post_item_url, post_group_url):
+class PostSearchApi(DecoratedMethodView):
+    method_decorators = {"get": [log_operate]}
+
+    def get(self):
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get(
+            "per_page", current_app.config["FLASKY_POSTS_PER_PAGE"], type=int
+        )
+        keyword = request.args.get("q", "", type=str)
+        result = _search_post(page, per_page, keyword)
+        return success(data=result.data, total=result.total)
+
+
+def register_post_api(bp, *, post_item_url, post_group_url, post_search_url):
     item = PostItemApi.as_view("post_item")
     group = PostGroupApi.as_view("post_group")
+    search = PostSearchApi.as_view("post_search")
     bp.add_url_rule(post_item_url, view_func=item)
     bp.add_url_rule(post_group_url, view_func=group)
+    bp.add_url_rule(post_search_url, view_func=search)
