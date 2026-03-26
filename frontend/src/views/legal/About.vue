@@ -61,7 +61,7 @@ export default {
 
 <style lang="scss" scoped>
 .about-page {
-  min-height: calc(100vh - var(--app-header-height));
+  height: calc(100vh - 56px - 24px - 30px);
   background-color: #fff;
   display: flex;
   flex-direction: column;

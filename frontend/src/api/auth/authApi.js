@@ -43,7 +43,26 @@ export default {
     return $http.get(`${url_prefix}/checkFreshness`);
   },
   oauthProviders() {
-    return $http.get(`${url_prefix}/oauth/providers`);
+    // return $http.get(`${url_prefix}/oauth/providers`);
+    return new Promise((resolve) => {
+      resolve({
+        code: 200,
+        data: {
+          providers: [
+            {
+              authorize_endpoint: "/auth/oauth/authorize/qq",
+              name: "qq",
+              provider: "qq",
+            },
+            {
+              authorize_endpoint: "/auth/oauth/authorize/github",
+              name: "github",
+              provider: "github",
+            },
+          ],
+        },
+      });
+    });
   },
   oauthAuthorize(provider, params = {}) {
     return $http.get(`${url_prefix}/oauth/authorize/${provider}`, { params });

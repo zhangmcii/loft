@@ -181,7 +181,6 @@ export default {
           })
           .catch((error) => {
             this.loading = false;
-            ElMessage.error(error.message || "注册失败，请稍后重试");
           });
       } else {
         ElMessage.error("请修正表单中的错误");

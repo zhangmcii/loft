@@ -272,9 +272,10 @@ export default {
 </template>
 <style lang="scss" scoped>
 @use "./components/PostCard.scss" as *;
+@use "./components/PostReadingTokens.scss" as tokens;
 
 .posts-shell {
-  width: min(100%, 780px);
+  width: min(100%, tokens.$reading-shell-width);
   margin: 0 auto;
   padding: 28px 24px 56px;
   box-sizing: border-box;

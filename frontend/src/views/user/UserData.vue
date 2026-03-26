@@ -1,7 +1,7 @@
 <template>
   <div
     class="vapp-fullscreen-background"
-    :class="{ 'content-loaded': contentLoaded }"
+    :class="{ 'content-loaded': contentLoaded, 'bg-loaded': bgLoaded }"
   >
     <el-page-header
       :style="{ color: backColor }"
@@ -259,20 +259,49 @@
 .vapp-fullscreen-background {
   height: 100%;
   width: 100%;
-  z-index: -1;
+  position: relative;
+  z-index: 0;
+  background: #141414;
 
   // 背景图片层
   &::before {
     content: "";
+    inset: 0;
     background-image: var(--leleo-background-image-url);
-    transition: background-image 0.8s ease;
     background-size: cover;
     background-position: center;
     position: absolute;
-    height: 94%;
-    width: 100%;
     z-index: -1;
-    filter: brightness(85%);
+    opacity: 0;
+    transform: scale(1.02);
+    filter: brightness(85%) blur(12px);
+    will-change: opacity, transform, filter;
+    transition: opacity 0.42s ease, transform 0.65s ease, filter 0.65s ease;
+  }
+
+  // 背景占位层（图片未完成加载时仍然自然）
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient(
+        140% 100% at 25% 0%,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0) 62%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.04) 0%,
+        rgba(255, 255, 255, 0) 40%
+      ),
+      linear-gradient(180deg, #1a1a1a 0%, #121212 100%);
+  }
+
+  &.bg-loaded::before {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(85%) blur(0);
   }
 
   // 玻璃态样式
@@ -505,6 +534,14 @@
 
   .block {
     margin-bottom: 33px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vapp-fullscreen-background::before {
+    transition: none;
+    transform: none;
+    filter: brightness(85%);
   }
 }
 

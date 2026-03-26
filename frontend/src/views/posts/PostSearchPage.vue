@@ -204,7 +204,7 @@ export default {
             </el-input>
             <el-button
               class="search-submit"
-              type="primary"
+              type="text"
               :disabled="!canSearch"
               :loading="loading.card"
               @click="submitSearch"
@@ -241,13 +241,17 @@ export default {
 
         <div v-if="hasKeyword" class="search-meta">
           <div class="search-meta-copy">
-            <p class="search-meta-title">{{ resultSummary }}</p>
-            <p v-if="total >= 0" class="search-meta-count">
-              找到 {{ total }} 篇文章
+            <p class="search-meta-title">
+              <span v-if="loading.card && results.length === 0">正在查找</span>
+              <span class="search-meta-keyword">“{{ searchKeyword }}”</span>
+              <span v-if="total >= 0" class="search-meta-sep">·</span>
+              <span v-if="total >= 0" class="search-meta-count-inline"
+                >{{ total }} 篇</span
+              >
             </p>
           </div>
           <el-button type="text" class="search-clear" @click="clearSearch">
-            清除搜索
+            清空
           </el-button>
         </div>
 
@@ -303,7 +307,7 @@ export default {
 @use "./components/PostReadingTokens.scss" as tokens;
 
 .search-shell {
-  width: min(100%, 700px);
+  width: min(100%, tokens.$reading-shell-width);
   margin: 0 auto;
   padding: 24px 24px 56px;
   box-sizing: border-box;
@@ -349,16 +353,18 @@ export default {
   min-width: 0;
 
   :deep(.el-input__wrapper) {
-    min-height: 36px;
-    padding: 0 10px;
-    border-radius: 6px;
-    box-shadow: 0 0 0 1px tokens.$reading-border inset;
-    background: #fff;
-    transition: box-shadow 0.2s ease;
+    min-height: 32px;
+    padding: 0 2px 0 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    border-bottom: 1px solid tokens.$reading-border;
+    transition: border-color 0.2s ease, border-bottom-width 0.2s ease;
   }
 
   :deep(.el-input__wrapper.is-focus) {
-    box-shadow: 0 0 0 1px tokens.$reading-border-strong inset;
+    border-bottom-color: tokens.$reading-border-strong;
+    border-bottom-width: 1.5px;
   }
 
   :deep(.el-input__inner) {
@@ -377,28 +383,27 @@ export default {
 }
 
 .search-submit {
-  min-height: 36px;
-  padding: 0 13px;
-  border: 1px solid tokens.$reading-text-primary;
-  border-radius: 6px;
-  background: tokens.$reading-text-primary;
-  color: #fff;
+  padding: 0;
   font-size: 13px;
+  font-weight: 500;
   line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  color: tokens.$reading-text-secondary;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
 
-  &:hover {
-    border-color: #000;
-    background: #000;
+  &:hover,
+  &:focus {
+    color: tokens.$reading-text-primary;
+    text-decoration-color: tokens.$reading-border;
   }
 
   &.is-disabled,
   &.is-disabled:hover,
   &.is-disabled:focus {
-    border-color: tokens.$reading-border;
-    background: transparent;
     color: tokens.$reading-text-quaternary;
+    text-decoration-color: transparent;
   }
 }
 
@@ -485,10 +490,16 @@ export default {
   color: tokens.$reading-text-secondary;
 }
 
-.search-meta-count {
-  margin: 2px 0 0;
-  font-size: 12px;
-  line-height: 1.6;
+.search-meta-keyword {
+  color: tokens.$reading-text-primary;
+}
+
+.search-meta-sep {
+  margin: 0 6px;
+  color: tokens.$reading-text-quaternary;
+}
+
+.search-meta-count-inline {
   color: tokens.$reading-text-quaternary;
 }
 

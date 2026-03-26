@@ -13,7 +13,7 @@ import PageScroll from "@/utils/components/PageScroll.vue";
 import userApi from "@/api/user/userApi.js";
 import date from "@/utils/date.js";
 import dayjs from "@/config/dayjsCfg";
-import { loginReminder, waitImage } from "@/utils/common.js";
+import { loginReminder } from "@/utils/common.js";
 import musicPlayer from "./music.vue";
 import { useMusicStore } from "@/stores/music";
 
@@ -45,6 +45,8 @@ export default {
       },
       dialogShow: false,
       contentLoaded: false,
+      bgLoaded: false,
+      bgLoadToken: 0,
       isMobileDevice: false,
       noPadding: true,
     };
@@ -147,6 +149,7 @@ export default {
           this.loading.more = false;
           this.loading.userData = true;
           this.contentLoaded = false;
+          this.bgLoaded = false;
           this.getUser();
         }
       }
@@ -165,12 +168,53 @@ export default {
         return;
       }
 
-      const bgImageUrl = this.bgImage;
+      this.setBackgroundImage(this.bgImage);
+    },
+    setBackgroundImage(bgImageUrl) {
       const root = document.documentElement;
       root.style.setProperty(
         "--leleo-background-image-url",
         bgImageUrl ? `url('${bgImageUrl}')` : "none"
       );
+    },
+    preloadImage(url) {
+      return new Promise((resolve) => {
+        if (!url) return resolve(false);
+        const img = new Image();
+        img.decoding = "async";
+        img.loading = "eager";
+        let settled = false;
+        const settle = (ok) => {
+          if (settled) return;
+          settled = true;
+          resolve(ok);
+        };
+        img.onload = () => settle(true);
+        img.onerror = () => settle(false);
+        img.src = url;
+        if (typeof img.decode === "function") {
+          img
+            .decode()
+            .then(() => settle(true))
+            .catch(() => {});
+        }
+      });
+    },
+    async preloadAndShowBackground(url) {
+      const token = ++this.bgLoadToken;
+      this.bgLoaded = false;
+      this.setBackgroundImage(null);
+      if (!this.isUserPage || !url) return;
+
+      const ok = await this.preloadImage(url);
+      if (!ok) return;
+      if (token !== this.bgLoadToken || !this.isUserPage) return;
+
+      this.setBackgroundImage(url);
+      requestAnimationFrame(() => {
+        if (token !== this.bgLoadToken || !this.isUserPage) return;
+        this.bgLoaded = true;
+      });
     },
     // 每次点击tag触发动画
     playTagAnimation(e) {
@@ -186,9 +230,11 @@ export default {
     handleSwitchChange() {
       const root = document.documentElement;
       if (this.isUserPage) {
-        this.setMainProperty();
+        void this.preloadAndShowBackground(this.bgImage);
         this.noPadding = true;
       } else {
+        this.bgLoaded = false;
+        this.bgLoadToken += 1;
         root.style.setProperty("--leleo-background-image-url", `none`);
         root.style.setProperty("background-color", "#fff");
         this.noPadding = false;
@@ -212,6 +258,7 @@ export default {
     getUser() {
       this.loading.userData = true;
       this.contentLoaded = false;
+      this.bgLoaded = false;
 
       // 检查是否是查看当前登录用户的资料
       const isViewingSelf =
@@ -263,14 +310,11 @@ export default {
             });
           }
 
-          // 背景图片加载（不阻塞内容显示）
-          if (this.bgImage) {
-            waitImage([this.bgImage]);
-          }
+          // 背景图片加载（不阻塞内容显示）：先预加载/解码，再淡入
+          void this.preloadAndShowBackground(this.bgImage);
 
           // 关闭加载状态
           this.loading.userData = false;
-          this.setMainProperty();
 
           // 标记内容已加载，触发清晰度过渡
           this.$nextTick(() => {

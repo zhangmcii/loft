@@ -38,8 +38,6 @@ export default {
         images: [],
         type: "markdown",
       },
-      restoredDraftMessage: "",
-      restoredDraftMode: "",
       previewVisible: false,
       previewUrl: "",
       assistExpanded: false,
@@ -110,13 +108,6 @@ export default {
         { key: "markdown", label: "Markdown" },
       ];
     },
-    visibleRestoredDraftMessage() {
-      if (!this.restoredDraftMessage) return "";
-      if (this.isEdit) return this.restoredDraftMessage;
-      return this.restoredDraftMode === this.mode
-        ? this.restoredDraftMessage
-        : "";
-    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -152,8 +143,6 @@ export default {
       this.postId = route.params.id ? Number(route.params.id) : null;
       this.isEdit = Boolean(this.postId);
       this.mode = route.query.mode || "text";
-      this.restoredDraftMessage = "";
-      this.restoredDraftMode = "";
       this.resetDraft();
       if (this.isEdit) {
         this.fetchPost();
@@ -434,10 +423,6 @@ export default {
           ...this.markdownContent,
           content: draft.markdownContent || "",
         };
-        this.restoredDraftMode = draft.mode || this.mode;
-        this.restoredDraftMessage = this.isEdit
-          ? "已恢复未保存修改"
-          : "已恢复上次草稿";
       } catch {
         this.composeDraftStore.removeDraft(draftKey);
       } finally {
@@ -454,8 +439,6 @@ export default {
           this.composeDraftStore.removeDraft(draftKey)
         );
       }
-      this.restoredDraftMessage = "";
-      this.restoredDraftMode = "";
     },
     currentSnapshot() {
       if (this.mode === "markdown") {
@@ -487,8 +470,6 @@ export default {
         images: [],
         type: "markdown",
       };
-      this.restoredDraftMessage = "";
-      this.restoredDraftMode = "";
       this.assistExpanded = false;
     },
   },
@@ -523,10 +504,6 @@ export default {
           </el-button>
         </div>
       </header>
-
-      <p v-if="visibleRestoredDraftMessage" class="compose-draft-note">
-        {{ visibleRestoredDraftMessage }}
-      </p>
 
       <div class="compose-shell">
         <nav class="compose-modes">
