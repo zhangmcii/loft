@@ -3,7 +3,7 @@
     <div class="search-inline-entry" @click="openSearch">
       <div class="entry-copy">
         <span class="entry-title">搜索文章</span>
-        <span class="entry-hint">按标题、正文或作者关键词查找</span>
+        <span class="entry-hint">按标题、正文关键词查找</span>
       </div>
       <span class="entry-action">进入</span>
     </div>

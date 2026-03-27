@@ -98,3 +98,29 @@ class PostRepository(ABC):
         self, posts, *, viewer_id: int | None = None
     ) -> dict[int, dict]:
         raise NotImplementedError
+
+    @abstractmethod
+    def list_posts_by_ids(self, ids: list[int], *, viewer=None):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_post_engagement(self, post_id: int):
+        """Return (timestamp, deleted, like_count, comment_count) or None."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_hot_candidates(
+        self,
+        *,
+        since,
+        min_likes: int,
+        min_comments: int,
+        limit: int,
+        comment_weight: float,
+    ):
+        """Return iterable of (post_id, timestamp, like_count, comment_count)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_post_timestamp(self, post_id: int):
+        raise NotImplementedError

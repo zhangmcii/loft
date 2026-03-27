@@ -13,6 +13,7 @@ from ..domain.post.policies import (
     normalize_post_type,
     validate_post_content,
 )
+from .hot_posts_service import HotPostsService
 
 
 class PostService:
@@ -22,10 +23,12 @@ class PostService:
         uow: UnitOfWork,
         assembler: ResponseAssemblerPort,
         notifier: NotificationDispatcherPort,
+        hot_posts: HotPostsService,
     ):
         self.uow = uow
         self.assembler = assembler
         self.notifier = notifier
+        self.hot_posts = hot_posts
 
     @staticmethod
     def can_publish(*, user) -> bool:
@@ -34,6 +37,10 @@ class PostService:
     def list_posts(
         self, *, page: int, per_page: int, viewer=None, tab_name: str | None = None
     ):
+        if tab_name == "hot":
+            return self.hot_posts.list_hot_posts(
+                page=page, per_page=per_page, viewer=viewer
+            )
         page_entities = self.uow.posts.list_posts(
             page=page,
             per_page=per_page,
@@ -141,6 +148,10 @@ class PostService:
         logging.info("逻辑删除文章: id=%s", post.id)
         post.deleted = True
         self.uow.commit()
+        try:
+            self.hot_posts.remove_post(post_id=post.id)
+        except Exception:
+            logging.warning("热门榜移除文章失败(忽略): id=%s", post.id, exc_info=True)
         return ActionResult(message="文章删除成功")
 
     def edit_post(self, *, post_id: int, operator, payload: dict):

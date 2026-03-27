@@ -13,6 +13,7 @@ from ..domain.common.exceptions import ForbiddenError, NotFoundError
 from ..domain.common.unit_of_work import UnitOfWork
 from ..domain.ports.assemblers import ResponseAssemblerPort
 from ..domain.ports.notifications import NotificationDispatcherPort
+from .hot_posts_service import HotPostsService
 
 
 class CommentService:
@@ -22,10 +23,12 @@ class CommentService:
         uow: UnitOfWork,
         assembler: ResponseAssemblerPort,
         notifier: NotificationDispatcherPort,
+        hot_posts: HotPostsService,
     ):
         self.uow = uow
         self.assembler = assembler
         self.notifier = notifier
+        self.hot_posts = hot_posts
 
     def list_comment_replies(self, *, root_comment_id: int, page: int, per_page: int):
         page_entities = self.uow.comments.list_replies(
@@ -92,6 +95,12 @@ class CommentService:
             )
             self.uow.comments.add(comment)
             self.uow.commit()
+            try:
+                self.hot_posts.increment_post_engagement(
+                    post_id=post.id, delta_comments=1
+                )
+            except Exception:
+                logging.warning("热门榜实时更新失败(忽略): post_id=%s", post.id, exc_info=True)
 
             targets = build_comment_notification_targets(
                 actor_id=author.id,

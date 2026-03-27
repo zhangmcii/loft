@@ -8,12 +8,20 @@ from ..domain.praise.policies import (
     ensure_praise_not_exists,
     resolve_like_notification_receiver,
 )
+from .hot_posts_service import HotPostsService
 
 
 class PraiseService:
-    def __init__(self, *, uow: UnitOfWork, notifier: NotificationDispatcherPort):
+    def __init__(
+        self,
+        *,
+        uow: UnitOfWork,
+        notifier: NotificationDispatcherPort,
+        hot_posts: HotPostsService,
+    ):
         self.uow = uow
         self.notifier = notifier
+        self.hot_posts = hot_posts
 
     def list_praised_comment_ids_for_post(self, *, user_id: int, post_id: int):
         comment_ids = self.uow.praises.list_praised_comment_ids_for_post(
@@ -39,6 +47,10 @@ class PraiseService:
             praise = self.uow.praises.create_post_praise(post=post, author=user)
             self.uow.praises.add(praise)
             self.uow.commit()
+            try:
+                self.hot_posts.increment_post_engagement(post_id=post.id, delta_likes=1)
+            except Exception:
+                logging.warning("热门榜实时更新失败(忽略): post_id=%s", post.id, exc_info=True)
 
             receiver_id = resolve_like_notification_receiver(
                 actor_id=user.id, target_author_id=post.author_id

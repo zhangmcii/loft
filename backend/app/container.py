@@ -15,6 +15,7 @@ from .infrastructure.adapters import (
     OAuthNetworkAdapter,
     QiniuStorageAdapter,
     RedisEmailCodeAdapter,
+    RedisHotPostsRankingAdapter,
     RedisPresenceAdapter,
 )
 from .infrastructure.oauth import OAuthInfraService, get_frontend_oauth_redirect
@@ -29,6 +30,7 @@ from .services.auth_service import AuthService
 from .services.chat_ws_service import ChatWsService
 from .services.comment_service import CommentService
 from .services.follow_service import FollowService
+from .services.hot_posts_service import HotPostsConfig, HotPostsService
 from .services.jwt_service import JwtService
 from .services.log_service import LogService
 from .services.message_service import MessageService
@@ -83,22 +85,49 @@ class AppContainer(containers.DeclarativeContainer):
 
     uow = providers.Factory(_build_uow)
 
+    hot_posts_config = providers.Singleton(
+        HotPostsConfig,
+        key=config.HOT_POSTS_KEY,
+        min_likes=config.HOT_POSTS_MIN_LIKES,
+        min_comments=config.HOT_POSTS_MIN_COMMENTS,
+        max_size=config.HOT_POSTS_MAX_SIZE,
+        window_days=config.HOT_POSTS_WINDOW_DAYS,
+        comment_weight=config.HOT_POSTS_COMMENT_WEIGHT,
+        decay_alpha=config.HOT_POSTS_DECAY_ALPHA,
+        candidate_limit=config.HOT_POSTS_CANDIDATE_LIMIT,
+    )
+    hot_posts_ranking = providers.Singleton(
+        RedisHotPostsRankingAdapter,
+        redis_client=redis_client,
+        key=config.HOT_POSTS_KEY,
+    )
+    hot_posts_service = providers.Factory(
+        HotPostsService,
+        uow=uow,
+        assembler=assembler,
+        ranking=hot_posts_ranking,
+        config=hot_posts_config,
+    )
+
     post_service = providers.Factory(
         PostService,
         uow=uow,
         assembler=assembler,
         notifier=notification_dispatcher,
+        hot_posts=hot_posts_service,
     )
     comment_service = providers.Factory(
         CommentService,
         uow=uow,
         assembler=assembler,
         notifier=notification_dispatcher,
+        hot_posts=hot_posts_service,
     )
     praise_service = providers.Factory(
         PraiseService,
         uow=uow,
         notifier=notification_dispatcher,
+        hot_posts=hot_posts_service,
     )
     user_service = providers.Factory(
         UserService,

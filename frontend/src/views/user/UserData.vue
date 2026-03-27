@@ -1,7 +1,11 @@
 <template>
   <div
     class="vapp-fullscreen-background"
-    :class="{ 'content-loaded': contentLoaded, 'bg-loaded': bgLoaded }"
+    :class="{
+      'content-loaded': contentLoaded,
+      'bg-loaded': bgLoaded,
+      'posts-mode': !isUserPage,
+    }"
   >
     <el-page-header
       :style="{ color: backColor }"
@@ -302,6 +306,20 @@
     opacity: 1;
     transform: scale(1);
     filter: brightness(85%) blur(0);
+  }
+
+  &.posts-mode {
+    background: #fff;
+  }
+
+  &.posts-mode::before {
+    opacity: 0;
+    filter: none;
+    transform: none;
+  }
+
+  &.posts-mode::after {
+    background: #fff;
   }
 
   // 玻璃态样式

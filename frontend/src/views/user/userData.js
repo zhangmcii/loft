@@ -71,7 +71,7 @@ export default {
         : "";
     },
     from_now() {
-      return date.dateShow(this.user.last_seen);
+      return date.dateShow(this.user?.last_seen);
     },
     isCurrentUser() {
       return this.$route.params.userName == this.currentUser.userInfo.username;
@@ -134,7 +134,6 @@ export default {
     this.isMobileDevice = this.checkIsMobile();
     // 首次加载时获取用户数据
     this.getUser();
-    console.log("111", this.$route.params.userName);
     // 从A用户主页跳转到B用户主页触发
     this.$watch(
       () => this.$route.params.userName,
@@ -162,13 +161,6 @@ export default {
       return (
         /Mobi|Android|iPhone|iPad|iPod/i.test(ua) || window.innerWidth <= 768
       );
-    },
-    setMainProperty() {
-      if (!this.isUserPage) {
-        return;
-      }
-
-      this.setBackgroundImage(this.bgImage);
     },
     setBackgroundImage(bgImageUrl) {
       const root = document.documentElement;
@@ -228,15 +220,13 @@ export default {
       this.activeInterest = type;
     },
     handleSwitchChange() {
-      const root = document.documentElement;
       if (this.isUserPage) {
         void this.preloadAndShowBackground(this.bgImage);
         this.noPadding = true;
       } else {
         this.bgLoaded = false;
         this.bgLoadToken += 1;
-        root.style.setProperty("--leleo-background-image-url", `none`);
-        root.style.setProperty("background-color", "#fff");
+        this.setBackgroundImage(null);
         this.noPadding = false;
       }
     },

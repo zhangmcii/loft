@@ -2,7 +2,7 @@ import logging
 import time
 from functools import wraps
 
-from flask import request
+from flask import current_app, request
 from flask.views import MethodView
 from flask_jwt_extended import current_user
 from flask_sqlalchemy import record_queries
@@ -52,7 +52,7 @@ def admin_required(f):
 
 def log_operate(f):
     def decorate(*args, **kwargs):
-        if request.args.get("page", 1, type=int) != 1:
+        if current_app.debug or request.args.get("page", 1, type=int) != 1:
             return f(*args, **kwargs)
 
         if "X-Forwarded-For" in request.headers:

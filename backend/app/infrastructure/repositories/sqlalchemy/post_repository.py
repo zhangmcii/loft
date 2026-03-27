@@ -244,6 +244,96 @@ class SqlAlchemyPostRepository(PostRepository):
 
         return extra_data_map
 
+    def list_posts_by_ids(self, ids: list[int], *, viewer=None):
+        if not ids:
+            return []
+        rows = (
+            Post.query.options(
+                joinedload(Post.author).load_only(
+                    User.id, User.username, User.nickname, User.image
+                )
+            )
+            .filter(Post.deleted.is_(False), Post.id.in_(ids))
+            .all()
+        )
+        mapped = {post.id: post for post in rows}
+        return [mapped[pid] for pid in ids if pid in mapped]
+
+    def get_post_engagement(self, post_id: int):
+        post_row = (
+            self.session.query(Post.timestamp, Post.deleted)
+            .filter(Post.id == post_id)
+            .first()
+        )
+        if not post_row:
+            return None
+        timestamp, deleted = post_row
+        like_count = (
+            self.session.query(func.count(Praise.id))
+            .filter(Praise.post_id == post_id)
+            .scalar()
+            or 0
+        )
+        comment_count = (
+            self.session.query(func.count(Comment.id))
+            .filter(Comment.post_id == post_id)
+            .scalar()
+            or 0
+        )
+        return timestamp, bool(deleted), int(like_count), int(comment_count)
+
+    def get_post_timestamp(self, post_id: int):
+        row = self.session.query(Post.timestamp).filter(Post.id == post_id).first()
+        if not row:
+            return None
+        return row[0]
+
+    def list_hot_candidates(
+        self,
+        *,
+        since,
+        min_likes: int,
+        min_comments: int,
+        limit: int,
+        comment_weight: float,
+    ):
+        like_subq = (
+            self.session.query(
+                Praise.post_id.label("post_id"),
+                func.count(Praise.id).label("like_count"),
+            )
+            .filter(Praise.post_id.isnot(None))
+            .group_by(Praise.post_id)
+            .subquery()
+        )
+        comment_subq = (
+            self.session.query(
+                Comment.post_id.label("post_id"),
+                func.count(Comment.id).label("comment_count"),
+            )
+            .group_by(Comment.post_id)
+            .subquery()
+        )
+
+        like_count = func.coalesce(like_subq.c.like_count, 0)
+        comment_count = func.coalesce(comment_subq.c.comment_count, 0)
+        rough = like_count + comment_count * float(comment_weight)
+
+        query = (
+            self.session.query(Post.id, Post.timestamp, like_count, comment_count)
+            .outerjoin(like_subq, like_subq.c.post_id == Post.id)
+            .outerjoin(comment_subq, comment_subq.c.post_id == Post.id)
+            .filter(Post.deleted.is_(False))
+            .filter(like_count >= int(min_likes), comment_count >= int(min_comments))
+            .order_by(rough.desc(), Post.timestamp.desc())
+        )
+        if since is not None:
+            query = query.filter(Post.timestamp >= since)
+        if limit and int(limit) > 0:
+            query = query.limit(int(limit))
+
+        return [(int(pid), ts, int(lc), int(cc)) for pid, ts, lc, cc in query.all()]
+
     def _search_posts_by_fulltext(
         self, *, keyword: str, page: int, per_page: int
     ) -> PageEntities:

@@ -221,6 +221,41 @@ export default {
               </div>
             </div>
           </el-tab-pane>
+          <el-tab-pane label="热门" name="hot">
+            <div
+              v-if="activeName == 'hot' && posts_count == 0 && !loading.card"
+              class="posts-empty"
+            >
+              <p class="posts-empty-title">热门榜暂时为空</p>
+              <p class="posts-empty-note">点赞和讨论会让文章慢慢浮上来。</p>
+            </div>
+            <SkeletonUtil
+              :loading="loading.card"
+              :row="5"
+              :throttle="throttle"
+              :useNew="true"
+            >
+              <transition-group name="slide-in" tag="div" class="posts-list">
+                <PostPreview
+                  v-for="item in posts"
+                  :key="item.id"
+                  :post="item"
+                  @click="$router.push(`/postDetail/${item.id}`)"
+                  v-slide-in
+                >
+                  <template #image>
+                    <PostImage :postImages="item.post_images" @click.stop="" />
+                  </template>
+                </PostPreview>
+              </transition-group>
+            </SkeletonUtil>
+            <div class="posts-infinite-footer">
+              <div v-if="loading.more" class="posts-loading">加载中...</div>
+              <div v-else-if="noMore && posts.length" class="posts-end">
+                已经到底了～
+              </div>
+            </div>
+          </el-tab-pane>
           <el-tab-pane name="showFollowed" v-if="currentUser.isLogin">
             <template #label>
               <van-badge :dot="showDot" :offset="[1, 10]"> 关注 </van-badge>

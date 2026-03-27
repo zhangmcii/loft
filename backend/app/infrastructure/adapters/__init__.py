@@ -1,6 +1,7 @@
 from .asset_url import AvatarUrlAdapter
 from .auth import CeleryMailSender, RedisEmailCodeAdapter
 from .cache import FlaskCacheAdapter
+from .hot_posts import RedisHotPostsRankingAdapter
 from .jwt import FlaskJwtAdapter
 from .notifications import CeleryNotificationDispatcher
 from .oauth import OAuthNetworkAdapter
@@ -13,6 +14,7 @@ __all__ = [
     "RedisEmailCodeAdapter",
     "CeleryMailSender",
     "FlaskCacheAdapter",
+    "RedisHotPostsRankingAdapter",
     "FlaskJwtAdapter",
     "HybridAvatarProvider",
     "QiniuAvatarProvider",

@@ -2,7 +2,7 @@ import logging
 import os
 
 from celery import shared_task
-from flask import render_template
+from flask import current_app, render_template
 from flask_mail import Message
 
 from ..capabilities import capability_enabled, get_capability
@@ -65,10 +65,35 @@ def hard_delete_post():
         post_delete_result = posts_query.delete(synchronize_session=False)
         db.session.commit()
 
+        # 从热门榜移除（尽力而为，不影响主流程）
+        try:
+            hot_posts = current_app.container.hot_posts_service()
+            hot_posts.remove_posts(post_ids=post_ids)
+        except Exception:
+            logging.warning(
+                "Celery: 热门榜移除文章失败(忽略): count=%s", post_count, exc_info=True
+            )
+
         logging.info(f"Celery: 批量删除完成，文章 {post_delete_result} 篇, 图片 {image_count} 张")
 
     except Exception as e:
         _handle_delete_error(e)
+
+
+@shared_task(ignore_result=True)
+def rebuild_hot_posts():
+    """定时重建热门榜（Redis ZSET）。"""
+    try:
+        if not capability_enabled("redis", default=True):
+            reason = (get_capability("redis") or {}).get("reason", "redis unavailable")
+            logging.warning("Celery: 跳过热门榜重建，Redis 不可用: %s", reason)
+            return
+
+        service = current_app.container.hot_posts_service()
+        count = service.rebuild_hot_rank()
+        logging.info("Celery: 热门榜重建完成: count=%s", count)
+    except Exception as e:
+        logging.error("Celery: 热门榜重建失败: %s", e, exc_info=True)
 
 
 def _delete_post_images(post_ids):

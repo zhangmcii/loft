@@ -54,6 +54,10 @@ def celery_init_app(app) -> Celery:
             # 测试用，1分钟执行一次
             # "schedule": timedelta(minutes=1.0),
         },
+        "rebuild_hot_posts": {
+            "task": "app.infrastructure.my_celery.tasks.rebuild_hot_posts",
+            "schedule": timedelta(minutes=10),
+        },
     }
 
     celery_app.set_default()

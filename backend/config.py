@@ -44,6 +44,16 @@ class Config:
 
     FLASKY_SLOW_DB_QUERY_TIME = 0.5
 
+    # Hot posts ranking (Redis ZSET)
+    HOT_POSTS_KEY = "hot_posts:global"
+    HOT_POSTS_MIN_LIKES = 3
+    HOT_POSTS_MIN_COMMENTS = 1
+    HOT_POSTS_MAX_SIZE = 5000
+    HOT_POSTS_WINDOW_DAYS = 90
+    HOT_POSTS_COMMENT_WEIGHT = 3
+    HOT_POSTS_DECAY_ALPHA = 0.5
+    HOT_POSTS_CANDIDATE_LIMIT = 20000
+
     # github工作流上redis容器不使用密码
     redis_pass = "" if os.getenv("FLASK_CONFIG") == "testing" else ":1234@"
     # 适配多进程部署
