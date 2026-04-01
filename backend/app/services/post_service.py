@@ -9,6 +9,7 @@ from ..domain.ports.notifications import NotificationDispatcherPort
 from ..domain.post.policies import (
     build_post_image_entities,
     build_post_summary,
+    build_post_summary_image_refs,
     ensure_can_edit_post,
     normalize_post_type,
     validate_post_content,
@@ -116,10 +117,16 @@ class PostService:
 
         try:
             mapped_type = normalize_post_type(post_type)
+            summary_preview = build_post_summary(
+                content,
+                post_type=post_type,
+                image_refs=build_post_summary_image_refs(images=images),
+            )
             post = self.uow.posts.create_post(
                 author=author,
                 content=content,
-                summary=build_post_summary(content),
+                summary=summary_preview.summary,
+                has_more=summary_preview.is_truncated,
                 post_type_value=mapped_type.value,
                 has_image=bool(images),
             )
@@ -162,15 +169,28 @@ class PostService:
         ensure_can_edit_post(operator, post)
 
         content = payload.get("content")
+        images = payload.get("images")
+
         if content:
             post.content = content
-            post.summary = build_post_summary(post.content)
-
-        images = payload.get("images")
         if images:
             image_payloads = build_post_image_entities(post_id=post.id, images=images)
             image_entities = self.uow.posts.create_post_images(image_payloads)
             self.uow.posts.add_images(image_entities)
+
+        if content or images:
+            summary_image_refs = (
+                build_post_summary_image_refs(images=images)
+                if images
+                else self._load_summary_image_refs(post)
+            )
+            summary_preview = build_post_summary(
+                post.content,
+                post_type=post.derived_type,
+                image_refs=summary_image_refs,
+            )
+            post.summary = summary_preview.summary
+            post.has_more = summary_preview.is_truncated
 
         self.uow.commit()
         extra_data_map = self.uow.posts.build_post_extra_data_map(
@@ -189,3 +209,8 @@ class PostService:
         self.notifier.dispatch_new_post(
             post_id=post_id, author_id=author_id, follower_ids=follower_ids
         )
+
+    def _load_summary_image_refs(self, post):
+        extra_data_map = self.uow.posts.build_post_extra_data_map([post])
+        images = extra_data_map.get(post.id, {}).get("images", [])
+        return build_post_summary_image_refs(images=images)

@@ -7,10 +7,6 @@ export default {
     let params = {};
     params["page"] = page;
     params["tabName"] = tabName;
-    // PC端每页显示9篇文章
-    if (!/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-      params["per_page"] = 9;
-    }
     return $http.get(`${url_prefix}/posts`, { params: params });
   },
 
@@ -18,9 +14,6 @@ export default {
     let params = {};
     params["page"] = page;
     params["q"] = keyword;
-    if (!/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-      params["per_page"] = 9;
-    }
     return $http.get(`${url_prefix}/posts/search`, { params: params });
   },
 

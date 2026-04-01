@@ -4,7 +4,7 @@ from ..application.dto import ActionResult, ItemResult
 from ..domain.admin.policies import normalize_admin_post_type
 from ..domain.common.exceptions import NotFoundError
 from ..domain.common.unit_of_work import UnitOfWork
-from ..domain.text.markdown_truncate import MarkdownTruncator
+from ..domain.post.policies import build_post_summary, build_post_summary_image_refs
 
 
 class AdminPostService:
@@ -22,13 +22,19 @@ class AdminPostService:
             return ItemResult(data={"updated_count": 0, "total_found": 0})
 
         updated_count = 0
+        extra_data_map = self.uow.posts.build_post_extra_data_map(posts_without_summary)
         for post in posts_without_summary:
             try:
                 content = post.content or ""
-                is_pure_text = post.derived_type != "markdown"
                 if content:
-                    summary = MarkdownTruncator.get_smart_preview(content, is_pure_text)
-                    post.summary = summary
+                    images = extra_data_map.get(post.id, {}).get("images", [])
+                    summary_preview = build_post_summary(
+                        content,
+                        post_type=post.derived_type,
+                        image_refs=build_post_summary_image_refs(images=images),
+                    )
+                    post.summary = summary_preview.summary
+                    post.has_more = summary_preview.is_truncated
                     updated_count += 1
                     if updated_count % 100 == 0:
                         self.uow.commit()

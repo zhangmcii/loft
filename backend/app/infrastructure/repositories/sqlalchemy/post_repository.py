@@ -27,12 +27,14 @@ class SqlAlchemyPostRepository(PostRepository):
         author,
         content: str,
         summary: str,
+        has_more: bool,
         post_type_value: str,
         has_image: bool,
     ):
         return Post(
             content=content,
             summary=summary,
+            has_more=has_more,
             type=PostType(post_type_value),
             has_image=has_image,
             author=author,
@@ -41,7 +43,7 @@ class SqlAlchemyPostRepository(PostRepository):
     def list_posts(
         self, *, page: int, per_page: int, viewer=None, tab_name: str | None = None
     ) -> PageEntities:
-        if tab_name == "showFollowed" and viewer is not None:
+        if tab_name == "showFollowed" and viewer:
             base_query = Post.query.join(
                 Follow, Follow.followed_id == Post.author_id
             ).filter(
@@ -128,7 +130,7 @@ class SqlAlchemyPostRepository(PostRepository):
 
     @staticmethod
     def list_posts_without_summary():
-        return Post.query.filter((Post.summary.is_(None)) | (Post.summary == "")).all()
+        return Post.query.all()
 
     @staticmethod
     def list_posts_without_content():
@@ -327,7 +329,7 @@ class SqlAlchemyPostRepository(PostRepository):
             .filter(like_count >= int(min_likes), comment_count >= int(min_comments))
             .order_by(rough.desc(), Post.timestamp.desc())
         )
-        if since is not None:
+        if since:
             query = query.filter(Post.timestamp >= since)
         if limit and int(limit) > 0:
             query = query.limit(int(limit))

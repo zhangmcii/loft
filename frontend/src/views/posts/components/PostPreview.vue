@@ -92,6 +92,7 @@ export default {
       :preview-type="post.post_type"
       :fontSize="isShortPost ? 18 : 16"
       :compact="isShortPost"
+      :force-truncation-indicator="Boolean(post.has_more)"
     />
     <slot name="image"></slot>
 

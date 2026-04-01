@@ -24,6 +24,7 @@ class Post(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     summary = db.Column(db.String(500))
+    has_more = db.Column(db.Boolean, default=False, nullable=False)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     content = db.Column(db.Text)

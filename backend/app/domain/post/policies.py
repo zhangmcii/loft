@@ -22,8 +22,30 @@ def normalize_post_type(post_type: str):
     return PostTypeCode.TEXT
 
 
-def build_post_summary(content: str):
-    return MarkdownTruncator.get_smart_preview(content or "")
+def build_post_summary(content: str, *, post_type: str = "markdown", image_refs=None):
+    return MarkdownTruncator.build_preview(
+        content or "",
+        is_markdown=(post_type == "markdown"),
+        image_refs=image_refs,
+    )
+
+
+def build_post_summary_image_refs(*, images):
+    if not images:
+        return []
+
+    first_item = images[0]
+    if isinstance(first_item, dict):
+        refs = []
+        for image in images:
+            url = image.get("url", "")
+            pos = image.get("pos", image.get("describe", ""))
+            if not url:
+                continue
+            refs.append({"url": url, "pos": str(pos)})
+        return refs
+
+    return []
 
 
 def build_post_image_entities(*, post_id: int, images):

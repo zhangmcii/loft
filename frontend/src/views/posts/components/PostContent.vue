@@ -49,6 +49,10 @@ export default {
       type: Number,
       default: 16,
     },
+    forceTruncationIndicator: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: {
     mavonEditor,
@@ -594,7 +598,7 @@ export default {
       }"
     />
     <div
-      v-if="preview && isTruncated"
+      v-if="preview && (isTruncated || forceTruncationIndicator)"
       class="truncation-indicator"
       :class="{ 'truncation-indicator-markdown': previewType === 'markdown' }"
     >

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from ..domain.text.markdown_images import replace_markdown_image_refs
 from ..utils.common import get_avatars_url
 from ..utils.time_util import DateUtils
-from .read_models import replace_markdown_image_refs
 
 
 def map_image(image):
@@ -157,7 +157,8 @@ def map_post(post, extra_data, *, is_list=False):
     }
 
     if is_list:
-        data["summary"] = post.summary
+        data["summary"] = post.summary or ""
+        data["has_more"] = bool(post.has_more)
     else:
         content = post.content
         if post.has_image and post.derived_type == "markdown":

@@ -12,6 +12,7 @@ class PostRepository(ABC):
         author,
         content: str,
         summary: str,
+        has_more: bool,
         post_type_value: str,
         has_image: bool,
     ):
