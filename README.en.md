@@ -46,7 +46,7 @@ A full-stack social platform template with real-time communication and graceful 
 
 ## 🎬 Demo
 
-- Online preview: 191718.com
+- Online preview: [191718.com](https://191718.com)
 - Note: no prebuilt demo account. You can register your own account or browse as a guest.
 
 ## 🖼️ Preview
@@ -69,6 +69,7 @@ The-Reverie-Loft is an open-source full-stack social platform built on a modern 
 - 📱 **Social login**: GitHub, Google, QQ, Weibo OAuth
 - 💬 **Real-time chat**: instant messaging powered by WebSocket
 - 📝 **Content publishing**: post text and images
+- 🔥 **Hot posts**: Redis-backed hot ranking (periodic recompute + realtime incremental updates)
 - 👍 **Interactions**: likes, comments, follows
 - 🔐 **Access control**: JWT-based authentication
 - 📊 **Analytics**: operation logs and user behavior stats
@@ -96,7 +97,7 @@ The-Reverie-Loft is an open-source full-stack social platform built on a modern 
 
 Loft implements capability detection and degradation strategies at the infrastructure layer:
 
-- Redis unavailable: cache/rate limit/realtime messaging/async tasks enter degraded mode (for example Celery falls back to in-memory eager execution)
+- Redis unavailable: cache/rate limit/realtime messaging/async tasks/hot ranking enter degraded mode (for example Celery falls back to in-memory eager execution)
 - Mail not configured: mail service degrades, verification emails are unavailable, core flows still run
 - Qiniu not configured: upload and signed access degrade; registered users fall back to frontend default avatars and persist avatar names
 - OAuth not configured: social login entries are disabled without impacting username/password auth
@@ -193,7 +194,7 @@ The project uses an "enable when available, degrade when missing" capability mod
 
 | Capability | **Key Config** | Impact if Missing |
 |------|------|------|
-| Redis | **`DEV_REDIS_URL` / `REDIS_URL` / `REDIS_HOST`** | Cache, rate limit, realtime messaging, async tasks enter degraded mode |
+| Redis | **`DEV_REDIS_URL` / `REDIS_URL` / `REDIS_HOST`** | Cache, rate limit, realtime messaging, async tasks, hot ranking enter degraded mode |
 | Mail | **`MAIL_USERNAME` / `MAIL_PASSWORD`** | Email verification codes are printed to `backend/logg/celery.log`; notifications unavailable (system still runs) |
 | Qiniu object storage | **`QINIU_ACCESS_KEY` / `QINIU_SECRET_KEY` / `QINIU_BUCKET_NAME` / `QINIU_DOMAIN`** | Image upload and signed access unavailable; registration avatar falls back to frontend static default avatar (avatar name is persisted) |
 | OAuth login | **Platform `*_CLIENT_ID` / `*_CLIENT_SECRET`** | Corresponding social login entries unavailable |
