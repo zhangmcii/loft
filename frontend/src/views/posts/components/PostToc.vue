@@ -22,10 +22,11 @@ export default {
   methods: {
     scrollToHeading(id) {
       this.$emit("navigate", id);
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+      // 抽屉模式下点击目录项后自动关闭，避免遮挡阅读
+      if (this.mode === "drawer") {
+        this.show = false;
       }
+      // 滚动统一由父组件处理（父组件带顶部偏移，避免标题被导航栏遮挡）
     },
     toggleVisible() {
       this.show = !this.show;

@@ -59,6 +59,10 @@ export default {
       lastScrollTop: 0,
       scrollRaf: null,
       scrollEl: null,
+      // 程序化滚动锁定截止时间（毫秒时间戳）
+      scrollLockUntil: 0,
+      // 目录跳转后需先下滑一次，上滑才会重新显示浮动按钮
+      requireDownScroll: false,
       // 文章目录
       toc: [],
       // 当前激活的标题ID
@@ -177,18 +181,21 @@ export default {
     // 跳转到标题位置
     scrollToHeading(id) {
       const el = document.getElementById(id);
-      if (el) {
-        // 添加偏移量避免被顶部导航栏遮挡
-        const offset = 80;
-        const elementPosition = el.offsetTop;
-        const pageScroll = this.$refs.pageScrollRef;
-        if (pageScroll) {
-          pageScroll.setScrollTop(elementPosition - offset);
-        }
-
-        // 手动设置当前激活的标题
-        this.activeHeadingId = id;
+      if (!el) return;
+      // 添加偏移量避免被顶部导航栏遮挡
+      const offset = 80;
+      const pageScroll = this.$refs.pageScrollRef;
+      if (pageScroll) {
+        // 锁定方向检测，防止程序化滚动的事件让浮动按钮回弹
+        this.scrollLockUntil = Date.now() + 400;
+        // 跳转后按钮保持隐藏
+        this.showFloatingButtons = false;
+        this.requireDownScroll = true;
+        pageScroll.setScrollTop(el.offsetTop - offset);
       }
+
+      // 手动设置当前激活的标题
+      this.activeHeadingId = id;
     },
 
     getPostById(postId) {
@@ -259,6 +266,11 @@ export default {
       }
     },
     handleScroll(event) {
+      // 程序化滚动（目录跳转）期间只同步位置，不改变按钮状态
+      if (Date.now() < this.scrollLockUntil) {
+        this.lastScrollTop = event.target?.scrollTop || this.lastScrollTop;
+        return;
+      }
       if (this.toolboxVisible) {
         this.showFloatingButtons = true;
         return;
@@ -277,9 +289,17 @@ export default {
           return;
         }
         if (currentTop < 10) {
+          // 回到顶部时始终显示，并解除"需先下滑"的限制
           this.showFloatingButtons = true;
+          this.requireDownScroll = false;
+        } else if (delta < 0) {
+          // 上滑：只有先下滑过一次才重新显示
+          if (!this.requireDownScroll) {
+            this.showFloatingButtons = true;
+          }
         } else {
-          this.showFloatingButtons = delta < 0;
+          this.showFloatingButtons = false;
+          this.requireDownScroll = false;
         }
         this.lastScrollTop = currentTop;
       });
