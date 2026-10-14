@@ -1,5 +1,7 @@
 from base64 import b64encode
 
+from dependency_injector import providers
+
 
 class TestUserProfileCase:
     """测试用户资料相关功能"""
@@ -61,6 +63,34 @@ class TestUserProfileCase:
         r = client.get(self.pre_fix + "/users/1", headers=auth_instance.get_headers())
         assert r.status_code == 200
         assert r.json.get("data").get("nickname") == "测试昵称"
+
+    def test_update_background_saves_and_returns_lqip(self, app, client, auth):
+        class FakeBackgroundLqip:
+            @staticmethod
+            def build(image_url):
+                return f"lqip:{image_url}" if image_url else None
+
+        app.container.background_lqip.override(providers.Object(FakeBackgroundLqip()))
+        auth_instance = auth()
+        auth_instance.register()
+        auth_instance.login()
+
+        mobile_url = "https://cdn.example.com/userBackground/mobile/image.webp"
+        pc_url = "https://cdn.example.com/userBackground/pc/image.webp"
+        r = client.patch(
+            self.pre_fix + "/users/1",
+            headers=auth_instance.get_headers(),
+            json={"bg_image": mobile_url, "pc_bg_image": pc_url},
+        )
+        assert r.status_code == 200
+        assert r.json.get("code") == 200
+
+        r = client.get(self.pre_fix + "/users/1", headers=auth_instance.get_headers())
+        data = r.json.get("data")
+        assert data.get("bg_image") == mobile_url
+        assert data.get("pc_bg_image") == pc_url
+        assert data.get("bg_image_lqip") == f"lqip:{mobile_url}"
+        assert data.get("pc_bg_image_lqip") == f"lqip:{pc_url}"
 
     def test_update_user_social_account(self, client, auth):
         """测试更新用户社交账号"""

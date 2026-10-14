@@ -3,6 +3,7 @@ from ..domain.common.exceptions import NotFoundError
 from ..domain.common.unit_of_work import UnitOfWork
 from ..domain.ports.assemblers import ResponseAssemblerPort
 from ..domain.ports.asset_url import AssetUrlPort
+from ..domain.ports.background_lqip import BackgroundLqipPort
 from ..domain.ports.storage import AvatarProviderPort
 from ..domain.user.policies import should_update_profile_field
 
@@ -15,11 +16,13 @@ class UserProfileService:
         assembler: ResponseAssemblerPort,
         avatar_provider: AvatarProviderPort,
         asset_url: AssetUrlPort,
+        background_lqip: BackgroundLqipPort,
     ):
         self.uow = uow
         self.assembler = assembler
         self.avatar_provider = avatar_provider
         self.asset_url = asset_url
+        self.background_lqip = background_lqip
 
     def rollback(self):
         self.uow.rollback()
@@ -57,11 +60,24 @@ class UserProfileService:
         )
 
     def update_user_profile(self, *, user, payload: dict):
-        for key, value in (payload or {}).items():
+        payload = payload or {}
+        for key, value in payload.items():
             if should_update_profile_field(key) and hasattr(user, key):
                 setattr(user, key, value)
+
+        self._update_background_lqips(user=user, payload=payload)
         self.uow.commit()
         return ActionResult(message="用户资料更新成功")
+
+    def _update_background_lqips(self, *, user, payload: dict) -> None:
+        background_fields = (
+            ("bg_image", "bg_image_lqip"),
+            ("pc_bg_image", "pc_bg_image_lqip"),
+        )
+        for image_field, lqip_field in background_fields:
+            if image_field in payload:
+                lqip = self.background_lqip.build(getattr(user, image_field))
+                setattr(user, lqip_field, lqip)
 
     def get_user_image(self, *, user_id: int):
         user = self.get_user_by_id(user_id)

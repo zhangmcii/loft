@@ -28,6 +28,7 @@
     "qiniu-js": "^3.4.1",
     "sass": "^1.86.0",
     "socket.io-client": "^4.8.1",
+    "thumbhash": "^0.1.1",
     "typeit": "^8.8.7",
     "undraw-ui": "^1.2.7",
     "uuid": "^11.1.0",

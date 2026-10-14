@@ -13,6 +13,7 @@ from .infrastructure.adapters import (
     FlaskJwtAdapter,
     HybridAvatarProvider,
     OAuthNetworkAdapter,
+    QiniuBackgroundLqipAdapter,
     QiniuStorageAdapter,
     RedisEmailCodeAdapter,
     RedisPresenceAdapter,
@@ -66,6 +67,7 @@ class AppContainer(containers.DeclarativeContainer):
     )
     mail_sender = providers.Singleton(CeleryMailSender)
     avatar_provider = providers.Singleton(HybridAvatarProvider)
+    background_lqip = providers.Singleton(QiniuBackgroundLqipAdapter)
     storage_gateway = providers.Singleton(QiniuStorageAdapter)
     asset_url = providers.Singleton(AvatarUrlAdapter)
     presence_port = providers.Factory(
@@ -112,6 +114,7 @@ class AppContainer(containers.DeclarativeContainer):
         assembler=assembler,
         avatar_provider=avatar_provider,
         asset_url=asset_url,
+        background_lqip=background_lqip,
     )
     follow_service = providers.Factory(
         FollowService,

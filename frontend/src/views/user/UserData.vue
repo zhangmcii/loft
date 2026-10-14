@@ -1,8 +1,29 @@
 <template>
   <div
     class="vapp-fullscreen-background"
-    :class="{ 'content-loaded': contentLoaded }"
+    :class="{
+      'content-loaded': contentLoaded,
+      'posts-mode': !isUserPage,
+    }"
   >
+    <div class="profile-background" aria-hidden="true">
+      <div class="background-layer background-fallback"></div>
+      <div
+        v-if="background.lqipUrl"
+        class="background-layer background-lqip"
+        :style="{ backgroundImage: `url(${background.lqipUrl})` }"
+      ></div>
+      <div
+        class="background-layer background-image"
+        :class="{ 'is-loaded': background.loaded }"
+        :style="{
+          backgroundImage: background.hiImage
+            ? `url(${background.hiImage})`
+            : 'none',
+        }"
+      ></div>
+      <div v-if="background.loading" class="background-skeleton"></div>
+    </div>
     <el-page-header
       :style="{ color: backColor }"
       @back="$router.back()"
@@ -243,27 +264,70 @@
 <script src="./userData.js"></script>
 
 <style lang="scss" scoped>
-:root {
-  --leleo-background-image-url: none;
-}
-
 .vapp-fullscreen-background {
+  position: relative;
   height: 100%;
   width: 100%;
-  z-index: -1;
+  isolation: isolate;
+  background: #1e1e24;
 
-  // 背景图片层
-  &::before {
-    content: "";
-    background-image: var(--leleo-background-image-url);
-    transition: background-image 0.8s ease;
-    background-size: cover;
-    background-position: center;
+  .profile-background,
+  .background-layer,
+  .background-skeleton {
     position: absolute;
-    height: 94%;
-    width: 100%;
-    z-index: -1;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  &.posts-mode {
+    background: #ffffff;
+
+    .profile-background {
+      opacity: 0;
+    }
+  }
+
+  .profile-background {
+    position: fixed;
+    top: 45px;
+    z-index: 0;
+    overflow: hidden;
+    background: #1e1e24;
+  }
+
+  .background-layer {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .background-fallback {
+    background: #1e1e24;
+  }
+
+  .background-lqip {
+    filter: brightness(85%) blur(22px);
+    transform: scale(1.15) translateZ(0);
+  }
+
+  .background-image {
+    opacity: 0;
     filter: brightness(85%);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: opacity;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.is-loaded {
+      opacity: 1;
+    }
+  }
+
+  .background-skeleton {
+    z-index: 2;
+    background: #18181c;
+    opacity: 0.94;
+    transition: opacity 0.4s ease;
   }
 
   // 玻璃态样式
@@ -356,6 +420,7 @@
 
   // 主内容区域
   .area-container {
+    position: relative;
     z-index: 1;
 
     .avatar {

@@ -1,5 +1,6 @@
 from .asset_url import AvatarUrlAdapter
 from .auth import CeleryMailSender, RedisEmailCodeAdapter
+from .background_lqip import QiniuBackgroundLqipAdapter
 from .cache import FlaskCacheAdapter
 from .jwt import FlaskJwtAdapter
 from .notifications import CeleryNotificationDispatcher
@@ -18,6 +19,7 @@ __all__ = [
     "QiniuAvatarProvider",
     "QiniuStorageAdapter",
     "AvatarUrlAdapter",
+    "QiniuBackgroundLqipAdapter",
     "RedisPresenceAdapter",
     "OAuthNetworkAdapter",
     "FlaskConfigSettingsAdapter",

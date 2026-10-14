@@ -187,6 +187,8 @@ def map_user(user, *, extra_data):
         "sex": user.sex,
         "bg_image": user.bg_image,
         "pc_bg_image": user.pc_bg_image,
+        "bg_image_lqip": user.bg_image_lqip,
+        "pc_bg_image_lqip": user.pc_bg_image_lqip,
         "member_since": user.member_since
         if isinstance(user.member_since, str)
         else DateUtils.datetime_to_str(user.member_since),

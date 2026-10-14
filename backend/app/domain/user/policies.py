@@ -24,6 +24,8 @@ EDITABLE_PROFILE_FIELDS = {
     "company",
     "occupation",
     "school",
+    "bg_image",
+    "pc_bg_image",
 }
 
 

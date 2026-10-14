@@ -109,6 +109,8 @@ class User(db.Model):
     sex = db.Column(db.String(10), nullable=True)
     bg_image = db.Column(db.String(255), nullable=True)
     pc_bg_image = db.Column(db.String(255), nullable=True)
+    bg_image_lqip = db.Column(db.String(128), nullable=True)
+    pc_bg_image_lqip = db.Column(db.String(128), nullable=True)
     member_since = db.Column(db.DateTime(), default=DateUtils.now_time)
     last_seen = db.Column(db.DateTime(), default=DateUtils.now_time)
     image = db.Column(db.String(255))

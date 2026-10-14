@@ -1,6 +1,7 @@
 from .assemblers import ResponseAssemblerPort
 from .asset_url import AssetUrlPort
 from .auth import EmailCodePort, MailSenderPort
+from .background_lqip import BackgroundLqipPort
 from .cache import CachePort
 from .jwt import JwtPort
 from .notifications import NotificationDispatcherPort
@@ -19,6 +20,7 @@ __all__ = [
     "AvatarProviderPort",
     "StoragePort",
     "AssetUrlPort",
+    "BackgroundLqipPort",
     "PresencePort",
     "OAuthNetworkPort",
     "PaginationSettingsPort",

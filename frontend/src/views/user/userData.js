@@ -13,9 +13,10 @@ import PageScroll from "@/utils/components/PageScroll.vue";
 import userApi from "@/api/user/userApi.js";
 import date from "@/utils/date.js";
 import dayjs from "@/config/dayjsCfg";
-import { loginReminder, waitImage } from "@/utils/common.js";
+import { loginReminder } from "@/utils/common.js";
 import musicPlayer from "./music.vue";
 import { useMusicStore } from "@/stores/music";
+import { thumbHashToDataURL } from "thumbhash";
 
 export default {
   components: {
@@ -45,6 +46,13 @@ export default {
       dialogShow: false,
       contentLoaded: false,
       isMobileDevice: false,
+      background: {
+        hiImage: "",
+        lqipUrl: "",
+        loaded: false,
+        loading: true,
+      },
+      backgroundRequestId: 0,
     };
   },
   setup() {
@@ -102,17 +110,6 @@ export default {
         this.user.is_followed_by_current_user
       );
     },
-    bgImage() {
-      const isMobile = this.isMobileDevice;
-      if (this.isCurrentUser) {
-        return isMobile
-          ? this.currentUser.backGroundUrl
-          : this.currentUser.pcBackGroundUrl;
-      }
-      return isMobile
-        ? this.otherUser.backGroundUrl
-        : this.otherUser.pcBackGroundUrl;
-    },
     backColor() {
       return this.isUserPage ? "#ffffff" : "#000000";
     },
@@ -135,10 +132,6 @@ export default {
       (newUserName, oldUserName) => {
         if (this.$route.name === "user" && newUserName !== oldUserName) {
           this.isUserPage = true;
-          // 重置加载状态
-          this.user = null;
-          this.loading.userData = true;
-          this.contentLoaded = false;
           this.getUser();
         }
       }
@@ -152,17 +145,67 @@ export default {
         /Mobi|Android|iPhone|iPad|iPod/i.test(ua) || window.innerWidth <= 768
       );
     },
-    setMainProperty() {
-      if (!this.isUserPage) {
-        return;
+    resetProfileState() {
+      this.user = null;
+      this.loading.userData = true;
+      this.contentLoaded = false;
+      this.backgroundRequestId += 1;
+      this.background = {
+        hiImage: "",
+        lqipUrl: "",
+        loaded: false,
+        loading: true,
+      };
+      return this.backgroundRequestId;
+    },
+    getBackgroundData(userData) {
+      if (this.isMobileDevice) {
+        return {
+          image: userData.bg_image || this.currentUser.defaultBackground,
+          lqip: userData.bg_image_lqip,
+        };
+      }
+      return {
+        image: userData.pc_bg_image || this.currentUser.defaultPcBackground,
+        lqip: userData.pc_bg_image_lqip,
+      };
+    },
+    decodeThumbHash(thumbHash) {
+      if (!thumbHash) return "";
+      const bytes = Uint8Array.from(atob(thumbHash), (char) =>
+        char.charCodeAt(0)
+      );
+      return thumbHashToDataURL(bytes);
+    },
+    async loadBackground(userData, requestId) {
+      const { image, lqip } = this.getBackgroundData(userData);
+      try {
+        this.background.lqipUrl = this.decodeThumbHash(lqip);
+      } catch (error) {
+        console.warn("背景 ThumbHash 解码失败", error);
       }
 
-      const bgImageUrl = this.bgImage;
-      const root = document.documentElement;
-      root.style.setProperty(
-        "--leleo-background-image-url",
-        bgImageUrl ? `url('${bgImageUrl}')` : "none"
-      );
+      if (requestId !== this.backgroundRequestId) return;
+      this.background.loading = false;
+      if (!image) return;
+
+      const highResolutionImage = new Image();
+      highResolutionImage.src = image;
+      try {
+        await highResolutionImage.decode();
+        if (requestId !== this.backgroundRequestId) return;
+        this.background.hiImage = image;
+        window.setTimeout(() => {
+          if (requestId === this.backgroundRequestId) {
+            this.background.loaded = true;
+          }
+        }, 300);
+      } catch (error) {
+        if (requestId !== this.backgroundRequestId) return;
+        console.warn("背景高清图解码失败，使用降级显示", error);
+        this.background.hiImage = image;
+        this.background.loaded = true;
+      }
     },
     // 每次点击tag触发动画
     playTagAnimation(e) {
@@ -175,15 +218,7 @@ export default {
     setActive(type) {
       this.activeInterest = type;
     },
-    handleSwitchChange() {
-      const root = document.documentElement;
-      if (this.isUserPage) {
-        this.setMainProperty();
-      } else {
-        root.style.setProperty("--leleo-background-image-url", `none`);
-        root.style.setProperty("background-color", "#fff");
-      }
-    },
+    handleSwitchChange() {},
     async beforeSwitch() {
       // 从文章列表切换到用户资料页时，不会发请求
       if (!this.isUserPage) {
@@ -194,9 +229,8 @@ export default {
       this.loading.switch = false;
       return true;
     },
-    getUser() {
-      this.loading.userData = true;
-      this.contentLoaded = false;
+    async getUser() {
+      const requestId = this.resetProfileState();
 
       // 检查是否是查看当前登录用户的资料
       const isViewingSelf =
@@ -207,66 +241,58 @@ export default {
         ? this.currentUser.userInfo.username
         : this.$route.params.userName;
 
-      userApi
-        .getUserByUsername(param)
-        .then(async (res) => {
-          // 适配新的统一接口返回格式
-          let userData;
-          if (res.code === 200) {
-            userData = res.data;
-          } else {
-            throw new Error("获取用户数据失败");
+      try {
+        const res = await userApi.getUserByUsername(param);
+        if (requestId !== this.backgroundRequestId) return;
+        // 适配新的统一接口返回格式
+        if (res.code !== 200) {
+          throw new Error("获取用户数据失败");
+        }
+        const userData = res.data;
+
+        // 一次性赋值，避免多次局部更新
+        this.user = userData;
+
+        // 更新对应的存储
+        if (isViewingSelf) {
+          this.currentUser.setUserInfo(userData);
+          if (userData.bg_image) {
+            this.currentUser.userInfo.bg_image = userData.bg_image;
           }
-
-          // 一次性赋值，避免多次局部更新
-          this.user = userData;
-
-          // 更新对应的存储
-          if (isViewingSelf) {
-            this.currentUser.setUserInfo(userData);
-            if (userData.bg_image) {
-              this.currentUser.userInfo.bg_image = userData.bg_image;
-            }
-            if (userData.pc_bg_image) {
-              this.currentUser.userInfo.pc_bg_image = userData.pc_bg_image;
-            }
-          } else {
-            this.otherUser.userInfo = userData;
-            if (userData.bg_image) {
-              this.otherUser.userInfo.bg_image = userData.bg_image;
-            }
-            if (userData.pc_bg_image) {
-              this.otherUser.userInfo.pc_bg_image = userData.pc_bg_image;
-            }
+          if (userData.pc_bg_image) {
+            this.currentUser.userInfo.pc_bg_image = userData.pc_bg_image;
           }
-
-          // 只有从文章预览卡片的音乐部分点击进入时才自动播放音乐
-          const shouldPlayMusic = this.$route.query.playMusic === "true";
-          if (shouldPlayMusic && this.user?.music && this.user.music.url) {
-            this.$nextTick(() => {
-              this.musicStore.playMusic(this.user.music);
-            });
+        } else {
+          this.otherUser.userInfo = userData;
+          if (userData.bg_image) {
+            this.otherUser.userInfo.bg_image = userData.bg_image;
           }
-
-          // 背景图片加载（不阻塞内容显示）
-          if (this.bgImage) {
-            waitImage([this.bgImage]);
+          if (userData.pc_bg_image) {
+            this.otherUser.userInfo.pc_bg_image = userData.pc_bg_image;
           }
+        }
 
-          // 关闭加载状态
-          this.loading.userData = false;
-          this.setMainProperty();
-
-          // 标记内容已加载，触发清晰度过渡
+        // 只有从文章预览卡片的音乐部分点击进入时才自动播放音乐
+        const shouldPlayMusic = this.$route.query.playMusic === "true";
+        if (shouldPlayMusic && this.user?.music && this.user.music.url) {
           this.$nextTick(() => {
-            this.contentLoaded = true;
+            this.musicStore.playMusic(this.user.music);
           });
-        })
-        .catch((err) => {
-          this.loading.userData = false;
-          ElMessage.error(err);
-          console.error(err);
+        }
+
+        this.loadBackground(userData, requestId);
+
+        this.loading.userData = false;
+        this.$nextTick(() => {
+          this.contentLoaded = true;
         });
+      } catch (err) {
+        if (requestId !== this.backgroundRequestId) return;
+        this.loading.userData = false;
+        this.background.loading = false;
+        ElMessage.error(err);
+        console.error(err);
+      }
     },
     async getPosts(userName, page) {
       await userApi
