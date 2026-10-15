@@ -73,6 +73,27 @@ class PostService:
             )[0]
         )
 
+    def get_post_list_item(self, post_id: int, *, viewer=None):
+        """以"列表结构"(is_list=True)组装单篇文章。
+
+        发布接口返回该结构，保证与 GET /posts 列表项字段一致(包含 summary)，
+        前端可直接把它插入列表，而不会出现内容空白。
+        """
+        post = self.uow.posts.get_post_detail(post_id)
+        if not post:
+            raise NotFoundError("文章不存在")
+
+        extra_data_map = self.uow.posts.build_post_extra_data_map(
+            [post], viewer_id=(viewer.id if viewer else None)
+        )
+        return ItemResult(
+            data=self.assembler.batch_map_posts(
+                [post],
+                extra_data_map=extra_data_map,
+                is_list=True,
+            )[0]
+        )
+
     def create_post(
         self, *, author, content: str, post_type: str = "text", images=None
     ):
@@ -146,7 +167,20 @@ class PostService:
         )
 
     def _dispatch_new_post_notification(self, *, post_id: int, author_id: int, repo):
-        follower_ids = repo.list_follower_ids(author_id=author_id)
-        self.notifier.dispatch_new_post(
-            post_id=post_id, author_id=author_id, follower_ids=follower_ids
-        )
+        """派发新文章通知。
+
+        通知在事务提交之后触发，属于"尽力而为"的副作用：任何异常都不应影响发布
+        结果，因此在此吞掉异常并记录日志，保证"入库成功即发布成功"。
+        """
+        try:
+            follower_ids = repo.list_follower_ids(author_id=author_id)
+            self.notifier.dispatch_new_post(
+                post_id=post_id, author_id=author_id, follower_ids=follower_ids
+            )
+        except Exception as exc:  # noqa: BLE001 - 通知失败必须被隔离，不得影响发布
+            logging.warning(
+                "派发新文章通知失败(已忽略): post_id=%s, author_id=%s, error=%s",
+                post_id,
+                author_id,
+                exc,
+            )

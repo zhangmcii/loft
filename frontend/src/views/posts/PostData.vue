@@ -95,7 +95,14 @@ export default {
         const res = await postApi.getPosts(page, tabName);
         if (res.code === 200) {
           const list = Array.isArray(res.data) ? res.data : [];
-          this.posts = append ? [...this.posts, ...list] : list;
+          if (append) {
+            // offset 分页下本地插入新帖会导致翻页边界错位，按 id 去重兜底
+            const existIds = new Set(this.posts.map((item) => item.id));
+            const unique = list.filter((item) => !existIds.has(item.id));
+            this.posts = [...this.posts, ...unique];
+          } else {
+            this.posts = list;
+          }
           if (typeof res.total === "number") {
             this.posts_count = res.total;
           } else if (!append) {
@@ -121,15 +128,21 @@ export default {
       }
     },
     getPostsResult(post) {
-      const newPosts = Array.isArray(post) ? post : [post];
-      this.posts.unshift(...newPosts);
-      if (this.posts_count >= 0) {
-        this.posts_count += newPosts.length;
-      }
-
-      // 首页设置了缓存，手动更新为第一页
-      this.currentPage = 1;
       this.loading.publishPost = false;
+      // 关注流 = 我关注的人的文章，自己的新帖只在广场插入
+      if (this.activeName !== "all") {
+        return;
+      }
+      const newPosts = Array.isArray(post) ? post : [post];
+      const existIds = new Set(this.posts.map((item) => item.id));
+      const unique = newPosts.filter((item) => !existIds.has(item.id));
+      if (!unique.length) {
+        return;
+      }
+      this.posts.unshift(...unique);
+      if (this.posts_count >= 0) {
+        this.posts_count += unique.length;
+      }
     },
   },
   beforeUnmount() {

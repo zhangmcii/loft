@@ -27,7 +27,7 @@ class TestPraiseCommentCase:
             json={"content": "测试文章内容", "type": "text", "images": []},
         )
         assert r.json.get("code") == 200
-        post_id = r.json.get("data")[0].get("id")
+        post_id = r.json.get("data").get("id")
 
         # 发表评论
         r = client.post(
@@ -88,7 +88,7 @@ class TestPraiseCommentCase:
             json={"content": "测试文章内容", "type": "text", "images": []},
         )
         assert r.json.get("code") == 200
-        post_id = r.json.get("data")[-1].get("id")
+        post_id = r.json.get("data").get("id")
 
         # 发表根评论
         r = client.post(

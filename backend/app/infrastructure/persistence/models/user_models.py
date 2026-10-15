@@ -21,6 +21,7 @@ class Role(db.Model):
         if self.permissions is None:
             self.permissions = 0
 
+    # shell中执行完，需要手动调用db.session.commit()
     @staticmethod
     def insert_roles(session=None):
         db.create_all()

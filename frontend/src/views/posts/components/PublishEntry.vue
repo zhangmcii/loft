@@ -239,13 +239,22 @@ export default {
             break;
         }
 
-        if (result && result.code === 200) {
-          ElMessage.success("发布成功!");
-          this.resetForm();
-          this.showPublishPanel = false;
-          this.$emit("newPost", result.data);
-        } else {
-          ElMessage.error("发布失败!");
+        // 上游已提示的校验失败会返回空结果，直接结束
+        if (!result) {
+          return;
+        }
+
+        ElMessage.success("发布成功!");
+        this.resetForm();
+        this.showPublishPanel = false;
+        this.$emit("newPost", result.data);
+      } catch (error) {
+        console.error("发布失败:", error);
+        // 业务/网络错误已由 request 拦截器统一提示，此处仅兜底非请求类异常
+        const handledByInterceptor =
+          typeof error === "string" || error?.isAxiosError === true;
+        if (!handledByInterceptor) {
+          ElMessage.error(error?.message || "发布失败，请稍后重试");
         }
       } finally {
         this.publishing = false;
@@ -265,7 +274,8 @@ export default {
 
     async publishImage() {
       if (!beforePicUpload(this.imageFiles)) {
-        throw new Error("图片格式或大小不符合要求");
+        ElMessage.warning("图片格式或大小不符合要求");
+        return null;
       }
 
       // 压缩图像

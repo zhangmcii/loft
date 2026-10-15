@@ -8,8 +8,8 @@ from ..exceptions import RateLimitError
 
 
 def my_key_func():
-    """根据当前用户id限速"""
-    return current_user.id if current_user else get_remote_address
+    """根据当前用户id限速，未登录时回退到客户端 IP。"""
+    return current_user.id if current_user else get_remote_address()
 
 
 limiter = Limiter(

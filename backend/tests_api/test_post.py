@@ -54,8 +54,8 @@ class TestApiCase:
         )
         assert r.json.get("code") == 200
         data = r.json.get("data")
-        assert "测试图文文章" in data[0].get("summary")
-        assert len(data[0].get("post_images")) == 2
+        assert "测试图文文章" in data.get("summary")
+        assert len(data.get("post_images")) == 2
 
         time.sleep(1)
         # 发布markdown文章
@@ -69,7 +69,6 @@ class TestApiCase:
             },
         )
         assert r.json.get("code") == 200
-        assert r.json.get("total") == 3
         data = r.json.get("data")
-        assert "测试markdown文章" in data[0].get("summary")
-        assert "1" in data[0].get("pos")
+        assert "测试markdown文章" in data.get("summary")
+        assert "1" in data.get("pos")

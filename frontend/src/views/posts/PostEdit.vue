@@ -63,7 +63,7 @@ export default {
             this.$router.push(`/postDetail/${this.postId}`);
           } else {
             this.loading = false;
-            ElMessage.success("修改失败");
+            ElMessage.error("修改失败");
           }
         });
     },
@@ -79,7 +79,7 @@ export default {
           this.$router.push(`/postDetail/${this.postId}`);
         } else {
           this.loading = false;
-          ElMessage.success("修改失败");
+          ElMessage.error("修改失败");
         }
       });
     },

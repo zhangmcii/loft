@@ -7,6 +7,7 @@ from flask_jwt_extended import current_user, jwt_required
 from ..application.cache import PostListCache
 from ..container import AppContainer
 from ..decorators import DecoratedMethodView, log_operate
+from ..domain.common.constants import PermissionCode
 from ..infrastructure.my_limiter import limiter
 from ..services.post_service import PostService
 from ..utils.response import forbidden, success
@@ -67,7 +68,11 @@ class PostGroupApi(DecoratedMethodView):
         )
 
     @staticmethod
-    @limiter.limit("2/day", exempt_when=lambda: current_user.role_id == 3)
+    @limiter.limit(
+        "2/day",
+        exempt_when=lambda: bool(current_user)
+        and current_user.can(PermissionCode.ADMIN),
+    )
     def publish_image_post(content, images):
         return PostGroupApi.submit_to_db("image", content, images)
 
@@ -93,12 +98,11 @@ class PostGroupApi(DecoratedMethodView):
             return forbidden("没有权限发布文章")
         create_result = PostGroupApi.posts_publish(request.json or {})
         _post_cache().invalidate_all()
-        result = _query_post(1, current_app.config["FLASKY_POSTS_PER_PAGE"])
-        return success(
-            message=create_result.message,
-            data=result.data,
-            total=result.total,
+        # 只返回新建的单篇文章(列表结构)，由前端插入列表，避免整页重复
+        result = _post_service().get_post_list_item(
+            create_result.data["post_id"], viewer=current_user
         )
+        return success(message=create_result.message, data=result.data)
 
 
 class PostItemApi(DecoratedMethodView):

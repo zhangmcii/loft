@@ -26,7 +26,7 @@ class TestNotificationCase:
         )
         assert r.get_json().get("code") == 200
         # 根据你后端的返回结构获取 ID，通常在 data 列表或对象中
-        post_id = r.get_json().get("data")[0].get("id")
+        post_id = r.get_json().get("data").get("id")
 
         # 注册并登录评论者 (User B)
         auth_b.register(username="commenter1", password="password")
@@ -63,7 +63,7 @@ class TestNotificationCase:
             headers=auth_author.get_headers(),
             json={"content": "测试文章内容", "type": "text", "images": []},
         )
-        post_id = r.get_json().get("data")[0].get("id")
+        post_id = r.get_json().get("data").get("id")
 
         # 点赞者登录
         auth_liker.register(username="liker2", password="password")
@@ -97,7 +97,7 @@ class TestNotificationCase:
             headers=auth_c1.get_headers(),
             json={"content": "测试内容", "type": "text", "images": []},
         )
-        post_id = r_post.get_json().get("data")[0].get("id")
+        post_id = r_post.get_json().get("data").get("id")
 
         r_cmt = client.post(
             self.pre_fix + f"/posts/{post_id}/comments",
@@ -136,7 +136,7 @@ class TestNotificationCase:
             headers=auth_a.get_headers(),
             json={"content": "测试内容", "type": "text", "images": []},
         )
-        post_id = r_post.get_json().get("data")[0].get("id")
+        post_id = r_post.get_json().get("data").get("id")
 
         # B评论
         auth_b.register(username="commenter4", password="password")

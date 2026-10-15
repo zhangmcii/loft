@@ -158,12 +158,6 @@ const routes = [
         component: () => import("../views/posts/postDetail.vue"),
       },
       {
-        path: "/pubImage",
-        name: "pubImage",
-        component: () => import("../views/posts/publish/PublishImage.vue"),
-        meta: { keepAlive: true },
-      },
-      {
         path: "/chat",
         name: "chat",
         component: () => import("../views/chat/chat.vue"),
